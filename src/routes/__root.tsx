@@ -67,26 +67,6 @@ function RootComponent() {
     select: (s) => s.status === "pending",
   });
 
-  const [showNavigationSpinner, setShowNavigationSpinner] = createSignal(false);
-
-  createEffect(
-    () => isNavigating(),
-    (isNavigating) => {
-      if (!isNavigating) {
-        setShowNavigationSpinner(false);
-        return;
-      }
-
-      const timeout = setTimeout(() => {
-        setShowNavigationSpinner(true);
-      }, 500);
-
-      return () => {
-        clearTimeout(timeout);
-      };
-    },
-  );
-
   return (
     <QueryClientProvider client={queryClient}>
       <html lang="en" class="pointer-coarse:overscroll-none">
@@ -97,32 +77,6 @@ function RootComponent() {
 
         <body class="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark dark:text-white">
           <div class="app-shell grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[1fr_min-content] md:grid-cols-[auto_1fr]">
-            <div
-              aria-hidden="true"
-              class="pointer-events-none fixed top-0 left-0 z-99999999 h-80 w-full select-none"
-            >
-              <div
-                class={cn(
-                  "absolute top-0 h-80 w-full rounded-[100%] bg-black/25 blur-3xl transition-all duration-500",
-                  showNavigationSpinner()
-                    ? "-translate-y-1/2 opacity-100"
-                    : "-translate-y-full opacity-0",
-                )}
-              />
-              <div
-                class={cn(
-                  "absolute top-6 left-1/2 -translate-x-1/2 transition-all duration-300",
-                  showNavigationSpinner()
-                    ? "translate-y-0 opacity-100"
-                    : "-translate-y-6 opacity-0",
-                )}
-              >
-                <Show when={isNavigating() && showNavigationSpinner()}>
-                  <Spinner />
-                </Show>
-              </div>
-            </div>
-
             <Aside />
 
             <CatchBoundary
@@ -131,7 +85,11 @@ function RootComponent() {
                 <ErrorAlert message={getErrorMessage(error)} />
               )}
             >
-              <Outlet />
+              <Show when={isNavigating()} fallback={<Outlet />}>
+                <div class="pointer-events-none grid size-full place-items-center">
+                  <Spinner />
+                </div>
+              </Show>
             </CatchBoundary>
           </div>
 
