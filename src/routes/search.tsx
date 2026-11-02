@@ -23,19 +23,21 @@ export const Route = createFileRoute("/search")({
 
   loader: async ({ deps: { search } }) => {
     if (!search.q) return;
-    const artists = await $spotify.lookupArtists({ data: search.q });
 
     if (search.lucky) {
-      const topResultId = artists[0].id;
+      const best = await $spotify.findBestArtistMatch({ data: search.q });
+      if (best)
+        throw redirect({
+          to: "/artist/$spotifyId",
+          params: { spotifyId: best.id },
+          replace: true,
+        });
 
-      throw redirect({
-        to: "/artist/$spotifyId",
-        params: { spotifyId: topResultId },
-        replace: true,
-      });
+      // nothing to be lucky with; show the (empty) results instead
+      return { artists: [] };
     }
 
-    return { artists };
+    return { artists: await $spotify.searchArtists({ data: search.q }) };
   },
 
   component: RouteComponent,
@@ -82,19 +84,24 @@ function RouteComponent() {
       }}
     >
       <Show when={search().q}>
-        <div class="cool-grid h-full p-3">
-          <For each={data()?.artists}>
-            {(artist) => (
-              <Chip
-                to="/artist/$spotifyId"
-                leading={artist.images.at(-1)?.url}
-                params={{ spotifyId: artist.id }}
-              >
-                {artist.name}
-              </Chip>
-            )}
-          </For>
-        </div>
+        <Show
+          when={data()?.artists.length}
+          fallback={<p class="p-3 opacity-60">No artists found.</p>}
+        >
+          <div class="cool-grid h-full p-3">
+            <For each={data()?.artists}>
+              {(artist) => (
+                <Chip
+                  to="/artist/$spotifyId"
+                  leading={artist.imageUrl}
+                  params={{ spotifyId: artist.id }}
+                >
+                  {artist.name}
+                </Chip>
+              )}
+            </For>
+          </div>
+        </Show>
       </Show>
     </Layout>
   );

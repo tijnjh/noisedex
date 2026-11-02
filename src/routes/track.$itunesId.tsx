@@ -3,78 +3,19 @@ import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
 import { $itunes } from "#lib/api/index";
-import { siteName, siteUrl } from "#lib/constants";
 import { nowPlaying } from "#lib/global";
-import { fmt, getBigItunesArtwork } from "#lib/utils";
+import { trackHead } from "#lib/page-head";
+import { fmt, fmtDuration } from "#lib/utils";
 import { createFileRoute, notFound, useRouter } from "@tanstack/solid-router";
 import { Show } from "solid-js";
 
 export const Route = createFileRoute("/track/$itunesId")({
   loader: async ({ params }) => {
-    const id = Number(params.itunesId);
-    if (!/^\d+$/.test(params.itunesId) || !Number.isSafeInteger(id) || id <= 0)
-      throw notFound();
-
-    const response = await $itunes.isa.lookup("id", id, {
-      media: "music",
-      entity: "song",
-    });
-    const track = response.results.find(
-      (result) =>
-        result.wrapperType === "track" &&
-        result.kind === "song" &&
-        result.trackId === id,
-    );
+    const track = await $itunes.releases.getTrack(params.itunesId);
     if (!track) throw notFound();
-
     return { track };
   },
-  head: ({ loaderData, params }) => {
-    if (!loaderData) return {};
-    const { track } = loaderData;
-    const title = `${track.trackName} by ${track.artistName} | ${siteName}`;
-    const description = `Explore ${track.trackName} by ${track.artistName} from ${track.collectionName}: release date, genre, and listening links on ${siteName}.`;
-    const url = `${siteUrl}/track/${params.itunesId}`;
-    const artwork = getBigItunesArtwork(track);
-
-    return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:type", content: "music.song" },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:image", content: artwork },
-        { property: "og:url", content: url },
-      ],
-      links: [{ rel: "canonical", href: url }],
-      scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "MusicRecording",
-            "@id": url,
-            url,
-            name: track.trackName,
-            byArtist: { "@type": "MusicGroup", name: track.artistName },
-            inAlbum: {
-              "@type": "MusicAlbum",
-              name: track.collectionName,
-              url: `${siteUrl}/album/${track.collectionId}`,
-            },
-            datePublished: track.releaseDate,
-            genre: track.primaryGenreName,
-            image: artwork,
-            duration: Number.isFinite(track.trackTimeMillis)
-              ? `PT${Math.round(track.trackTimeMillis / 1000)}S`
-              : undefined,
-          }).replace(/</g, "\\u003c"),
-        },
-      ],
-    };
-  },
-
+  head: ({ loaderData }) => (loaderData ? trackHead(loaderData.track) : {}),
   component: RouteComponent,
 });
 
@@ -85,25 +26,19 @@ function RouteComponent() {
   const backHref = () =>
     router.buildLocation({
       to: "/album/$itunesId",
-      params: { itunesId: String(track().collectionId) },
+      params: { itunesId: String(track().albumId) },
     }).href;
-  const constructedSearchQuery = () =>
-    encodeURIComponent(`${track().artistName} ${track().trackName}`);
-  const duration = () => {
-    const seconds = Math.floor(track().trackTimeMillis / 1000);
-    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-  };
   const isPlaying = () =>
     Boolean(track().previewUrl) && nowPlaying().url === track().previewUrl;
 
   return (
     <Layout
-      header={{ title: track().trackName, backHref: backHref() }}
+      header={{ title: track().title, backHref: backHref() }}
       leading={
         <div class="flex min-w-0 flex-col gap-3">
           <img
-            src={getBigItunesArtwork(track())}
-            alt={`${track().collectionName} album cover`}
+            src={track().artworkUrl}
+            alt={`${track().albumName} album cover`}
             class="mx-auto aspect-square w-full max-w-72"
             width={600}
             height={600}
@@ -125,7 +60,7 @@ function RouteComponent() {
                 aria-label={isPlaying() ? "Stop preview" : "Play preview"}
                 aria-pressed={isPlaying() ? "true" : "false"}
                 track={{
-                  title: `${track().artistName} — ${track().trackName}`,
+                  title: `${track().artistName} — ${track().title}`,
                   url: track().previewUrl,
                 }}
               />
@@ -136,32 +71,12 @@ function RouteComponent() {
           </Show>
 
           <PlatformLinks
-            links={[
-              {
-                name: "last.fm",
-                icon: "/last-fm.ico",
-                href: `https://last.fm/music/${encodeURIComponent(track().artistName)}/_/${encodeURIComponent(track().trackName)}`,
-              },
-              {
-                name: "spotify",
-                icon: "/spotify-com.png",
-                href: `https://open.spotify.com/search/${constructedSearchQuery()}`,
-              },
-              {
-                name: "apple music",
-                icon: "/music-apple-com.png",
-                href: track().trackViewUrl,
-              },
-              {
-                name: "bandcamp",
-                icon: "/bandcamp-com.png",
-                href: `https://bandcamp.com/search?q=${constructedSearchQuery()}&item_type=t`,
-              },
-              {
-                name: "soundcloak",
-                href: `https://sc.maid.zone/search?q=${constructedSearchQuery()}&type=tracks`,
-              },
-            ]}
+            for={{
+              kind: "track",
+              artistName: track().artistName,
+              title: track().title,
+              appleMusicUrl: track().appleMusicUrl,
+            }}
           />
         </div>
       }
@@ -173,10 +88,10 @@ function RouteComponent() {
           <h2 class="section-divider">from the album</h2>
           <Chip
             to="/album/$itunesId"
-            params={{ itunesId: String(track().collectionId) }}
-            leading={track().artworkUrl60}
+            params={{ itunesId: String(track().albumId) }}
+            leading={track().thumbnailUrl}
           >
-            {track().collectionName}
+            {track().albumName}
           </Chip>
 
           <h2>Track details</h2>
@@ -187,9 +102,13 @@ function RouteComponent() {
                 dateStyle: "long",
               })}
             </dd>
-            <Show when={Number.isFinite(track().trackTimeMillis)}>
-              <dt>duration</dt>
-              <dd>{duration()}</dd>
+            <Show when={track().durationMs}>
+              {(ms) => (
+                <>
+                  <dt>duration</dt>
+                  <dd>{fmtDuration(ms())}</dd>
+                </>
+              )}
             </Show>
             <dt
               class="cursor-help"
@@ -197,7 +116,7 @@ function RouteComponent() {
             >
               genre
             </dt>
-            <dd class="wrap-anywhere">{track().primaryGenreName}</dd>
+            <dd class="wrap-anywhere">{track().genre}</dd>
             <dt>track</dt>
             <dd>
               {track().trackNumber} of {track().trackCount}
@@ -208,7 +127,7 @@ function RouteComponent() {
                 {track().discNumber} of {track().discCount}
               </dd>
             </Show>
-            <Show when={track().trackExplicitness === "explicit"}>
+            <Show when={track().explicit}>
               <dt>content</dt>
               <dd>explicit</dd>
             </Show>

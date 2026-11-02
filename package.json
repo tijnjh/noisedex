@@ -20,11 +20,9 @@
   },
   "dependencies": {
     "@solidjs/web": "2.0.0-rc.18",
-    "@tanstack/solid-query": "^6.0.0-rc.5",
     "cn": "^0.5.0",
     "domino": "^2.1.8",
     "itunes-store-api": "^2.1.0",
-    "jotai": "^3.0.1",
     "ky": "^2.2.0",
     "papaparse": "^5.7.0",
     "solid-js": "2.0.0-rc.18",

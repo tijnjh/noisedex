@@ -2,47 +2,76 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlayButton } from "#components/play-button";
 import { VirtualGrid } from "#components/virtual-grid";
-import { useEnumToggle } from "#hooks/use-enum-toggle";
-import { useQueryState } from "#hooks/use-query-state";
 import { $everynoise } from "#lib/api/index";
 import { siteUrl } from "#lib/constants";
-import { genreNameToSlug, sortHexColorsToGradient } from "#lib/utils";
+import {
+  filterGenres,
+  type GenreFilter,
+  type GenreSort,
+  genreSlug,
+  sortGenres,
+} from "#lib/genres";
 import { createFileRoute } from "@tanstack/solid-router";
-import { createMemo, Show } from "solid-js";
+import { createMemo } from "solid-js";
+import * as v from "valibot";
+
+const filters = ["genre", "preview"] as const satisfies GenreFilter[];
+const sorts = [
+  "popularity",
+  "alphabetical",
+  "color",
+] as const satisfies GenreSort[];
+
+const placeholders: Record<GenreFilter, string> = {
+  genre: "filter genre names",
+  preview: "filter genre preview track name",
+};
 
 export const Route = createFileRoute("/")({
-  loader: async () => {
-    const genres = await $everynoise.getAllGenres();
-    return { genres };
-  },
+  // the url is the only state, so back/forward and shared links just work
+  validateSearch: v.object({
+    q: v.fallback(v.optional(v.string()), undefined),
+    type: v.fallback(v.optional(v.picklist(filters)), undefined),
+    sort: v.fallback(v.optional(v.picklist(sorts)), undefined),
+  }),
+  loader: async () => ({ genres: await $everynoise.getAllGenres() }),
   head: () => ({ links: [{ rel: "canonical", href: siteUrl }] }),
   component: RouteComponent,
 });
 
+function next<T>(values: readonly T[], current: T) {
+  return values[(values.indexOf(current) + 1) % values.length];
+}
+
 function RouteComponent() {
   const data = Route.useLoaderData();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
 
-  const [searchTerm, setSearchTerm] = useQueryState("q", {
-    defaultValue: "",
-  });
+  const term = () => search().q ?? "";
+  const filter = () => search().type ?? filters[0];
+  const sort = () => search().sort ?? sorts[0];
 
-  const [type, setType] = useQueryState("type", {
-    defaultValue: "genre",
-  });
+  // default values are left out of the url
+  const setSearch = (
+    patch: Partial<{ q: string; type: GenreFilter; sort: GenreSort }>,
+  ) =>
+    navigate({
+      to: ".",
+      search: (prev) => {
+        const merged = { ...prev, ...patch };
+        return {
+          q: merged.q || undefined,
+          type: merged.type === filters[0] ? undefined : merged.type,
+          sort: merged.sort === sorts[0] ? undefined : merged.sort,
+        };
+      },
+      replace: true,
+    });
 
-  const filterType = useEnumToggle(["genre", "preview"], {
-    onUpdate: setType,
-    defaultValue: type() ?? "genre",
-  });
-
-  const [sort, setSort] = useQueryState("sort", {
-    defaultValue: "popularity",
-  });
-
-  const sortType = useEnumToggle(["popularity", "alphabetical", "color"], {
-    onUpdate: setSort,
-    defaultValue: sort() ?? "popularity",
-  });
+  const genres = createMemo(() =>
+    sortGenres(filterGenres(data().genres, filter(), term()), sort()),
+  );
 
   return (
     <Layout
@@ -51,110 +80,50 @@ function RouteComponent() {
         children: (
           <div class="flex gap-6">
             <div class="flex grow gap-3">
-              <button class="btn" onClick={filterType.cycle}>
-                {filterType.current()}
+              <button
+                class="btn"
+                onClick={() => setSearch({ type: next(filters, filter()) })}
+              >
+                {filter()}
               </button>
 
               <input
-                value={searchTerm() ?? ""}
-                onInput={(e) => setSearchTerm(e.currentTarget.value)}
+                value={term()}
+                onInput={(e) => setSearch({ q: e.currentTarget.value })}
                 class="h-9 min-w-0 grow bg-zinc-50-950 px-3"
                 name="q"
-                placeholder={
-                  {
-                    genre: "filter genre names",
-                    preview: "filter genre preview track name",
-                  }[filterType.current()]
-                }
+                placeholder={placeholders[filter()]}
               />
 
-              <Show when={filterType.current() === "lookup"}>
-                <button type="submit" class="btn-inverse size-9 justify-center">
-                  →
-                </button>
-              </Show>
-
-              <button class="btn" onClick={sortType.cycle}>
-                {sortType.current()}
+              <button
+                class="btn"
+                onClick={() => setSearch({ sort: next(sorts, sort()) })}
+              >
+                {sort()}
               </button>
             </div>
           </div>
         ),
       }}
     >
-      <Genres
-        filterType={filterType.current()}
-        sortType={sortType.current()}
-        searchTerm={searchTerm()}
-        genres={data().genres}
-      />
+      <VirtualGrid entries={genres()}>
+        {(genre) => (
+          <Chip
+            to="/genre/$slug"
+            params={{ slug: genreSlug(genre.name) }}
+            trailing={
+              <PlayButton
+                title={genre.previewTitle}
+                class="bt size-9 shrink-0 justify-center"
+                style={{ "background-color": genre.color }}
+                track={{ title: genre.previewTitle, url: genre.previewUrl }}
+              />
+            }
+          >
+            {genre.name}
+          </Chip>
+        )}
+      </VirtualGrid>
     </Layout>
-  );
-}
-
-function Genres(props: {
-  genres: Everynoise.Genre[];
-  searchTerm: string;
-  filterType: string;
-  sortType: string;
-}) {
-  const filteredGenres = () => {
-    const t = props.searchTerm.toLowerCase();
-
-    switch (props.filterType) {
-      case "genre":
-        return t
-          ? props.genres.filter((g) => g.genreName.toLowerCase().includes(t))
-          : props.genres;
-
-      case "preview":
-        return t
-          ? props.genres.filter((g) => g.previewTitle.toLowerCase().includes(t))
-          : props.genres;
-
-      default:
-        return [];
-    }
-  };
-
-  const sortedGenres = createMemo(() => {
-    const filtered = filteredGenres();
-
-    switch (props.sortType) {
-      case "popularity":
-        return filtered;
-
-      case "alphabetical":
-        return [...filtered].sort((a, b) =>
-          a.genreName.localeCompare(b.genreName),
-        );
-
-      case "color":
-        return sortHexColorsToGradient(filtered, (item) => item.color);
-
-      default:
-        return filtered;
-    }
-  });
-
-  return (
-    <VirtualGrid entries={sortedGenres()}>
-      {(genre) => (
-        <Chip
-          to="/genre/$slug"
-          params={{ slug: genreNameToSlug(genre.genreName) }}
-          trailing={
-            <PlayButton
-              title={genre.previewTitle}
-              class="bt size-9 shrink-0 justify-center"
-              style={{ "background-color": genre.color }}
-              track={{ title: genre.previewTitle, url: genre.previewUrl }}
-            />
-          }
-        >
-          {genre.genreName}
-        </Chip>
-      )}
-    </VirtualGrid>
   );
 }

@@ -6,7 +6,6 @@ import { siteName } from "#lib/constants";
 import { getErrorMessage } from "#lib/utils";
 import styleCss from "../style.css?url";
 import { HydrationScript } from "@solidjs/web";
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import {
   CatchBoundary,
   createRootRoute,
@@ -48,10 +47,6 @@ const tabs = [
 ] as const;
 
 function RootComponent() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-
   const isNavigating = useRouterState({
     select: (s) => s.status === "pending",
   });
@@ -77,59 +72,57 @@ function RootComponent() {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <html lang="en" class="pointer-coarse:overscroll-none">
-        <head>
-          <HydrationScript />
-          <HeadContent />
-        </head>
+    <html lang="en" class="pointer-coarse:overscroll-none">
+      <head>
+        <HydrationScript />
+        <HeadContent />
+      </head>
 
-        <body class="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark select-none dark:text-white">
-          <div class="grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[1fr_min-content] md:grid-cols-[auto_1fr]">
+      <body class="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark select-none dark:text-white">
+        <div class="grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[1fr_min-content] md:grid-cols-[auto_1fr]">
+          <div
+            aria-hidden="true"
+            class="pointer-events-none fixed top-0 left-0 z-99999999 h-80 w-full select-none"
+          >
             <div
-              aria-hidden="true"
-              class="pointer-events-none fixed top-0 left-0 z-99999999 h-80 w-full select-none"
-            >
-              <div
-                class={cn(
-                  "absolute top-0 h-80 w-full rounded-[100%] bg-black/25 blur-3xl transition-all duration-500",
-                  showNavigationSpinner()
-                    ? "-translate-y-1/2 opacity-100"
-                    : "-translate-y-full opacity-0",
-                )}
-              />
-              <div
-                class={cn(
-                  "absolute top-6 left-1/2 -translate-x-1/2 transition-all duration-300",
-                  showNavigationSpinner()
-                    ? "translate-y-0 opacity-100"
-                    : "-translate-y-6 opacity-0",
-                )}
-              >
-                <Show when={isNavigating() && showNavigationSpinner()}>
-                  <Spinner />
-                </Show>
-              </div>
-            </div>
-
-            <Aside />
-
-            <CatchBoundary
-              getResetKey={() => "reset"}
-              errorComponent={({ error }) => (
-                <ErrorAlert message={getErrorMessage(error)} />
+              class={cn(
+                "absolute top-0 h-80 w-full rounded-[100%] bg-black/25 blur-3xl transition-all duration-500",
+                showNavigationSpinner()
+                  ? "-translate-y-1/2 opacity-100"
+                  : "-translate-y-full opacity-0",
+              )}
+            />
+            <div
+              class={cn(
+                "absolute top-6 left-1/2 -translate-x-1/2 transition-all duration-300",
+                showNavigationSpinner()
+                  ? "translate-y-0 opacity-100"
+                  : "-translate-y-6 opacity-0",
               )}
             >
-              <Outlet />
-            </CatchBoundary>
+              <Show when={isNavigating() && showNavigationSpinner()}>
+                <Spinner />
+              </Show>
+            </div>
           </div>
 
-          <MiniPlayer />
+          <Aside />
 
-          <Scripts />
-        </body>
-      </html>
-    </QueryClientProvider>
+          <CatchBoundary
+            getResetKey={() => "reset"}
+            errorComponent={({ error }) => (
+              <ErrorAlert message={getErrorMessage(error)} />
+            )}
+          >
+            <Outlet />
+          </CatchBoundary>
+        </div>
+
+        <MiniPlayer />
+
+        <Scripts />
+      </body>
+    </html>
   );
 }
 

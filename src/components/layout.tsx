@@ -1,8 +1,7 @@
-import { fixRelativeUrl } from "#lib/utils";
 import { JSX } from "@solidjs/web";
 import { Link } from "@tanstack/solid-router";
 import { cn } from "cn";
-import { children, ComponentProps, createMemo, For, Show } from "solid-js";
+import { children, ComponentProps, createMemo, Show } from "solid-js";
 import { MergeExclusive } from "type-fest";
 
 export function Layout(
@@ -54,20 +53,12 @@ function Title(props: { title: string }) {
   );
 }
 
-export function Header(
-  props: {
-    backHref?: string;
-    title: string;
-  } & MergeExclusive<
-    { links?: Array<{ text: string; href: string }> },
-    { children: JSX.Element }
-  >,
-) {
+export function Header(props: {
+  backHref?: string;
+  title: string;
+  children?: JSX.Element;
+}) {
   const content = children(() => props.children);
-
-  // we hide this button cus its too wide and doesn't provide much functionality in this case
-  const links = () =>
-    props.links?.filter((l) => l.text !== "Every Noise at Once");
 
   return (
     <header
@@ -92,30 +83,7 @@ export function Header(
         <h1 class="truncate text-2xl font-bold max-md:hidden">{props.title}</h1>
       </div>
 
-      <Show
-        when={content()}
-        fallback={
-          <Show when={links()?.length}>
-            <ul class="flex scrollbar-none gap-3 overflow-x-auto">
-              <For each={links()}>
-                {(link) => (
-                  <li class="first:ml-3 last:mr-3">
-                    <a
-                      href={fixRelativeUrl(link.href)}
-                      target="_blank"
-                      class="btn-inverse"
-                    >
-                      {link.text}
-                    </a>
-                  </li>
-                )}
-              </For>
-            </ul>
-          </Show>
-        }
-      >
-        {(children) => children()}
-      </Show>
+      {content()}
     </header>
   );
 }

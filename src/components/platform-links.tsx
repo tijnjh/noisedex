@@ -1,15 +1,10 @@
+import { type Linkable, platformLinksFor } from "#lib/platform-links";
 import { For, Show } from "solid-js";
 
-export interface PlatformLink {
-  name: string;
-  icon?: string;
-  href: string;
-}
-
-export function PlatformLinks(props: { links: PlatformLink[] }) {
+export function PlatformLinks(props: { for: Linkable }) {
   return (
     <div class="flex flex-wrap gap-3">
-      <For each={props.links}>
+      <For each={platformLinksFor(props.for)}>
         {(link) => (
           <a href={link.href} class="btn" target="_blank">
             <Show when={link.icon}>
