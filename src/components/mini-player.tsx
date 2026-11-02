@@ -1,6 +1,6 @@
 import { nowPlaying, setNowPlaying } from "../lib/global";
 import { cn } from "cn";
-import Hls from "hls.js";
+import type Hls from "hls.js";
 import { createEffect, onCleanup, Show } from "solid-js";
 
 export function MiniPlayer() {
@@ -8,21 +8,46 @@ export function MiniPlayer() {
 
   createEffect(nowPlaying, (track) => {
     if (!track.url || !audioRef) return;
+    const audio = audioRef;
+    const url = track.url;
     let hls: Hls | undefined;
+    let cancelled = false;
+    onCleanup(() => {
+      cancelled = true;
+      hls?.destroy();
+    });
+
+    const playNative = () => {
+      audio.src = url;
+      audio.play().catch(() => {});
+    };
+
     if (
-      track.url.includes(".m3u8") &&
-      !audioRef.canPlayType("application/vnd.apple.mpegurl") &&
-      Hls.isSupported()
+      url.includes(".m3u8") &&
+      !audio.canPlayType("application/vnd.apple.mpegurl")
     ) {
-      hls = new Hls();
-      hls.loadSource(track.url);
-      hls.attachMedia(audioRef);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => audioRef.play().catch(() => {}));
+      // @ts-expect-error The light entry point does not expose types.
+      import("hls.js/light")
+        .then((module) => {
+          if (cancelled) return;
+          const HlsLight = module.default as typeof Hls;
+          if (!HlsLight.isSupported()) {
+            playNative();
+            return;
+          }
+          hls = new HlsLight();
+          hls.on(HlsLight.Events.MANIFEST_PARSED, () => {
+            if (!cancelled) audio.play().catch(() => {});
+          });
+          hls.loadSource(url);
+          hls.attachMedia(audio);
+        })
+        .catch((error) => {
+          if (!cancelled) console.error("Failed to load HLS playback", error);
+        });
     } else {
-      audioRef.src = track.url;
-      audioRef.play().catch(() => {});
+      playNative();
     }
-    onCleanup(() => hls?.destroy());
   });
   const cleanTitle = () => nowPlaying().title?.replace("e.g.", "").trim();
 
