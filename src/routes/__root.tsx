@@ -27,7 +27,18 @@ export const Route = createRootRoute({
       },
       {
         name: "viewport",
-        content: "width=device-width, initial-scale=1",
+        content:
+          "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content",
+      },
+      {
+        name: "theme-color",
+        media: "(prefers-color-scheme: light)",
+        content: "#e4e4e7",
+      },
+      {
+        name: "theme-color",
+        media: "(prefers-color-scheme: dark)",
+        content: "#27272a",
       },
       { title: `${siteName} | Explore music genres and albums` },
       {
@@ -84,8 +95,8 @@ function RootComponent() {
           <HeadContent />
         </head>
 
-        <body class="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark select-none dark:text-white">
-          <div class="grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[1fr_min-content] md:grid-cols-[auto_1fr]">
+        <body class="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark dark:text-white">
+          <div class="app-shell grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[1fr_min-content] md:grid-cols-[auto_1fr]">
             <div
               aria-hidden="true"
               class="pointer-events-none fixed top-0 left-0 z-99999999 h-80 w-full select-none"
@@ -135,7 +146,7 @@ function RootComponent() {
 
 function Aside() {
   return (
-    <aside class="z-999 flex h-full flex-col gap-3 border-zinc-300-700 p-3 max-md:order-1 max-md:border-t md:w-60 md:border-r">
+    <aside class="app-navigation z-999 flex h-full flex-col gap-3 border-zinc-300-700 p-3 max-md:order-1 max-md:border-t md:w-60 md:border-r">
       <span class="h-9 text-2xl font-bold max-md:hidden">{siteName}</span>
 
       <div class="flex gap-3 md:contents">

@@ -60,6 +60,9 @@ function RouteComponent() {
                 onInput={(e) => setSearchTerm(e.currentTarget.value)}
                 class="h-9 min-w-0 grow bg-zinc-50-950 px-3"
                 name="q"
+                enterkeyhint="search"
+                autocapitalize="none"
+                autocorrect="off"
                 placeholder={
                   {
                     genre: "filter genre names",

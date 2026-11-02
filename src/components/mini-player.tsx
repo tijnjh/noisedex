@@ -29,7 +29,7 @@ export function MiniPlayer() {
   return (
     <div
       class={cn(
-        "fixed right-3 bottom-3 left-3 z-999 flex-col gap-3 border bg-zinc-50-950 p-3 md:w-100!",
+        "fixed right-[calc(0.75rem+env(safe-area-inset-right,0px))] bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] left-[calc(0.75rem+env(safe-area-inset-left,0px))] z-999 flex-col gap-3 border bg-zinc-50-950 p-3 md:w-100!",
         nowPlaying().url ? "flex" : "hidden",
       )}
     >

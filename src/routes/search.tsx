@@ -71,6 +71,9 @@ function RouteComponent() {
               required
               class="h-9 min-w-0 grow bg-zinc-50-950 px-3"
               name="q"
+              enterkeyhint="search"
+              autocapitalize="none"
+              autocorrect="off"
               placeholder="look up an artist"
             />
 
