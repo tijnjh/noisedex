@@ -10,7 +10,7 @@ dd {
 }
 
 @utility btn {
-  @apply pointer-fine:active:translate-y-px pointer-coarse:active:-scale-95 flex h-9 items-center gap-2 bg-zinc-50-950 px-3 hover:bg-zinc-100-900;
+  @apply flex h-9 items-center gap-2 bg-zinc-50-950 px-3 hover:bg-zinc-100-900 pointer-coarse:active:scale-95 pointer-fine:active:translate-y-px;
 }
 
 @utility btn-inverse {
@@ -29,7 +29,7 @@ a.btn-inverse {
 }
 
 @utility cool-grid {
-  @apply grid auto-rows-min grid-cols-responsive content-start items-start gap-3 overflow-y-auto;
+  @apply grid auto-rows-min grid-cols-responsive content-start items-start gap-3 overflow-y-auto overscroll-contain;
 }
 
 @utility grid-cols-responsive {
