@@ -2,7 +2,7 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
-import { $itunes } from "#lib/api/index";
+import { $itunes, $soundcloud } from "#lib/api/index";
 import { siteName, siteUrl } from "#lib/constants";
 import {
   fmt,
@@ -28,7 +28,13 @@ export const Route = createFileRoute("/album/$itunesId")({
 
     const tracks = response.results.filter((r) => r.wrapperType === "track");
 
-    return { album, tracks };
+    const soundcloud = await $soundcloud.matchAlbum({
+      data: {
+        artist: album.artistName,
+        album: trimItunesCollectionPostfix(album.collectionName),
+      },
+    });
+    return { album, tracks, soundcloud };
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) return {};
@@ -179,7 +185,15 @@ function RouteComponent() {
                 trailing={
                   <PlayButton
                     class="btn-inverse size-9 shrink-0 justify-center"
-                    track={{ title: track.trackName, url: track.previewUrl }}
+                    track={{
+                      title: track.trackName,
+                      url:
+                        $soundcloud.trackUrl(
+                          data().soundcloud,
+                          track.trackName,
+                          track.artistName,
+                        ) ?? track.previewUrl,
+                    }}
                   />
                 }
               >

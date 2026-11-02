@@ -1,12 +1,28 @@
 import { nowPlaying, setNowPlaying } from "../lib/global";
 import { cn } from "cn";
-import { createEffect, Show } from "solid-js";
+import Hls from "hls.js";
+import { createEffect, onCleanup, Show } from "solid-js";
 
 export function MiniPlayer() {
   let audioRef!: HTMLAudioElement;
 
   createEffect(nowPlaying, (track) => {
-    if (track.url) audioRef?.play().catch(() => {});
+    if (!track.url || !audioRef) return;
+    let hls: Hls | undefined;
+    if (
+      track.url.includes(".m3u8") &&
+      !audioRef.canPlayType("application/vnd.apple.mpegurl") &&
+      Hls.isSupported()
+    ) {
+      hls = new Hls();
+      hls.loadSource(track.url);
+      hls.attachMedia(audioRef);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => audioRef.play().catch(() => {}));
+    } else {
+      audioRef.src = track.url;
+      audioRef.play().catch(() => {});
+    }
+    onCleanup(() => hls?.destroy());
   });
   const cleanTitle = () => nowPlaying().title?.replace("e.g.", "").trim();
 
@@ -31,7 +47,7 @@ export function MiniPlayer() {
       </div>
 
       <Show when={nowPlaying().url}>
-        <audio ref={audioRef} src={nowPlaying().url} controls></audio>
+        <audio ref={audioRef} controls></audio>
       </Show>
     </div>
   );

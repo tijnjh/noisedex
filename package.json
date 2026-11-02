@@ -23,6 +23,7 @@
     "@tanstack/solid-query": "^6.0.0-rc.5",
     "cn": "^0.5.0",
     "domino": "^2.1.8",
+    "hls.js": "^1.7.4",
     "itunes-store-api": "^2.1.0",
     "jotai": "^3.0.1",
     "ky": "^2.2.0",

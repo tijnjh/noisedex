@@ -2,7 +2,7 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
-import { $itunes } from "#lib/api/index";
+import { $itunes, $soundcloud } from "#lib/api/index";
 import { siteName, siteUrl } from "#lib/constants";
 import { nowPlaying } from "#lib/global";
 import { fmt, getBigItunesArtwork } from "#lib/utils";
@@ -27,7 +27,10 @@ export const Route = createFileRoute("/track/$itunesId")({
     );
     if (!track) throw notFound();
 
-    return { track };
+    const soundcloud = await $soundcloud.matchAlbum({
+      data: { artist: track.artistName, album: track.collectionName },
+    });
+    return { track, soundcloud };
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) return {};
@@ -93,8 +96,15 @@ function RouteComponent() {
     const seconds = Math.floor(track().trackTimeMillis / 1000);
     return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
   };
+  const fullUrl = () =>
+    $soundcloud.trackUrl(
+      data().soundcloud,
+      track().trackName,
+      track().artistName,
+    );
+  const playbackUrl = () => fullUrl() ?? track().previewUrl;
   const isPlaying = () =>
-    Boolean(track().previewUrl) && nowPlaying().url === track().previewUrl;
+    Boolean(playbackUrl()) && nowPlaying().url === playbackUrl();
 
   return (
     <Layout
@@ -114,7 +124,7 @@ function RouteComponent() {
           </Chip>
 
           <Show
-            when={track().previewUrl}
+            when={playbackUrl()}
             fallback={
               <p class="opacity-60">No preview available for this track.</p>
             }
@@ -122,15 +132,15 @@ function RouteComponent() {
             <div class="flex items-center gap-3">
               <PlayButton
                 class="btn-inverse size-9 shrink-0 justify-center"
-                aria-label={isPlaying() ? "Stop preview" : "Play preview"}
+                aria-label={isPlaying() ? "Stop playback" : "Play track"}
                 aria-pressed={isPlaying() ? "true" : "false"}
                 track={{
                   title: `${track().artistName} — ${track().trackName}`,
-                  url: track().previewUrl,
+                  url: playbackUrl(),
                 }}
               />
               <span>
-                {isPlaying() ? "Playing preview" : "Listen to a preview"}
+                {fullUrl() ? "Listen on SoundCloud" : "Listen to a preview"}
               </span>
             </div>
           </Show>
