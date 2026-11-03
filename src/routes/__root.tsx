@@ -1,7 +1,6 @@
 /// <reference types="vite/client" />
 import { ErrorAlert } from "#components/error-alert";
 import { MiniPlayer } from "#components/mini-player";
-import { Spinner } from "#components/spinner";
 import { siteName } from "#lib/constants";
 import { getErrorMessage } from "#lib/utils";
 import styleCss from "../style.css?url";
@@ -14,10 +13,8 @@ import {
   Link,
   Outlet,
   Scripts,
-  useRouterState,
 } from "@tanstack/solid-router";
-import { cn } from "cn";
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { For } from "solid-js";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -63,10 +60,6 @@ function RootComponent() {
     defaultOptions: { queries: { retry: false } },
   });
 
-  const isNavigating = useRouterState({
-    select: (s) => s.status === "pending",
-  });
-
   return (
     <QueryClientProvider client={queryClient}>
       <html lang="en" class="pointer-coarse:overscroll-none">
@@ -76,7 +69,7 @@ function RootComponent() {
         </head>
 
         <body class="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark dark:text-white">
-          <div class="app-shell grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[1fr_min-content] md:grid-cols-[auto_1fr]">
+          <div class="app-shell relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[1fr_min-content] md:grid-cols-[auto_1fr]">
             <Aside />
 
             <CatchBoundary
@@ -85,11 +78,7 @@ function RootComponent() {
                 <ErrorAlert message={getErrorMessage(error)} />
               )}
             >
-              <Show when={isNavigating()} fallback={<Outlet />}>
-                <div class="pointer-events-none grid size-full place-items-center">
-                  <Spinner />
-                </div>
-              </Show>
+              <Outlet />
             </CatchBoundary>
           </div>
 
