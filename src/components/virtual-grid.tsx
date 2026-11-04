@@ -4,7 +4,6 @@ import type { Key, ReactNode, Ref } from "react";
 
 const gap = { x: 12, y: 12 };
 const itemHeight = 36;
-const paddingEnd = 256;
 
 export function VirtualGrid<T>({
   entries,
@@ -78,7 +77,6 @@ export function VirtualGrid<T>({
     estimateSize: () => itemHeight,
     gap: gap.y,
     overscan: 8,
-    paddingEnd,
     scrollMargin: viewport.paddingTop,
     // Render the same initial rows on the server and during hydration.
     initialRect: { width: 300, height: 600 },

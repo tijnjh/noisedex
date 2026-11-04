@@ -189,29 +189,36 @@ function RouteComponent() {
           className="flex h-full flex-col gap-3 overflow-x-hidden overflow-y-auto pb-32"
         >
           <h2 className="text-xl font-semibold">Tracks</h2>
-          {data.tracks.map((track) => (
-            <Chip
-              key={track.trackId}
-              to={"/track/$itunesId"}
-              params={{ itunesId: String(track.trackId) }}
-              trailing={
-                <PlayButton
-                  className="btn-inverse size-9 shrink-0 justify-center"
-                  track={{
-                    title: track.trackName,
-                    url:
-                      $soundcloud.trackUrl(
-                        data.soundcloud,
-                        track.trackName,
-                        track.artistName,
-                      ) ?? track.previewUrl,
-                  }}
-                />
-              }
-            >
-              {track.trackName}
-            </Chip>
-          ))}
+
+          <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
+            {data.tracks.map((track) => (
+              <div className="col-span-full grid w-full grid-cols-subgrid">
+                <div className="flex items-center">{track.trackNumber}</div>
+
+                <Chip
+                  key={track.trackId}
+                  to={"/track/$itunesId"}
+                  params={{ itunesId: String(track.trackId) }}
+                  trailing={
+                    <PlayButton
+                      className="btn-inverse size-9 shrink-0 justify-center"
+                      track={{
+                        title: track.trackName,
+                        url:
+                          $soundcloud.trackUrl(
+                            data.soundcloud,
+                            track.trackName,
+                            track.artistName,
+                          ) ?? track.previewUrl,
+                      }}
+                    />
+                  }
+                >
+                  {track.trackName}
+                </Chip>
+              </div>
+            ))}
+          </div>
         </section>
       }
     />
