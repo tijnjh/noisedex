@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { ErrorAlert } from "#components/error-alert";
 import { MiniPlayer } from "#components/mini-player";
+import { NavigationSpinner } from "#components/navigation-spinner";
 import { siteName } from "#lib/constants";
 import { getErrorMessage } from "#lib/utils";
 import styleCss from "../style.css?url";
@@ -73,6 +74,7 @@ function RootComponent() {
 
           <body className="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark dark:text-white">
             <div className="app-shell relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto_auto] md:grid-cols-[auto_1fr]">
+              <NavigationSpinner />
               <Aside />
 
               <CatchBoundary
