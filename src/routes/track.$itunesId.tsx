@@ -4,10 +4,10 @@ import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
 import { $itunes, $soundcloud } from "#lib/api/index";
 import { siteName, siteUrl } from "#lib/constants";
-import { nowPlaying } from "#lib/global";
+import { nowPlayingAtom } from "#lib/global";
 import { fmt, getBigItunesArtwork } from "#lib/utils";
-import { createFileRoute, notFound, useRouter } from "@tanstack/solid-router";
-import { Show } from "solid-js";
+import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 
 export const Route = createFileRoute("/track/$itunesId")({
   loader: async ({ params }) => {
@@ -84,92 +84,86 @@ export const Route = createFileRoute("/track/$itunesId")({
 function RouteComponent() {
   const data = Route.useLoaderData();
   const router = useRouter();
-  const track = () => data().track;
-  const backHref = () =>
-    router.buildLocation({
-      to: "/album/$itunesId",
-      params: { itunesId: String(track().collectionId) },
-    }).href;
-  const constructedSearchQuery = () =>
-    encodeURIComponent(`${track().artistName} ${track().trackName}`);
-  const duration = () => {
-    const seconds = Math.floor(track().trackTimeMillis / 1000);
-    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-  };
-  const fullUrl = () =>
-    $soundcloud.trackUrl(
-      data().soundcloud,
-      track().trackName,
-      track().artistName,
-    );
-  const playbackUrl = () => fullUrl() ?? track().previewUrl;
-  const isPlaying = () =>
-    Boolean(playbackUrl()) && nowPlaying().url === playbackUrl();
+  const nowPlaying = useAtomValue(nowPlayingAtom);
+  const track = data.track;
+  const backHref = router.buildLocation({
+    to: "/album/$itunesId",
+    params: { itunesId: String(track.collectionId) },
+  }).href;
+  const constructedSearchQuery = encodeURIComponent(
+    `${track.artistName} ${track.trackName}`,
+  );
+  const seconds = Math.floor(track.trackTimeMillis / 1000);
+  const duration = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  const fullUrl = $soundcloud.trackUrl(
+    data.soundcloud,
+    track.trackName,
+    track.artistName,
+  );
+  const playbackUrl = fullUrl ?? track.previewUrl;
+  const isPlaying = Boolean(playbackUrl) && nowPlaying.url === playbackUrl;
 
   return (
     <Layout
-      header={{ title: track().trackName, backHref: backHref() }}
+      header={{ title: track.trackName, backHref }}
       leading={
-        <div class="flex min-w-0 flex-col gap-3">
+        <div className="flex min-w-0 flex-col gap-3">
           <img
-            src={getBigItunesArtwork(track())}
-            alt={`${track().collectionName} album cover`}
-            class="mx-auto aspect-square w-full max-w-72"
+            src={getBigItunesArtwork(track)}
+            alt={`${track.collectionName} album cover`}
+            className="mx-auto aspect-square w-full max-w-72"
             width={600}
             height={600}
           />
 
-          <Chip to="/search" search={{ lucky: true, q: track().artistName }}>
-            {track().artistName}
+          <Chip to="/search" search={{ lucky: true, q: track.artistName }}>
+            {track.artistName}
           </Chip>
 
-          <Show
-            when={playbackUrl()}
-            fallback={
-              <p class="opacity-60">No preview available for this track.</p>
-            }
-          >
-            <div class="flex items-center gap-3">
+          {playbackUrl ? (
+            <div className="flex items-center gap-3">
               <PlayButton
-                class="btn-inverse size-9 shrink-0 justify-center"
-                aria-label={isPlaying() ? "Stop playback" : "Play track"}
-                aria-pressed={isPlaying() ? "true" : "false"}
+                className="btn-inverse size-9 shrink-0 justify-center"
+                aria-label={isPlaying ? "Stop playback" : "Play track"}
+                aria-pressed={isPlaying ? "true" : "false"}
                 track={{
-                  title: `${track().artistName} — ${track().trackName}`,
-                  url: playbackUrl(),
+                  title: `${track.artistName} — ${track.trackName}`,
+                  url: playbackUrl,
                 }}
               />
               <span>
-                {fullUrl() ? "Listen on SoundCloud" : "Listen to a preview"}
+                {fullUrl ? "Listen on SoundCloud" : "Listen to a preview"}
               </span>
             </div>
-          </Show>
+          ) : (
+            <p className="opacity-60">No preview available for this track.</p>
+          )}
 
           <PlatformLinks
             links={[
               {
                 name: "last.fm",
                 icon: "/last-fm.ico",
-                href: `https://last.fm/music/${encodeURIComponent(track().artistName)}/_/${encodeURIComponent(track().trackName)}`,
+                href: `https://last.fm/music/${encodeURIComponent(track.artistName)}/_/${encodeURIComponent(track.trackName)}`,
               },
               {
                 name: "spotify",
                 icon: "/spotify-com.png",
-                href: `https://open.spotify.com/search/${constructedSearchQuery()}`,
+                href: `https://open.spotify.com/search/${constructedSearchQuery}`,
               },
               {
                 name: "apple music",
                 icon: "/music-apple-com.png",
-                href: track().trackViewUrl,
+                href: track.trackViewUrl,
               },
               {
                 name: "bandcamp",
                 icon: "/bandcamp-com.png",
-                href: `https://bandcamp.com/search?q=${constructedSearchQuery()}&item_type=t`,
+                href: `https://bandcamp.com/search?q=${constructedSearchQuery}&item_type=t`,
               },
               {
                 name: "soundcloak",
-                href: `https://sc.maid.zone/search?q=${constructedSearchQuery()}&type=tracks`,
+                href: `https://sc.maid.zone/search?q=${constructedSearchQuery}&type=tracks`,
               },
             ]}
           />
@@ -178,50 +172,56 @@ function RouteComponent() {
       trailing={
         <section
           aria-label="Track details"
-          class="flex min-w-0 flex-col gap-3 pb-32 lg:overflow-y-auto"
+          className="flex min-w-0 flex-col gap-3 pb-32 lg:overflow-y-auto"
         >
-          <h2 class="section-divider">from the album</h2>
+          <h2 className="section-divider">from the album</h2>
           <Chip
             to="/album/$itunesId"
-            params={{ itunesId: String(track().collectionId) }}
-            leading={track().artworkUrl60}
+            params={{ itunesId: String(track.collectionId) }}
+            leading={track.artworkUrl60}
           >
-            {track().collectionName}
+            {track.collectionName}
           </Chip>
 
           <h2>Track details</h2>
           <dl>
             <dt>released</dt>
             <dd>
-              {fmt("date", new Date(track().releaseDate), {
+              {fmt("date", new Date(track.releaseDate), {
                 dateStyle: "long",
               })}
             </dd>
-            <Show when={Number.isFinite(track().trackTimeMillis)}>
-              <dt>duration</dt>
-              <dd>{duration()}</dd>
-            </Show>
+            {Number.isFinite(track.trackTimeMillis) && (
+              <>
+                <dt>duration</dt>
+                <dd>{duration}</dd>
+              </>
+            )}
             <dt
-              class="cursor-help"
+              className="cursor-help"
               title="this genre comes from itunes and is often vague or non-specific"
             >
               genre
             </dt>
-            <dd class="wrap-anywhere">{track().primaryGenreName}</dd>
+            <dd className="wrap-anywhere">{track.primaryGenreName}</dd>
             <dt>track</dt>
             <dd>
-              {track().trackNumber} of {track().trackCount}
+              {track.trackNumber} of {track.trackCount}
             </dd>
-            <Show when={track().discCount > 1}>
-              <dt>disc</dt>
-              <dd>
-                {track().discNumber} of {track().discCount}
-              </dd>
-            </Show>
-            <Show when={track().trackExplicitness === "explicit"}>
-              <dt>content</dt>
-              <dd>explicit</dd>
-            </Show>
+            {track.discCount > 1 && (
+              <>
+                <dt>disc</dt>
+                <dd>
+                  {track.discNumber} of {track.discCount}
+                </dd>
+              </>
+            )}
+            {track.trackExplicitness === "explicit" && (
+              <>
+                <dt>content</dt>
+                <dd>explicit</dd>
+              </>
+            )}
           </dl>
         </section>
       }

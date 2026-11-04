@@ -7,8 +7,8 @@ import { useQueryState } from "#hooks/use-query-state";
 import { $everynoise } from "#lib/api/index";
 import { siteUrl } from "#lib/constants";
 import { genreNameToSlug, sortHexColorsToGradient } from "#lib/utils";
-import { createFileRoute } from "@tanstack/solid-router";
-import { createMemo, Show } from "solid-js";
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo } from "react";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -32,7 +32,7 @@ function RouteComponent() {
 
   const filterType = useEnumToggle(["genre", "preview"], {
     onUpdate: setType,
-    defaultValue: type() ?? "genre",
+    defaultValue: type ?? "genre",
   });
 
   const [sort, setSort] = useQueryState("sort", {
@@ -41,7 +41,7 @@ function RouteComponent() {
 
   const sortType = useEnumToggle(["popularity", "alphabetical", "color"], {
     onUpdate: setSort,
-    defaultValue: sort() ?? "popularity",
+    defaultValue: sort ?? "popularity",
   });
 
   return (
@@ -49,36 +49,31 @@ function RouteComponent() {
       header={{
         title: "all genres",
         children: (
-          <div class="flex gap-6">
-            <div class="flex grow gap-3">
-              <button class="btn" onClick={filterType.cycle}>
-                {filterType.current()}
+          <div className="flex min-w-0 gap-6">
+            <div className="flex min-w-0 grow gap-3">
+              <button className="btn shrink-0" onClick={filterType.cycle}>
+                {filterType.current}
               </button>
 
               <input
-                value={searchTerm() ?? ""}
-                onInput={(e) => setSearchTerm(e.currentTarget.value)}
-                class="h-9 min-w-0 grow bg-zinc-50-950 px-3"
+                value={searchTerm ?? ""}
+                onChange={(e) => setSearchTerm(e.currentTarget.value)}
+                aria-label="Filter genres"
+                className="h-9 min-w-0 grow bg-zinc-50-950 px-3"
                 name="q"
-                enterkeyhint="search"
-                autocapitalize="none"
-                autocorrect="off"
+                enterKeyHint="search"
+                autoCapitalize="none"
+                autoCorrect="off"
                 placeholder={
                   {
                     genre: "filter genre names",
                     preview: "filter genre preview track name",
-                  }[filterType.current()]
+                  }[filterType.current]
                 }
               />
 
-              <Show when={filterType.current() === "lookup"}>
-                <button type="submit" class="btn-inverse size-9 justify-center">
-                  →
-                </button>
-              </Show>
-
-              <button class="btn" onClick={sortType.cycle}>
-                {sortType.current()}
+              <button className="btn shrink-0" onClick={sortType.cycle}>
+                {sortType.current}
               </button>
             </div>
           </div>
@@ -86,10 +81,11 @@ function RouteComponent() {
       }}
     >
       <Genres
-        filterType={filterType.current()}
-        sortType={sortType.current()}
-        searchTerm={searchTerm()}
-        genres={data().genres}
+        filterType={filterType.current}
+        sortType={sortType.current}
+        searchTerm={searchTerm}
+        genres={data.genres}
+        onClearFilter={() => setSearchTerm("")}
       />
     </Layout>
   );
@@ -100,8 +96,9 @@ function Genres(props: {
   searchTerm: string;
   filterType: string;
   sortType: string;
+  onClearFilter: () => void;
 }) {
-  const filteredGenres = () => {
+  const filteredGenres = useMemo(() => {
     const t = props.searchTerm.toLowerCase();
 
     switch (props.filterType) {
@@ -118,10 +115,10 @@ function Genres(props: {
       default:
         return [];
     }
-  };
+  }, [props.genres, props.searchTerm, props.filterType]);
 
-  const sortedGenres = createMemo(() => {
-    const filtered = filteredGenres();
+  const sortedGenres = useMemo(() => {
+    const filtered = filteredGenres;
 
     switch (props.sortType) {
       case "popularity":
@@ -138,10 +135,23 @@ function Genres(props: {
       default:
         return filtered;
     }
-  });
+  }, [filteredGenres, props.sortType]);
+
+  if (!sortedGenres.length) {
+    return (
+      <div className="flex flex-col items-start gap-3 p-3">
+        <p role="status">No genres found.</p>
+        {props.searchTerm && (
+          <button type="button" className="btn" onClick={props.onClearFilter}>
+            Clear filter
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <VirtualGrid entries={sortedGenres()}>
+    <VirtualGrid entries={sortedGenres} getKey={(genre) => genre.genreName}>
       {(genre) => (
         <Chip
           to="/genre/$slug"
@@ -149,8 +159,8 @@ function Genres(props: {
           trailing={
             <PlayButton
               title={genre.previewTitle}
-              class="bt size-9 shrink-0 justify-center"
-              style={{ "background-color": genre.color }}
+              className="btn size-9 shrink-0 justify-center"
+              style={{ backgroundColor: genre.color }}
               track={{ title: genre.previewTitle, url: genre.previewUrl }}
             />
           }

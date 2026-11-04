@@ -1,21 +1,19 @@
-import { nowPlaying, setNowPlaying } from "../lib/global";
-import { cn } from "cn";
+import { nowPlayingAtom } from "#lib/global";
 import type Hls from "hls.js";
-import { createEffect, onCleanup, Show } from "solid-js";
+import { useAtom } from "jotai";
+import { useEffect, useRef } from "react";
 
 export function MiniPlayer() {
-  let audioRef!: HTMLAudioElement;
+  const [nowPlaying, setNowPlaying] = useAtom(nowPlayingAtom);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
-  createEffect(nowPlaying, (track) => {
-    if (!track.url || !audioRef) return;
-    const audio = audioRef;
-    const url = track.url;
+  useEffect(() => {
+    const audio = audioRef.current;
+    const url = nowPlaying.url;
+    if (!url || !audio) return;
+
     let hls: Hls | undefined;
     let cancelled = false;
-    onCleanup(() => {
-      cancelled = true;
-      hls?.destroy();
-    });
 
     const playNative = () => {
       audio.src = url;
@@ -48,32 +46,43 @@ export function MiniPlayer() {
     } else {
       playNative();
     }
-  });
-  const cleanTitle = () => nowPlaying().title?.replace("e.g.", "").trim();
+
+    return () => {
+      cancelled = true;
+      audio.pause();
+      hls?.destroy();
+      audio.removeAttribute("src");
+      audio.load();
+    };
+  }, [nowPlaying.url]);
+
+  if (!nowPlaying.url) return null;
+
+  const cleanTitle = nowPlaying.title?.replace("e.g.", "").trim();
 
   return (
-    <div
-      class={cn(
-        "fixed right-[calc(0.75rem+env(safe-area-inset-right,0px))] bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] left-[calc(0.75rem+env(safe-area-inset-left,0px))] z-999 flex-col gap-3 border bg-zinc-50-950 p-3 md:w-100!",
-        nowPlaying().url ? "flex" : "hidden",
-      )}
-    >
-      <div class="flex items-center justify-between">
-        <span title={cleanTitle()} class="truncate">
-          {cleanTitle()}
+    <div className="z-999 mx-3 mb-3 flex min-w-0 flex-col gap-3 border bg-zinc-50-950 p-3 max-md:order-1 md:fixed md:bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] md:left-[calc(0.75rem+env(safe-area-inset-left,0px))] md:m-0 md:w-100">
+      <div className="flex items-center justify-between">
+        <span title={cleanTitle} className="truncate">
+          {cleanTitle}
         </span>
 
         <button
-          class="btn-inverse size-9 justify-center"
+          type="button"
+          aria-label="Close player"
+          className="btn-inverse size-9 shrink-0 justify-center"
           onClick={() => setNowPlaying({ title: undefined, url: undefined })}
         >
           &times;
         </button>
       </div>
 
-      <Show when={nowPlaying().url}>
-        <audio ref={audioRef} controls></audio>
-      </Show>
+      <audio
+        ref={audioRef}
+        className="w-full"
+        controls
+        onEnded={() => setNowPlaying({ title: undefined, url: undefined })}
+      />
     </div>
   );
 }

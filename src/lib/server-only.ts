@@ -1,5 +1,5 @@
 import genres from "../data/genres.gen.csv?raw";
-import { createServerOnlyFn } from "@tanstack/solid-start";
+import { createServerOnlyFn } from "@tanstack/react-start";
 import CSV from "papaparse";
 
 export const getAllGenres_serverOnly = createServerOnlyFn(

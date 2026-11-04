@@ -1,26 +1,32 @@
-import { nowPlaying, setNowPlaying } from "#lib/global";
-import { JSX } from "@solidjs/web";
-import { omit } from "solid-js";
+import { nowPlayingAtom, type PlaybackTrack } from "#lib/global";
+import { useAtom } from "jotai";
+import type { ComponentProps } from "react";
 
-export function PlayButton(
-  props: JSX.HTMLAttributes<HTMLButtonElement> & {
-    track: { title: string | undefined; url: string | undefined };
-  },
-) {
-  const rest = omit(props, "track");
-
-  const isThisTrackPlaying = () => nowPlaying().url === props.track.url;
+export function PlayButton({
+  track,
+  disabled,
+  onClick,
+  ...props
+}: ComponentProps<"button"> & { track: PlaybackTrack }) {
+  const [nowPlaying, setNowPlaying] = useAtom(nowPlayingAtom);
+  const isThisTrackPlaying = Boolean(track.url) && nowPlaying.url === track.url;
 
   return (
     <button
-      {...rest}
-      onClick={() => {
-        isThisTrackPlaying()
-          ? setNowPlaying({ title: undefined, url: undefined })
-          : setNowPlaying(props.track);
+      type="button"
+      aria-label={isThisTrackPlaying ? "Stop playback" : "Play track"}
+      aria-pressed={isThisTrackPlaying}
+      {...props}
+      disabled={disabled || !track.url}
+      onClick={(event) => {
+        onClick?.(event);
+        if (event.defaultPrevented) return;
+        setNowPlaying(
+          isThisTrackPlaying ? { title: undefined, url: undefined } : track,
+        );
       }}
     >
-      {isThisTrackPlaying() ? "☐" : "▶︎"}
+      {isThisTrackPlaying ? "☐" : "▶︎"}
     </button>
   );
 }

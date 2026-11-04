@@ -1,6 +1,6 @@
 import { Scrappy } from "#lib/scrappy";
 import { isValidGenre } from "#lib/server-only";
-import { createServerFn } from "@tanstack/solid-start";
+import { createServerFn } from "@tanstack/react-start";
 import ky from "ky";
 import * as v from "valibot";
 

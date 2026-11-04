@@ -1,23 +1,23 @@
-import { createSignal } from "solid-js";
+import { useState } from "react";
 
-export function useEnumToggle<T extends string[]>(
+export function useEnumToggle<const T extends readonly [string, ...string[]]>(
   values: T,
   opts?: {
-    defaultValue: T[number];
+    defaultValue: string;
     onUpdate: (newValue: T[number]) => void;
   },
 ) {
-  const [i, setI] = createSignal(
-    Math.max(0, values.indexOf(opts?.defaultValue ?? "")),
-  );
-  const current = () => values[i()] as T[number];
+  const [localValue, setLocalValue] = useState<T[number]>(values[0]);
+  // URL-backed toggles follow navigation, including the back/forward buttons.
+  const value = opts ? opts.defaultValue : localValue;
+  const index = Math.max(0, values.indexOf(value));
 
   return {
-    current,
+    current: values[index] as T[number],
     cycle: () => {
-      const next = (i() + 1) % values.length;
-      setI(next);
-      opts?.onUpdate(values[next] as T[number]);
+      const next = values[(index + 1) % values.length];
+      if (opts) opts.onUpdate(next);
+      else setLocalValue(next);
     },
   };
 }

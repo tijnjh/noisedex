@@ -1,5 +1,5 @@
 import { isIos } from "#lib/utils";
-import { createServerFn } from "@tanstack/solid-start";
+import { createServerFn } from "@tanstack/react-start";
 import * as serverIsa from "itunes-store-api";
 import * as v from "valibot";
 

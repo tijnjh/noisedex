@@ -1,53 +1,44 @@
-import { JSX } from "@solidjs/web";
-import { Link, LinkProps } from "@tanstack/solid-router";
+import { Link, type LinkProps } from "@tanstack/react-router";
 import { cn } from "cn";
-import { omit } from "solid-js";
+import type { ReactNode } from "react";
 
-// import { Marquee } from "tiny-marquee";
-
-export function Chip(
-  props: LinkProps & {
-    children?: string;
-    leading?: JSX.Element | string;
-    trailing?: JSX.Element;
-    inverse?: boolean;
-    class?: string;
-  },
-) {
-  const rest = omit(
-    props,
-    "children",
-    "leading",
-    "trailing",
-    "inverse",
-    "class",
-  );
-
+export function Chip({
+  children,
+  leading,
+  trailing,
+  inverse,
+  className,
+  ...props
+}: LinkProps & {
+  children?: string;
+  leading?: ReactNode;
+  trailing?: ReactNode;
+  inverse?: boolean;
+  className?: string;
+}) {
   return (
-    <div class="flex h-9 items-center">
-      {typeof props.leading === "string" ? (
-        <img class="aspect-square size-9" src={props.leading} />
+    <div className="flex h-9 items-center">
+      {typeof leading === "string" ? (
+        <img className="aspect-square size-9" src={leading} alt="" />
       ) : (
-        props.leading
+        leading
       )}
 
       <Link
-        {...rest}
+        {...props}
         draggable={false}
-        class={cn(
+        className={cn(
           "min-w-0 grow items-center px-0 [-webkit-touch-callout:none]",
-          props.inverse ? "btn-inverse" : "btn",
-          props.class,
+          inverse ? "btn-inverse" : "btn",
+          className,
         )}
       >
-        {/* <Marquee initialPosition="start"> */}
-        <span class="truncate px-3" title={props.children}>
-          {props.children}
+        <span className="truncate px-3" title={children}>
+          {children}
         </span>
-        {/* </Marquee> */}
       </Link>
 
-      {props.trailing}
+      {trailing}
     </div>
   );
 }

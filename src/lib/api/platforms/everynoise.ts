@@ -1,7 +1,7 @@
 import { Scrappy } from "#lib/scrappy";
 import { getAllGenres_serverOnly } from "#lib/server-only";
 import { genreNameToSlug } from "#lib/utils";
-import { createServerFn } from "@tanstack/solid-start";
+import { createServerFn } from "@tanstack/react-start";
 import ky from "ky";
 import * as v from "valibot";
 

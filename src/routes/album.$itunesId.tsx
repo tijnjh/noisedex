@@ -9,8 +9,7 @@ import {
   getBigItunesArtwork,
   trimItunesCollectionPostfix,
 } from "#lib/utils";
-import { createFileRoute, notFound, useRouter } from "@tanstack/solid-router";
-import { For } from "solid-js";
+import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/album/$itunesId")({
   loader: async ({ params }) => {
@@ -24,7 +23,7 @@ export const Route = createFileRoute("/album/$itunesId")({
     // for some reason the first result of a song query on an album returns the album itself..
     // weird but not complaining since it saves us a request :)
     const album = response.results[0] as unknown as Itunes.ResultAlbum;
-    if (album.collectionType !== "Album") throw notFound();
+    if (album?.collectionType !== "Album") throw notFound();
 
     const tracks = response.results.filter((r) => r.wrapperType === "track");
 
@@ -88,48 +87,44 @@ function RouteComponent() {
   const data = Route.useLoaderData();
   const router = useRouter();
 
-  const backHref = () =>
-    router.buildLocation({
-      to: "/search",
-      search: { lucky: true, q: data().album.artistName },
-    }).href;
+  const backHref = router.buildLocation({
+    to: "/search",
+    search: { lucky: true, q: data.album.artistName },
+  }).href;
 
-  const streamlinedCollectionName = () =>
-    trimItunesCollectionPostfix(data().album.collectionName);
+  const streamlinedCollectionName = trimItunesCollectionPostfix(
+    data.album.collectionName,
+  );
 
-  const constructedSearchQuery = () =>
-    encodeURIComponent(
-      `${data().album.artistName} ${streamlinedCollectionName()}`,
-    );
+  const constructedSearchQuery = encodeURIComponent(
+    `${data.album.artistName} ${streamlinedCollectionName}`,
+  );
 
   return (
     <Layout
-      header={{ title: data().album.collectionName, backHref: backHref() }}
+      header={{ title: data.album.collectionName, backHref }}
       leading={
-        <div class="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <img
-            src={getBigItunesArtwork(data().album)}
-            alt={`${data().album.collectionName} album cover`}
-            class="mx-auto aspect-square w-full max-w-72"
+            src={getBigItunesArtwork(data.album)}
+            alt={`${data.album.collectionName} album cover`}
+            className="mx-auto aspect-square w-full max-w-72"
           />
 
-          <Chip
-            to="/search"
-            search={{ lucky: true, q: data().album.artistName }}
-          >
-            {data().album.artistName}
+          <Chip to="/search" search={{ lucky: true, q: data.album.artistName }}>
+            {data.album.artistName}
           </Chip>
           <p>
             released{" "}
-            {fmt("date", new Date(data().album.releaseDate), {
+            {fmt("date", new Date(data.album.releaseDate), {
               dateStyle: "long",
             })}
           </p>
           <p
-            class="cursor-help"
+            className="cursor-help"
             title="this genre comes from itunes and is often vague or non-specific"
           >
-            genre: {data().album.primaryGenreName}
+            genre: {data.album.primaryGenreName}
           </p>
 
           <PlatformLinks
@@ -137,35 +132,35 @@ function RouteComponent() {
               {
                 name: "last.fm",
                 icon: "/last-fm.ico",
-                href: `https://last.fm/music/${data().album.artistName}/${streamlinedCollectionName()}`,
+                href: `https://last.fm/music/${encodeURIComponent(data.album.artistName)}/${encodeURIComponent(streamlinedCollectionName)}`,
               },
               {
                 name: "spotify",
                 icon: "/spotify-com.png",
-                href: `https://open.spotify.com/search/${constructedSearchQuery()}`,
+                href: `https://open.spotify.com/search/${constructedSearchQuery}`,
               },
               {
                 name: "apple music",
                 icon: "/music-apple-com.png",
-                href: `https://music.apple.com/artist/${data().album.artistId}`,
+                href: data.album.collectionViewUrl,
               },
               {
                 name: "AOTY",
-                href: `https://www.albumoftheyear.org/search/albums/?q=${constructedSearchQuery()}`,
+                href: `https://www.albumoftheyear.org/search/albums/?q=${constructedSearchQuery}`,
               },
               {
                 name: "RYM",
-                href: `https://rateyourmusic.com/release/album/${data().album.artistName}/${streamlinedCollectionName()}/`,
+                href: `https://rateyourmusic.com/release/album/${encodeURIComponent(data.album.artistName)}/${encodeURIComponent(streamlinedCollectionName)}/`,
               },
               {
                 name: "bandcamp",
                 icon: "/bandcamp-com.png",
-                href: `https://bandcamp.com/search?q=${constructedSearchQuery()}&item_type=a`,
+                href: `https://bandcamp.com/search?q=${constructedSearchQuery}&item_type=a`,
               },
               {
                 name: "soundcloak",
                 // icon: "/sc-maid-zone.png",
-                href: `https://sc.maid.zone/search?q=${constructedSearchQuery()}&type=playlists`,
+                href: `https://sc.maid.zone/search?q=${constructedSearchQuery}&type=playlists`,
               },
             ]}
           />
@@ -174,33 +169,32 @@ function RouteComponent() {
       trailing={
         <section
           aria-label="Track list"
-          class="flex h-full flex-col gap-3 overflow-x-hidden overflow-y-auto pb-32"
+          className="flex h-full flex-col gap-3 overflow-x-hidden overflow-y-auto pb-32"
         >
-          <h2 class="text-xl font-semibold">Tracks</h2>
-          <For each={data().tracks}>
-            {(track) => (
-              <Chip
-                to={"/track/$itunesId"}
-                params={{ itunesId: String(track.trackId) }}
-                trailing={
-                  <PlayButton
-                    class="btn-inverse size-9 shrink-0 justify-center"
-                    track={{
-                      title: track.trackName,
-                      url:
-                        $soundcloud.trackUrl(
-                          data().soundcloud,
-                          track.trackName,
-                          track.artistName,
-                        ) ?? track.previewUrl,
-                    }}
-                  />
-                }
-              >
-                {track.trackName}
-              </Chip>
-            )}
-          </For>
+          <h2 className="text-xl font-semibold">Tracks</h2>
+          {data.tracks.map((track) => (
+            <Chip
+              key={track.trackId}
+              to={"/track/$itunesId"}
+              params={{ itunesId: String(track.trackId) }}
+              trailing={
+                <PlayButton
+                  className="btn-inverse size-9 shrink-0 justify-center"
+                  track={{
+                    title: track.trackName,
+                    url:
+                      $soundcloud.trackUrl(
+                        data.soundcloud,
+                        track.trackName,
+                        track.artistName,
+                      ) ?? track.previewUrl,
+                  }}
+                />
+              }
+            >
+              {track.trackName}
+            </Chip>
+          ))}
         </section>
       }
     />

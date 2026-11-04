@@ -4,8 +4,7 @@ import { MiniPlayer } from "#components/mini-player";
 import { siteName } from "#lib/constants";
 import { getErrorMessage } from "#lib/utils";
 import styleCss from "../style.css?url";
-import { HydrationScript } from "@solidjs/web";
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   CatchBoundary,
   createRootRoute,
@@ -13,8 +12,9 @@ import {
   Link,
   Outlet,
   Scripts,
-} from "@tanstack/solid-router";
-import { For } from "solid-js";
+} from "@tanstack/react-router";
+import { Provider } from "jotai";
+import { useState } from "react";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -56,58 +56,61 @@ const tabs = [
 ] as const;
 
 function RootComponent() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      }),
+  );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <html lang="en" class="pointer-coarse:overscroll-none">
-        <head>
-          <HydrationScript />
-          <HeadContent />
-        </head>
+    <Provider>
+      <QueryClientProvider client={queryClient}>
+        <html lang="en" className="pointer-coarse:overscroll-none">
+          <head>
+            <HeadContent />
+          </head>
 
-        <body class="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark dark:text-white">
-          <div class="app-shell relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[1fr_min-content] md:grid-cols-[auto_1fr]">
-            <Aside />
+          <body className="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark dark:text-white">
+            <div className="app-shell relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto_auto] md:grid-cols-[auto_1fr]">
+              <Aside />
 
-            <CatchBoundary
-              getResetKey={() => "reset"}
-              errorComponent={({ error }) => (
-                <ErrorAlert message={getErrorMessage(error)} />
-              )}
-            >
-              <Outlet />
-            </CatchBoundary>
-          </div>
+              <CatchBoundary
+                getResetKey={() => "reset"}
+                errorComponent={({ error }) => (
+                  <ErrorAlert message={getErrorMessage(error)} />
+                )}
+              >
+                <Outlet />
+              </CatchBoundary>
 
-          <MiniPlayer />
+              <MiniPlayer />
+            </div>
 
-          <Scripts />
-        </body>
-      </html>
-    </QueryClientProvider>
+            <Scripts />
+          </body>
+        </html>
+      </QueryClientProvider>
+    </Provider>
   );
 }
 
 function Aside() {
   return (
-    <aside class="app-navigation z-999 flex h-full flex-col gap-3 border-zinc-300-700 p-3 max-md:order-1 max-md:border-t md:w-60 md:border-r">
-      <span class="h-9 text-2xl font-bold max-md:hidden">{siteName}</span>
+    <aside className="app-navigation z-999 flex h-full flex-col gap-3 border-zinc-300-700 p-3 max-md:order-2 max-md:border-t md:w-60 md:border-r">
+      <span className="h-9 text-2xl font-bold max-md:hidden">{siteName}</span>
 
-      <div class="flex gap-3 md:contents">
-        <For each={tabs}>
-          {([name, to]) => (
-            <Link
-              activeProps={{ class: "btn-inverse" }}
-              inactiveProps={{ class: "btn" }}
-              to={to}
-            >
-              {name}
-            </Link>
-          )}
-        </For>
+      <div className="flex gap-3 md:contents">
+        {tabs.map(([name, to]) => (
+          <Link
+            key={to}
+            activeProps={{ className: "btn-inverse" }}
+            inactiveProps={{ className: "btn" }}
+            to={to}
+          >
+            {name}
+          </Link>
+        ))}
       </div>
     </aside>
   );

@@ -5,9 +5,8 @@ import { SpotifyWidget } from "#components/spotify-widget";
 import { $everynoise, $itunes, $spotify } from "#lib/api/index";
 import { siteName, siteUrl } from "#lib/constants";
 import { genreNameToSlug, trimItunesCollectionPostfix } from "#lib/utils";
-import { createFileRoute } from "@tanstack/solid-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ResultAlbum } from "itunes-store-api";
-import { For, Show } from "solid-js";
 
 export const Route = createFileRoute("/artist/$spotifyId")({
   loader: async ({ params }) => {
@@ -49,108 +48,119 @@ export const Route = createFileRoute("/artist/$spotifyId")({
 function RouteComponent() {
   const params = Route.useParams();
   const data = Route.useLoaderData();
+  const encodedArtistName = encodeURIComponent(data.spotifyArtist.name);
 
   return (
     <Layout
       header={{
-        title: data().spotifyArtist.name,
+        title: data.spotifyArtist.name,
       }}
 
       leading={
         <>
-          <SpotifyWidget id={params().spotifyId} type="artist" class="h-38!" />
+          <SpotifyWidget
+            id={params.spotifyId}
+            type="artist"
+            className="h-38!"
+          />
 
           <PlatformLinks
             links={[
               {
                 name: "last.fm",
                 icon: "/last-fm.ico",
-                href: `https://last.fm/music/${data().spotifyArtist.name}`,
+                href: `https://last.fm/music/${encodedArtistName}`,
               },
               {
                 name: "spotify",
                 icon: "/spotify-com.png",
-                href: `https://open.spotify.com/artist/${params().spotifyId}`,
+                href: `https://open.spotify.com/artist/${params.spotifyId}`,
               },
-              {
-                name: "apple music",
-                icon: "/music-apple-com.png",
-                href: `https://music.apple.com/artist/${data().itunesArtistAlbums.artistId}`,
-              },
+              ...(data.itunesArtistAlbums.artistId
+                ? [
+                    {
+                      name: "apple music",
+                      icon: "/music-apple-com.png",
+                      href: `https://music.apple.com/artist/${data.itunesArtistAlbums.artistId}`,
+                    },
+                  ]
+                : []),
               {
                 name: "AOTY",
-                href: `https://www.albumoftheyear.org/search/artists/?q=${data().spotifyArtist.name}`,
+                href: `https://www.albumoftheyear.org/search/artists/?q=${encodedArtistName}`,
               },
               {
                 name: "RYM",
-                href: `https://rateyourmusic.com/artist/${data().spotifyArtist.name}-1`,
+                href: `https://rateyourmusic.com/artist/${encodedArtistName}-1`,
               },
               {
                 name: "bandcamp",
                 icon: "/bandcamp-com.png",
-                href: `https://bandcamp.com/search?q=${data().spotifyArtist.name}&item_type=b`,
+                href: `https://bandcamp.com/search?q=${encodedArtistName}&item_type=b`,
               },
               {
                 name: "soundcloak",
                 // icon: "/sc-maid-zone.png",
-                href: `https://sc.maid.zone/search?q=${data().spotifyArtist.name}&type=users`,
+                href: `https://sc.maid.zone/search?q=${encodedArtistName}&type=users`,
               },
             ]}
           />
 
-          <Show when={data().everynoiseArtistGenres.length}>
-            <span class="section-divider">genres this artist is in</span>
+          {data.everynoiseArtistGenres.length > 0 && (
+            <>
+              <span className="section-divider">genres this artist is in</span>
 
-            <div class="cool-grid">
-              <For each={data().everynoiseArtistGenres}>
-                {(genre) => (
+              <div className="cool-grid">
+                {data.everynoiseArtistGenres.map((genre) => (
                   <Chip
+                    key={genre}
                     to="/genre/$slug"
                     params={{ slug: genreNameToSlug(genre) }}
                   >
                     {genre}
                   </Chip>
-                )}
-              </For>
-            </div>
-          </Show>
+                ))}
+              </div>
+            </>
+          )}
         </>
       }
 
       trailing={
-        <ArtistReleasesList releases={data().itunesArtistAlbums.albums} />
+        <ArtistReleasesList releases={data.itunesArtistAlbums.albums} />
       }
     />
   );
 }
 
 function ArtistReleasesList(props: { releases: ResultAlbum[] }) {
-  const organizedReleases = () => organizeArtistReleases(props.releases);
-  return (
-    <div class="lg:overflow-y-auto">
-      <For each={Object.entries(organizedReleases())}>
-        {([name, releases]) => (
-          <Show when={releases.length}>
-            <div class="flex flex-col gap-3">
-              <span class="section-divider">{name}</span>
+  const organizedReleases = organizeArtistReleases(props.releases);
+  const sections = Object.entries(organizedReleases).filter(
+    ([, releases]) => releases.length > 0,
+  );
 
-              <div class="cool-grid">
-                <For each={releases}>
-                  {(release) => (
-                    <Chip
-                      leading={release.artworkUrl60}
-                      to="/album/$itunesId"
-                      params={{ itunesId: String(release.collectionId) }}
-                    >
-                      {trimItunesCollectionPostfix(release.collectionName)}
-                    </Chip>
-                  )}
-                </For>
-              </div>
-            </div>
-          </Show>
-        )}
-      </For>
+  if (!sections.length) return <p role="status">No releases found.</p>;
+
+  return (
+    <div className="lg:overflow-y-auto">
+      {sections.map(([name, releases]) => (
+        <div key={name} className="flex flex-col gap-3">
+          <span className="section-divider">{name}</span>
+
+          <div className="cool-grid">
+            {releases.map((release) => (
+              <Chip
+                key={release.collectionId}
+                leading={release.artworkUrl60}
+                to="/album/$itunesId"
+                params={{ itunesId: String(release.collectionId) }}
+              >
+                {trimItunesCollectionPostfix(release.collectionName)}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

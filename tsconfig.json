@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "jsx": "preserve",
-    "jsxImportSource": "@solidjs/web",
+    "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "useDefineForClassFields": true,
     "module": "ESNext",
@@ -20,5 +19,5 @@
     "skipLibCheck": true,
     "resolvePackageJsonImports": true
   },
-  "include": ["src", "vite.config.ts", "eslint.config.js"]
+  "include": ["src", "vite.config.ts"]
 }

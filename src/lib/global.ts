@@ -1,9 +1,11 @@
-import { createSignal } from "solid-js";
+import { atom } from "jotai";
 
-export const [nowPlaying, setNowPlaying] = createSignal<{
+export interface PlaybackTrack {
   title: string | undefined;
   url: string | undefined;
-}>({
+}
+
+export const nowPlayingAtom = atom<PlaybackTrack>({
   title: undefined,
   url: undefined,
 });

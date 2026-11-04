@@ -5,8 +5,7 @@ import { SpotifyWidget } from "#components/spotify-widget";
 import { $everynoise } from "#lib/api/index";
 import { siteName, siteUrl } from "#lib/constants";
 import { findSoundOfPlaylistId, genreNameToSlug } from "#lib/utils";
-import { createFileRoute } from "@tanstack/solid-router";
-import { For, Show } from "solid-js";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/genre/$slug")({
   loader: ({ params }) => $everynoise.getGenreBySlug({ data: params.slug }),
@@ -28,70 +27,66 @@ export const Route = createFileRoute("/genre/$slug")({
 function RouteComponent() {
   const params = Route.useParams();
   const genre = Route.useLoaderData();
+  const playlistId = findSoundOfPlaylistId(genre.links ?? []);
 
   return (
     <Layout
-      header={{ title: genre().genreName ?? params().slug }}
+      header={{ title: genre.genreName ?? params.slug }}
       leading={
-        <Show when={genre()}>
-          <SpotifyWidget
-            id={findSoundOfPlaylistId(genre().links!)!}
-            type="playlist"
-          />
+        <>
+          {playlistId && <SpotifyWidget id={playlistId} type="playlist" />}
 
-          <span class="section-divider">related genres</span>
+          <span className="section-divider">related genres</span>
 
-          <div class="cool-grid">
-            <For each={genre().relatedGenres}>
-              {(genre) => (
-                <Chip
-                  to="/genre/$slug"
-                  params={{ slug: genreNameToSlug(genre.genreName) }}
-                  trailing={
-                    <PlayButton
-                      title={genre.previewTitle!}
-                      class="bt size-9 shrink-0 justify-center"
-                      style={{ "background-color": genre.color }}
-                      track={{
-                        title: genre.previewTitle ?? undefined,
-                        url: genre.previewUrl ?? undefined,
-                      }}
-                    />
-                  }
-                >
-                  {genre.genreName}
-                </Chip>
-              )}
-            </For>
+          <div className="cool-grid">
+            {genre.relatedGenres?.map((genre) => (
+              <Chip
+                key={genre.genreName}
+                to="/genre/$slug"
+                params={{ slug: genreNameToSlug(genre.genreName) }}
+                trailing={
+                  <PlayButton
+                    title={genre.previewTitle!}
+                    className="btn size-9 shrink-0 justify-center"
+                    style={{ backgroundColor: genre.color }}
+                    track={{
+                      title: genre.previewTitle ?? undefined,
+                      url: genre.previewUrl ?? undefined,
+                    }}
+                  />
+                }
+              >
+                {genre.genreName}
+              </Chip>
+            ))}
           </div>
-        </Show>
+        </>
       }
       trailing={
-        <div class="flex flex-col gap-3 lg:overflow-y-auto">
-          <span class="section-divider">artists in this genre</span>
+        <div className="flex flex-col gap-3 lg:overflow-y-auto">
+          <span className="section-divider">artists in this genre</span>
 
-          <div class="grid grid-cols-responsive gap-3">
-            <For each={genre().artists}>
-              {(artist) => (
-                <Chip
-                  to="/artist/$spotifyId"
-                  params={{ spotifyId: artist.id }}
-                  trailing={
-                    <PlayButton
-                      class="btn size-9 justify-center"
-                      style={{ "background-color": artist.color }}
-                      title={artist.previewTitle!}
-                      track={{
-                        title: artist.previewTitle ?? undefined,
-                        url: artist.previewUrl ?? undefined,
-                      }}
-                    />
-                  }
-                >
-                  {artist.artistName!}
-                </Chip>
-              )}
-            </For>
+          <div className="grid grid-cols-responsive gap-3">
+            {genre.artists?.map((artist) => (
+              <Chip
+                key={artist.id}
+                to="/artist/$spotifyId"
+                params={{ spotifyId: artist.id }}
+                trailing={
+                  <PlayButton
+                    className="btn size-9 justify-center"
+                    style={{ backgroundColor: artist.color }}
+                    title={artist.previewTitle!}
+                    track={{
+                      title: artist.previewTitle ?? undefined,
+                      url: artist.previewUrl ?? undefined,
+                    }}
+                  />
+                }
+              >
+                {artist.artistName!}
+              </Chip>
+            ))}
           </div>
         </div>
       }
