@@ -29,7 +29,7 @@ a.btn-inverse {
 }
 
 @utility cool-grid {
-  @apply grid auto-rows-min grid-cols-responsive content-start items-start gap-3 overflow-y-auto overscroll-contain;
+  @apply grid auto-rows-min grid-cols-responsive content-start items-start gap-3;
 }
 
 @utility grid-cols-responsive {
@@ -44,11 +44,6 @@ a.btn-inverse {
 html {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
-}
-
-html,
-body {
-  overscroll-behavior: none;
 }
 
 /* Keep content clear of cutouts in portrait and landscape. */

@@ -103,6 +103,9 @@ function RouteComponent() {
   const playbackUrl = fullUrl ?? track.previewUrl;
   const isPlaying = Boolean(playbackUrl) && nowPlaying.url === playbackUrl;
 
+  const isSingle =
+    track.collectionName.endsWith("- Single") && track.trackCount === 1;
+
   return (
     <Layout
       header={{ title: track.trackName, backHref }}
@@ -174,14 +177,18 @@ function RouteComponent() {
           aria-label="Track details"
           className="flex min-w-0 flex-col gap-3 pb-32 lg:overflow-y-auto"
         >
-          <h2 className="section-divider">from the album</h2>
-          <Chip
-            to="/album/$itunesId"
-            params={{ itunesId: String(track.collectionId) }}
-            leading={track.artworkUrl60}
-          >
-            {track.collectionName}
-          </Chip>
+          {!isSingle && (
+            <>
+              <h2 className="section-divider">from the album</h2>
+              <Chip
+                to="/album/$itunesId"
+                params={{ itunesId: String(track.collectionId) }}
+                leading={track.artworkUrl60}
+              >
+                {track.collectionName}
+              </Chip>
+            </>
+          )}
 
           <h2>Track details</h2>
           <dl>
@@ -204,10 +211,14 @@ function RouteComponent() {
               genre
             </dt>
             <dd className="wrap-anywhere">{track.primaryGenreName}</dd>
-            <dt>track</dt>
-            <dd>
-              {track.trackNumber} of {track.trackCount}
-            </dd>
+            {!isSingle && (
+              <>
+                <dt>track</dt>
+                <dd>
+                  {track.trackNumber} of {track.trackCount}
+                </dd>
+              </>
+            )}
             {track.discCount > 1 && (
               <>
                 <dt>disc</dt>

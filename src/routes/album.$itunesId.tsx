@@ -9,7 +9,12 @@ import {
   getBigItunesArtwork,
   trimItunesCollectionPostfix,
 } from "#lib/utils";
-import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  notFound,
+  redirect,
+  useRouter,
+} from "@tanstack/react-router";
 
 export const Route = createFileRoute("/album/$itunesId")({
   loader: async ({ params }) => {
@@ -26,6 +31,18 @@ export const Route = createFileRoute("/album/$itunesId")({
     if (album?.collectionType !== "Album") throw notFound();
 
     const tracks = response.results.filter((r) => r.wrapperType === "track");
+
+    const isSingle =
+      album.collectionName.endsWith("- Single") && tracks.length === 1;
+
+    if (isSingle) {
+      throw redirect({
+        throw: true,
+        to: "/track/$itunesId",
+        params: { itunesId: String(tracks[0].trackId) },
+        replace: true,
+      });
+    }
 
     const soundcloud = await $soundcloud.matchAlbum({
       data: {
