@@ -82,21 +82,17 @@ export const Route = createFileRoute("/track/$itunesId")({
 });
 
 function RouteComponent() {
-  const data = Route.useLoaderData();
+  const { track, soundcloud } = Route.useLoaderData();
   const router = useRouter();
   const nowPlaying = useAtomValue(nowPlayingAtom);
-  const track = data.track;
-  const backHref = router.buildLocation({
-    to: "/album/$itunesId",
-    params: { itunesId: String(track.collectionId) },
-  }).href;
+
   const constructedSearchQuery = encodeURIComponent(
     `${track.artistName} ${track.trackName}`,
   );
   const seconds = Math.floor(track.trackTimeMillis / 1000);
   const duration = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
   const fullUrl = $soundcloud.trackUrl(
-    data.soundcloud,
+    soundcloud,
     track.trackName,
     track.artistName,
   );
@@ -105,6 +101,18 @@ function RouteComponent() {
 
   const isSingle =
     track.collectionName.endsWith("- Single") && track.trackCount === 1;
+
+  const backHref = router.buildLocation(
+    isSingle
+      ? {
+          to: "/search",
+          search: { lucky: true, q: track.artistName },
+        }
+      : {
+          to: "/album/$itunesId",
+          params: { itunesId: String(track.collectionId) },
+        },
+  ).href;
 
   return (
     <Layout
