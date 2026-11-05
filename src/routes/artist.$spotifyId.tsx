@@ -2,7 +2,7 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { SpotifyWidget } from "#components/spotify-widget";
-import { $everynoise, $itunes, $spotify } from "#lib/api/index";
+import { $everynoise, $itunes, $spotify, $wikipedia } from "#lib/api/index";
 import { siteName, siteUrl } from "#lib/constants";
 import { genreNameToSlug, trimItunesCollectionPostfix } from "#lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
@@ -10,22 +10,27 @@ import { ResultAlbum } from "itunes-store-api";
 
 export const Route = createFileRoute("/artist/$spotifyId")({
   loader: async ({ params }) => {
-    const spotifyArtist = await $spotify.getArtistById({
-      data: params.spotifyId,
-    });
+    // const spotifyArtist = await $spotify.getArtistById({
+    //   data: params.spotifyId,
+    // });
 
-    const itunesArtistAlbums = await $itunes.getAlbumsByArtistName({
-      data: spotifyArtist.name,
-    });
+    // const itunesArtistAlbums = await $itunes.getAlbumsByArtistName({
+    //   data: spotifyArtist.name,
+    // });
 
-    const everynoiseArtistGenres = await $everynoise.getGenresByArtistId({
-      data: params.spotifyId,
-    });
+    // const everynoiseArtistGenres = await $everynoise.getGenresByArtistId({
+    //   data: params.spotifyId,
+    // });
+
+    // const wikipediaArtist = await $wikipedia.getArtistByName({
+    //   data: spotifyArtist.name,
+    // });
 
     return {
       spotifyArtist,
       itunesArtistAlbums,
       everynoiseArtistGenres,
+      wikipediaArtist,
     };
   },
   head: ({ loaderData, params }) => ({

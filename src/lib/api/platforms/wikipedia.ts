@@ -1,4 +1,6 @@
+import { createServerFn } from "@tanstack/react-start";
 import ky from "ky";
+import * as v from "valibot";
 
 export const wikipediaKy = ky.create({
   baseUrl: "https://en.wikipedia.org",
@@ -12,61 +14,45 @@ export const wikipediaPhpKy = wikipediaKy.extend({
   prefix: "/w/api.php",
 });
 
-const probableArtistNouns = ["band", "artist", "musician"];
+type ArtistSummary = {
+  title: string;
+  type: string;
+  description?: string;
+  extract: string;
+};
 
-function wikiNormalize(title: string) {
-  encodeURIComponent(title).replaceAll("%20", "_");
-}
+export const getArtistByName = createServerFn()
+  .validator(v.string())
+  .handler(async ({ data: artistName }) => {
+    const name = artistName.trim();
+    if (!name) return;
 
-export async function getArtistDescriptionByName(artistName: string) {
-  const disambiguationResult = await wikipediaPhpKy("", {
-    searchParams: {
-      action: "query",
-      generator: "links",
-      titles: artistName,
-      gpllimit: 150,
-      format: "json",
-    },
-  }).json<{
-    query?: {
-      pages: Record<string, { title: string }>;
-    };
-  }>();
+    const { query } = await wikipediaPhpKy("", {
+      searchParams: {
+        action: "query",
+        list: "search",
+        srsearch: `${name} music`,
+        srlimit: 10,
+        srprop: "",
+        format: "json",
+        origin: "*",
+      },
+    }).json<{ query: { search: { title: string }[] } }>();
 
-  console.log(disambiguationResult.query?.pages);
+    for (const { title } of query.search) {
+      if (title.replace(/ \(.*\)$/, "").toLowerCase() !== name.toLowerCase())
+        continue;
 
-  if (!Object.values(disambiguationResult.query?.pages ?? []).length) {
-    console.log("empty disambu query");
+      const summary = await wikipediaRestKy(
+        `/page/summary/${encodeURIComponent(title.replaceAll(" ", "_"))}`,
+      ).json<ArtistSummary>();
 
-    const result = await wikipediaRestKy(
-      `/page/summary/${wikiNormalize(artistName)}`,
-    ).json<{
-      title: string;
-      type: string;
-      extract: string;
-    }>();
-
-    return result;
-  }
-
-  const narrowedPage = Object.values(disambiguationResult.query!.pages).find(
-    (e) =>
-      probableArtistNouns.some(
-        (noun) =>
-          e.title.toLowerCase() === artistName.toLowerCase() ||
-          e.title.toLowerCase().endsWith(`(${noun})`),
-      ),
-  );
-
-  if (!narrowedPage) {
-    console.log("failed to narrow page: " + artistName);
-    return;
-  }
-  console.log("narrowed page to " + narrowedPage.title);
-
-  return await wikipediaRestKy(`/page/summary/${narrowedPage.title}`).json();
-}
-
-// const x = await getArtistDescriptionByName("lucy bedroque");
-
-// console.log(x);
+      if (
+        summary.type === "standard" &&
+        /\b(band|musician|singer|rapper|songwriter|composer|record producer|DJ|musical (group|duo|trio)|orchestra)\b/i.test(
+          summary.description ?? summary.extract.split(". ")[0],
+        )
+      )
+        return summary;
+    }
+  });
