@@ -46,98 +46,145 @@ async function request<T>(url: URL, signal: AbortSignal): Promise<T> {
     signal,
     headers: { "User-Agent": "Noisedex/1.0 (https://noisedex.tijn.dev)" },
   });
+  if (response.status === 404) throw noMatch;
   if (!response.ok) throw new Error(`Wikipedia: ${response.status}`);
   return response.json();
 }
 
+const noMatch = Symbol("no matching Wikipedia article");
+
+function matchesGenreTitle(title: string, name: string) {
+  const key = (value: string) =>
+    normalize(
+      value.replace(/ \([^()]*\)$/, "").replace(/ music$/i, ""),
+    ).replaceAll(" ", "");
+  return key(title) === key(name);
+}
+
+function matchesSubject(summary: SummaryResponse, subject: Subject) {
+  if (summary.type !== "standard" || !summary.extract?.trim()) return false;
+  const description = `${summary.description ?? ""} ${summary.extract.split(". ")[0]}`;
+  const music =
+    /\b(music|musical|rock|pop|jazz|punk|metal|house|techno|hip.hop|electronic|dance|soul|blues|rap|folk|reggae)\b/i;
+
+  if (subject.kind === "artist") {
+    return (
+      /\b(band|musician|singer|rapper|songwriter|composer|record producer|DJ|orchestra)\b/i.test(
+        description,
+      ) ||
+      (music.test(description) &&
+        /\b(group|duo|trio|quartet|collective)\b/i.test(description))
+    );
+  }
+  if (subject.kind === "genre") {
+    return (
+      music.test(description) &&
+      /\b([a-z-]*genres?|styles?|forms?|types?|traditions?|movements?|aesthetics?|categories|category|fusion)\b/i.test(
+        description,
+      )
+    );
+  }
+  return (
+    /\b(album|EP|extended play)\b/i.test(description) &&
+    ` ${normalize(description)} `.includes(` ${normalize(subject.artist)} `)
+  );
+}
+
+function hasGenreAlias(summary: SummaryResponse, name: string) {
+  const lead = summary.extract
+    .split(". ")[0]
+    .split(/\b(is|are|was|were)\b/i)[0];
+  const alias = normalize(name);
+  return (
+    alias.length > 1 &&
+    Array.from(lead.matchAll(/\(([^()]*)\)/g)).some(([, text]) =>
+      ` ${normalize(text)} `.includes(` ${alias} `),
+    )
+  );
+}
+
 async function lookup(subject: Subject) {
   const signal = AbortSignal.timeout(45_000);
-  const searchUrl = new URL("https://en.wikipedia.org/w/api.php");
+  const requests = new Map<string, Promise<SummaryResponse>>();
+  const getCandidate = (title: string) => {
+    const key = title.replaceAll(" ", "_");
+    let pending = requests.get(key);
+    if (!pending) {
+      pending = request<SummaryResponse>(
+        new URL(
+          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(key)}`,
+        ),
+        signal,
+      ).then((summary) => {
+        if (!matchesSubject(summary, subject)) throw noMatch;
+        return summary;
+      });
+      requests.set(key, pending);
+    }
+    return pending;
+  };
 
+  const searchUrl = new URL("https://en.wikipedia.org/w/api.php");
   searchUrl.search = new URLSearchParams({
     action: "query",
     list: "search",
     srsearch:
-      subject.kind === "artist"
-        ? `${subject.name} music`
-        : subject.kind === "genre"
-          ? `${subject.name} music genre`
-          : `${subject.name} ${subject.artist} album`,
+      subject.kind === "album"
+        ? `${subject.name} ${subject.artist} album`
+        : `${subject.name} music${subject.kind === "genre" ? " genre" : ""}`,
     srlimit: "10",
-    srprop: "",
+    srprop: "redirecttitle",
     format: "json",
   }).toString();
 
-  const search = await request<{
-    query: { search: { title: string }[] };
-  }>(searchUrl, signal);
+  type SearchResult = { title: string; redirecttitle?: string };
+  const search = request<{ query: { search: SearchResult[] } }>(
+    searchUrl,
+    signal,
+  ).then((result) => result.query.search);
+  const searchMatches = search.then((results) => {
+    const candidates = results.filter(({ title, redirecttitle }) =>
+      subject.kind === "genre"
+        ? [title, redirecttitle].some(
+            (value) => value && matchesGenreTitle(value, subject.name),
+          )
+        : matchesTitle(title, subject.name),
+    );
+    return Promise.any(candidates.map(({ title }) => getCandidate(title)));
+  });
 
-  const candidates = search.query.search.filter(
-    ({ title }) =>
-      matchesTitle(title, subject.name) ||
-      (subject.kind === "genre" &&
-        matchesTitle(
-          title.replace(/ music$/i, ""),
-          subject.name.replace(/ music$/i, ""),
-        )),
-  );
-  if (!candidates.length) return null;
+  const attempts =
+    subject.kind === "genre"
+      ? [getCandidate(subject.name), searchMatches]
+      : [searchMatches];
 
-  // a slow unrelated candidate must not delay a valid summary that is already ready
-  const noMatch = Symbol("no matching article");
+  let summary: SummaryResponse;
 
   try {
-    return await Promise.any(
-      candidates.map(async ({ title }) => {
-        const summary = await request<SummaryResponse>(
-          new URL(
-            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replaceAll(" ", "_"))}`,
-          ),
-          signal,
-        );
-
-        if (summary.type !== "standard" || !summary.extract?.trim()) {
-          throw noMatch;
-        }
-
-        const description = `${summary.description ?? ""} ${summary.extract.split(". ")[0]}`;
-
-        const matches =
-          subject.kind === "artist"
-            ? /\b(band|musician|singer|rapper|songwriter|composer|record producer|DJ|musical (group|duo|trio)|orchestra)\b/i.test(
-                description,
-              )
-            : subject.kind === "genre"
-              ? /\b(genre|subgenre|style|form|tradition|movement)\b/i.test(
-                  description,
-                ) &&
-                /\b(music|musical|rock|pop|jazz|punk|metal|house|techno|hip.hop)\b/i.test(
-                  description,
-                )
-              : /\b(album|EP|extended play)\b/i.test(description) &&
-                ` ${normalize(description)} `.includes(
-                  ` ${normalize(subject.artist)} `,
-                );
-
-        if (!matches) throw noMatch;
-
-        return {
-          title: summary.title,
-          extract: summary.extract,
-          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(summary.title.replaceAll(" ", "_"))}`,
-        };
-      }),
-    );
+    summary = await Promise.any(attempts);
   } catch (error) {
-    if (
-      error instanceof AggregateError &&
-      error.errors.every((reason) => reason === noMatch)
-    ) {
-      return null;
+    if (subject.kind !== "genre") throw error;
+
+    try {
+      const results = await search;
+      summary = await Promise.any([
+        // broad searches can omit even obvious articles such as classical music
+        getCandidate(`${subject.name.replace(/ music$/i, "")} music`),
+        ...results.slice(0, 5).map(async ({ title }) => {
+          const candidate = await getCandidate(title);
+          if (!hasGenreAlias(candidate, subject.name)) throw noMatch;
+          return candidate;
+        }),
+      ]);
+    } catch (fallbackError) {
+      throw new AggregateError([error, fallbackError]);
     }
-    // failed requests are not cached as a confirmed missing article.
-    throw error;
   }
+  return {
+    title: summary.title,
+    extract: summary.extract,
+    url: `https://en.wikipedia.org/wiki/${encodeURIComponent(summary.title.replaceAll(" ", "_"))}`,
+  };
 }
 
 export function getSummary(input: Subject) {
@@ -156,7 +203,17 @@ export function getSummary(input: Subject) {
     subject.kind === "album" ? normalize(subject.artist) : "",
   ]);
 
-  return cacheSummary(key, () => lookup(subject));
+  return cacheSummary(key, () =>
+    lookup(subject).catch((error) => {
+      const isMissing = (reason: unknown): boolean =>
+        reason === noMatch ||
+        (reason instanceof AggregateError && reason.errors.every(isMissing));
+
+      if (isMissing(error)) return null;
+
+      throw error;
+    }),
+  );
 }
 
 export function extractGenres(html: string) {

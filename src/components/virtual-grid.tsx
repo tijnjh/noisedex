@@ -101,7 +101,11 @@ export function VirtualGrid<T>({
   }, [entries.length, rowCount, columns, viewport.paddingTop, rowVirtualizer]);
 
   return (
-    <div ref={parentRef} className="h-full overflow-x-hidden overflow-y-auto">
+    <div
+      ref={parentRef}
+      data-scroll-restoration-id="genre-grid"
+      className="h-full overflow-x-hidden overflow-y-auto"
+    >
       <div ref={contentRef} className="p-3">
         <ul
           ref={gridRef}

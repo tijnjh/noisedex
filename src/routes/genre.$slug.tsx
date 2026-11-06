@@ -77,7 +77,10 @@ function RouteComponent() {
         </>
       }
       trailing={
-        <div className="flex flex-col gap-3 lg:overflow-y-auto">
+        <div
+          data-scroll-restoration-id="content"
+          className="flex flex-col gap-3 lg:overflow-y-auto"
+        >
           <span className="section-divider">artists in this genre</span>
 
           <div className="grid grid-cols-responsive gap-3">

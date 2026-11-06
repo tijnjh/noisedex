@@ -183,6 +183,7 @@ function RouteComponent() {
       trailing={
         <section
           aria-label="Track details"
+          data-scroll-restoration-id="content"
           className="flex min-w-0 flex-col gap-3 pb-32 lg:overflow-y-auto"
         >
           {!isSingle && (

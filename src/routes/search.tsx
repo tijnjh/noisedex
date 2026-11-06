@@ -97,7 +97,10 @@ function RouteComponent() {
       }}
     >
       {search.q?.trim() && (
-        <div className="h-full overflow-y-auto p-3">
+        <div
+          data-scroll-restoration-id="content"
+          className="h-full overflow-y-auto p-3"
+        >
           {data?.artists.length ? (
             <div className="cool-grid">
               {data?.artists.map((artist) => (
