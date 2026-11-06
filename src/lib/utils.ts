@@ -3,7 +3,7 @@ import { everynoiseUrl } from "./constants";
 // i tested this against all 6000 genres
 export function genreNameToSlug(genre: string | undefined | null) {
   if (!genre) return;
-  return genre.replace(/[^a-z0-9]/gi, "");
+  return genre.toLowerCase().replace(/[^a-z0-9]/gi, "");
 }
 
 export function fixRelativeUrl(url: string) {

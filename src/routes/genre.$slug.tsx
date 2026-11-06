@@ -2,13 +2,25 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlayButton } from "#components/play-button";
 import { SpotifyWidget } from "#components/spotify-widget";
-import { $everynoise } from "#lib/api/index";
+import { WikipediaDescription } from "#components/wikipedia-description";
+import { $everynoise, $wikipedia } from "#lib/api/index";
 import { siteName, siteUrl } from "#lib/constants";
 import { findSoundOfPlaylistId, genreNameToSlug } from "#lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/genre/$slug")({
-  loader: ({ params }) => $everynoise.getGenreBySlug({ data: params.slug }),
+  loader: async ({ params }) => {
+    const genre = await $everynoise.getGenreBySlug({ data: params.slug });
+
+    const wikipediaGenre = genre.genreName
+      ? $wikipedia.getGenreByName({ data: genre.genreName }).catch(() => null)
+      : Promise.resolve(null);
+
+    return {
+      ...genre,
+      wikipediaGenre,
+    };
+  },
   head: ({ loaderData, params }) => ({
     meta: [
       {
@@ -35,6 +47,8 @@ function RouteComponent() {
       leading={
         <>
           {playlistId && <SpotifyWidget id={playlistId} type="playlist" />}
+
+          <WikipediaDescription summary={genre.wikipediaGenre} />
 
           <span className="section-divider">related genres</span>
 

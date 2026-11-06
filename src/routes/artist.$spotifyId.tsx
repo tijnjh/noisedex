@@ -2,7 +2,8 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { SpotifyWidget } from "#components/spotify-widget";
-import { $everynoise, $itunes, $spotify } from "#lib/api/index";
+import { WikipediaDescription } from "#components/wikipedia-description";
+import { $everynoise, $itunes, $spotify, $wikipedia } from "#lib/api/index";
 import { siteName, siteUrl } from "#lib/constants";
 import { genreNameToSlug, trimItunesCollectionPostfix } from "#lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
@@ -14,18 +15,30 @@ export const Route = createFileRoute("/artist/$spotifyId")({
       data: params.spotifyId,
     });
 
-    const itunesArtistAlbums = await $itunes.getAlbumsByArtistName({
-      data: spotifyArtist.name,
-    });
+    // keep the promise in loader data so ssr can stream it and hydration reuses it
+    const wikipediaArtist = $wikipedia
+      .getArtistByName({
+        data: spotifyArtist.name,
+      })
+      .catch(() => null);
 
-    const everynoiseArtistGenres = await $everynoise.getGenresByArtistId({
-      data: params.spotifyId,
-    });
+    const wikipediaArtistGenres = wikipediaArtist
+      .then((article) =>
+        article ? $wikipedia.getGenresByTitle({ data: article.title }) : [],
+      )
+      .catch(() => []);
+
+    const [everynoiseArtistGenres, itunesArtistAlbums] = await Promise.all([
+      $everynoise.getGenresByArtistId({ data: params.spotifyId }),
+      $itunes.getAlbumsByArtistName({ data: spotifyArtist.name }),
+    ]);
 
     return {
       spotifyArtist,
       itunesArtistAlbums,
       everynoiseArtistGenres,
+      wikipediaArtist,
+      wikipediaArtistGenres,
     };
   },
   head: ({ loaderData, params }) => ({
@@ -47,13 +60,21 @@ export const Route = createFileRoute("/artist/$spotifyId")({
 
 function RouteComponent() {
   const params = Route.useParams();
-  const data = Route.useLoaderData();
-  const encodedArtistName = encodeURIComponent(data.spotifyArtist.name);
+
+  const {
+    spotifyArtist,
+    itunesArtistAlbums,
+    everynoiseArtistGenres,
+    wikipediaArtist,
+    wikipediaArtistGenres,
+  } = Route.useLoaderData();
+
+  const encodedArtistName = encodeURIComponent(spotifyArtist.name);
 
   return (
     <Layout
       header={{
-        title: data.spotifyArtist.name,
+        title: spotifyArtist.name,
       }}
 
       leading={
@@ -76,12 +97,12 @@ function RouteComponent() {
                 icon: "/spotify-com.png",
                 href: `https://open.spotify.com/artist/${params.spotifyId}`,
               },
-              ...(data.itunesArtistAlbums.artistId
+              ...(itunesArtistAlbums.artistId
                 ? [
                     {
                       name: "apple music",
                       icon: "/music-apple-com.png",
-                      href: `https://music.apple.com/artist/${data.itunesArtistAlbums.artistId}`,
+                      href: `https://music.apple.com/artist/${itunesArtistAlbums.artistId}`,
                     },
                   ]
                 : []),
@@ -105,13 +126,17 @@ function RouteComponent() {
               },
             ]}
           />
+          <WikipediaDescription
+            summary={wikipediaArtist}
+            genres={wikipediaArtistGenres}
+          />
 
-          {data.everynoiseArtistGenres.length > 0 && (
+          {everynoiseArtistGenres.length > 0 && (
             <>
               <span className="section-divider">genres this artist is in</span>
 
               <div className="cool-grid">
-                {data.everynoiseArtistGenres.map((genre) => (
+                {everynoiseArtistGenres.map((genre) => (
                   <Chip
                     key={genre}
                     to="/genre/$slug"
@@ -126,9 +151,7 @@ function RouteComponent() {
         </>
       }
 
-      trailing={
-        <ArtistReleasesList releases={data.itunesArtistAlbums.albums} />
-      }
+      trailing={<ArtistReleasesList releases={itunesArtistAlbums.albums} />}
     />
   );
 }
