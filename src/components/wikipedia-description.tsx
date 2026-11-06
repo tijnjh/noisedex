@@ -54,7 +54,7 @@ export function WikipediaDescription({
                   {names.map((name) => (
                     <Link
                       to="/genre/$slug"
-                      params={{ slug: genreNameToSlug(name)! }}
+                      params={{ slug: genreNameToSlug(name.toLowerCase())! }}
                       key={name}
                       className="btn"
                     >

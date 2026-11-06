@@ -213,6 +213,7 @@ function RouteComponent() {
       trailing={
         <section
           aria-label="Track list"
+          data-scroll-restoration-id="content"
           className="flex h-full flex-col gap-3 overflow-x-hidden overflow-y-auto pb-32"
         >
           <h2 className="text-xl font-semibold">Tracks</h2>

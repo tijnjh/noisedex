@@ -17,7 +17,10 @@ export function Layout({
     <div className="grid grid-rows-[1fr_auto] overflow-hidden md:grid-rows-[auto_1fr]">
       <Header {...header} />
 
-      <div className={cn("grid overflow-y-auto", !children && "p-3")}>
+      <div
+        data-scroll-restoration-id="page"
+        className={cn("grid overflow-y-auto", !children && "p-3")}
+      >
         {children ? (
           <main className="flex min-h-0 flex-col overflow-hidden">
             <div className="px-3 pt-3 md:hidden">
@@ -30,7 +33,10 @@ export function Layout({
             <Title title={header.title} />
 
             <main className="grid h-full grid-cols-1 gap-6 max-lg:content-start lg:grid-cols-[auto_1fr] lg:overflow-hidden">
-              <div className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto">
+              <div
+                data-scroll-restoration-id="sidebar"
+                className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto"
+              >
                 {leading}
               </div>
               {trailing}

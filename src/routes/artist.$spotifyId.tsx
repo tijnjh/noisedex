@@ -165,7 +165,7 @@ function ArtistReleasesList(props: { releases: ResultAlbum[] }) {
   if (!sections.length) return <p role="status">No releases found.</p>;
 
   return (
-    <div className="lg:overflow-y-auto">
+    <div data-scroll-restoration-id="content" className="lg:overflow-y-auto">
       {sections.map(([name, releases]) => (
         <div key={name} className="flex flex-col gap-3">
           <span className="section-divider">{name}</span>
