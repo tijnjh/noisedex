@@ -56,33 +56,33 @@ export function MiniPlayer() {
     };
   }, [nowPlaying.url]);
 
-  if (!nowPlaying.url) return null;
-
   const cleanTitle = nowPlaying.title?.replace("e.g.", "").trim();
 
   return (
-    <div className="z-999 mx-3 mb-3 flex min-w-0 flex-col gap-3 border bg-zinc-50-950 p-3 max-md:order-1 md:fixed md:bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] md:left-[calc(0.75rem+env(safe-area-inset-left,0px))] md:m-0 md:w-100">
-      <div className="flex items-center justify-between">
-        <span title={cleanTitle} className="truncate">
-          {cleanTitle}
-        </span>
+    nowPlaying.url && (
+      <div className="z-999 mx-3 mb-3 flex min-w-0 flex-col gap-3 border border-zinc-300-700 bg-zinc-200-800 p-3 max-md:order-1 md:fixed md:bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] md:left-[calc(0.75rem+env(safe-area-inset-left,0px))] md:m-0 md:w-100">
+        <div className="flex items-center justify-between">
+          <span title={cleanTitle} className="truncate">
+            {cleanTitle}
+          </span>
 
-        <button
-          type="button"
-          aria-label="Close player"
-          className="btn-inverse size-9 shrink-0 justify-center"
-          onClick={() => setNowPlaying({ title: undefined, url: undefined })}
-        >
-          &times;
-        </button>
+          <button
+            type="button"
+            aria-label="Close player"
+            className="btn-inverse size-9 shrink-0 justify-center"
+            onClick={() => setNowPlaying({ title: undefined, url: undefined })}
+          >
+            &times;
+          </button>
+        </div>
+
+        <audio
+          ref={audioRef}
+          className="w-full"
+          controls
+          onEnded={() => setNowPlaying({ title: undefined, url: undefined })}
+        />
       </div>
-
-      <audio
-        ref={audioRef}
-        className="w-full"
-        controls
-        onEnded={() => setNowPlaying({ title: undefined, url: undefined })}
-      />
-    </div>
+    )
   );
 }

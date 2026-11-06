@@ -1,58 +1,27 @@
+import { getGenres, getSummary } from "./wikipedia.server";
 import { createServerFn } from "@tanstack/react-start";
-import ky from "ky";
 import * as v from "valibot";
 
-export const wikipediaKy = ky.create({
-  baseUrl: "https://en.wikipedia.org",
-});
-
-export const wikipediaRestKy = wikipediaKy.extend({
-  prefix: "/api/rest_v1",
-});
-
-export const wikipediaPhpKy = wikipediaKy.extend({
-  prefix: "/w/api.php",
-});
-
-type ArtistSummary = {
+export interface WikipediaSummary {
   title: string;
-  type: string;
-  description?: string;
   extract: string;
-};
+  url: string;
+}
 
 export const getArtistByName = createServerFn()
   .validator(v.string())
-  .handler(async ({ data: artistName }) => {
-    const name = artistName.trim();
-    if (!name) return;
+  .handler(({ data }) => getSummary({ kind: "artist", name: data }));
 
-    const { query } = await wikipediaPhpKy("", {
-      searchParams: {
-        action: "query",
-        list: "search",
-        srsearch: `${name} music`,
-        srlimit: 10,
-        srprop: "",
-        format: "json",
-        origin: "*",
-      },
-    }).json<{ query: { search: { title: string }[] } }>();
+export const getGenreByName = createServerFn()
+  .validator(v.string())
+  .handler(({ data }) => getSummary({ kind: "genre", name: data }));
 
-    for (const { title } of query.search) {
-      if (title.replace(/ \(.*\)$/, "").toLowerCase() !== name.toLowerCase())
-        continue;
+export const getAlbumByName = createServerFn()
+  .validator(v.object({ album: v.string(), artist: v.string() }))
+  .handler(({ data }) =>
+    getSummary({ kind: "album", name: data.album, artist: data.artist }),
+  );
 
-      const summary = await wikipediaRestKy(
-        `/page/summary/${encodeURIComponent(title.replaceAll(" ", "_"))}`,
-      ).json<ArtistSummary>();
-
-      if (
-        summary.type === "standard" &&
-        /\b(band|musician|singer|rapper|songwriter|composer|record producer|DJ|musical (group|duo|trio)|orchestra)\b/i.test(
-          summary.description ?? summary.extract.split(". ")[0],
-        )
-      )
-        return summary;
-    }
-  });
+export const getGenresByTitle = createServerFn()
+  .validator(v.string())
+  .handler(({ data }) => getGenres(data));

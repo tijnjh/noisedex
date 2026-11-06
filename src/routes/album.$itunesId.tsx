@@ -2,7 +2,8 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
-import { $itunes, $soundcloud } from "#lib/api/index";
+import { WikipediaDescription } from "#components/wikipedia-description";
+import { $itunes, $soundcloud, $wikipedia } from "#lib/api/index";
 import { siteName, siteUrl } from "#lib/constants";
 import {
   fmt,
@@ -44,13 +45,35 @@ export const Route = createFileRoute("/album/$itunesId")({
       });
     }
 
+    const wikipediaAlbum = $wikipedia
+      .getAlbumByName({
+        data: {
+          album: album.collectionName,
+          artist: album.artistName,
+        },
+      })
+      .catch(() => null);
+
+    const wikipediaAlbumGenres = wikipediaAlbum
+      .then((article) =>
+        article ? $wikipedia.getGenresByTitle({ data: article.title }) : [],
+      )
+      .catch(() => []);
+
     const soundcloud = await $soundcloud.matchAlbum({
       data: {
         artist: album.artistName,
         album: trimItunesCollectionPostfix(album.collectionName),
       },
     });
-    return { album, tracks, soundcloud };
+
+    return {
+      album,
+      tracks,
+      soundcloud,
+      wikipediaAlbum,
+      wikipediaAlbumGenres,
+    };
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) return {};
@@ -181,6 +204,10 @@ function RouteComponent() {
               },
             ]}
           />
+          <WikipediaDescription
+            summary={data.wikipediaAlbum}
+            genres={data.wikipediaAlbumGenres}
+          />
         </div>
       }
       trailing={
@@ -193,7 +220,9 @@ function RouteComponent() {
           <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
             {data.tracks.map((track) => (
               <div className="col-span-full grid w-full grid-cols-subgrid">
-                <div className="flex items-center">{track.trackNumber}</div>
+                <div className="flex items-center justify-end">
+                  {track.trackNumber}
+                </div>
 
                 <Chip
                   key={track.trackId}
