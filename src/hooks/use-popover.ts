@@ -55,6 +55,11 @@ export function usePopover(content: ReactNode) {
     onMouseLeave: close,
     onFocus: open,
     onBlur: close,
+    onPointerDown: (event) => {
+      if (event.pointerType === "touch") {
+        open(event);
+      }
+    },
   };
 
   return props;
