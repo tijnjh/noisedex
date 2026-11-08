@@ -1,13 +1,9 @@
-import { Chip } from "#components/chip";
+import { GenreChip } from "#components/genre-chip";
 import { Layout } from "#components/layout";
-import { PlayButton } from "#components/play-button";
 import { VirtualGrid } from "#components/virtual-grid";
 import { useGenreFilters } from "#hooks/use-genre-filters";
 import { $everynoise } from "#lib/api/index";
-import {
-  genreNameToSlug,
-  type Genre,
-} from "#lib/api/platforms/everynoise-data";
+import { type Genre } from "#lib/api/platforms/everynoise-data";
 import { siteUrl } from "#lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
@@ -92,22 +88,7 @@ function Genres(props: {
 
   return (
     <VirtualGrid entries={sortedGenres} getKey={(genre) => genre.genreName}>
-      {(genre) => (
-        <Chip
-          to="/genre/$slug"
-          params={{ slug: genreNameToSlug(genre.genreName) }}
-          trailing={
-            <PlayButton
-              title={genre.previewTitle}
-              className="btn size-9 shrink-0 justify-center"
-              style={{ backgroundColor: genre.color }}
-              track={{ title: genre.previewTitle, url: genre.previewUrl }}
-            />
-          }
-        >
-          {genre.genreName}
-        </Chip>
-      )}
+      {(genre) => <GenreChip genre={genre} />}
     </VirtualGrid>
   );
 }

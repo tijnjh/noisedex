@@ -3,6 +3,7 @@ import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
 import { WikipediaDescription } from "#components/wikipedia-description";
+import { usePopover } from "#hooks/use-popover";
 import { $itunes, $soundcloud, $wikipedia } from "#lib/api/index";
 import { isSingleRelease, parseItunesId } from "#lib/api/platforms/itunes-data";
 import {
@@ -13,13 +14,14 @@ import { siteName, siteUrl } from "#lib/constants";
 import { musicMetadata } from "#lib/music-metadata";
 import { albumLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
-import { formatDate } from "#lib/utils";
+import { formatDate, formatMillis } from "#lib/utils";
 import {
   createFileRoute,
   notFound,
   redirect,
   useRouter,
 } from "@tanstack/react-router";
+import { ResultMusicTrack } from "itunes-store-api";
 
 export const Route = createFileRoute("/album/$itunesId")({
   loader: async ({ params }) => {
@@ -149,39 +151,63 @@ function RouteComponent() {
 
           <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
             {data.tracks.map((track) => (
-              <div
-                key={track.trackId}
-                className="col-span-full grid w-full grid-cols-subgrid"
-              >
-                <div className="flex items-center justify-end">
-                  {track.trackNumber}
-                </div>
-
-                <Chip
-                  to={"/track/$itunesId"}
-                  params={{ itunesId: String(track.trackId) }}
-                  trailing={
-                    <PlayButton
-                      className="btn-inverse size-9 shrink-0 justify-center"
-                      track={{
-                        title: track.trackName,
-                        url:
-                          $soundcloud.trackUrl(
-                            data.soundcloud,
-                            track.trackName,
-                            track.artistName,
-                          ) ?? track.previewUrl,
-                      }}
-                    />
-                  }
-                >
-                  {track.trackName}
-                </Chip>
-              </div>
+              <Track
+                track={track}
+                playUrl={
+                  $soundcloud.trackUrl(
+                    data.soundcloud,
+                    track.trackName,
+                    track.artistName,
+                  ) ?? track.previewUrl
+                }
+              />
             ))}
           </div>
         </section>
       }
     />
+  );
+}
+
+function Track({
+  track,
+  playUrl,
+}: {
+  track: ResultMusicTrack;
+  playUrl: string;
+}) {
+  const triggerProps = usePopover(
+    <div className="flex w-72 flex-col gap-3 border p-3">
+      <dl>
+        <dt>duration</dt>
+        <dd>{formatMillis(track.trackTimeMillis)}</dd>
+      </dl>
+    </div>,
+  );
+
+  return (
+    <div
+      {...triggerProps}
+      key={track.trackId}
+      className="col-span-full grid w-full grid-cols-subgrid"
+    >
+      <div className="flex items-center justify-end">{track.trackNumber}</div>
+
+      <Chip
+        to={"/track/$itunesId"}
+        params={{ itunesId: String(track.trackId) }}
+        trailing={
+          <PlayButton
+            className="btn-inverse size-9 shrink-0 justify-center"
+            track={{
+              title: track.trackName,
+              url: playUrl,
+            }}
+          />
+        }
+      >
+        {track.trackName}
+      </Chip>
+    </div>
   );
 }

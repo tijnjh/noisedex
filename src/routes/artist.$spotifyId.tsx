@@ -3,6 +3,7 @@ import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { SpotifyWidget } from "#components/spotify-widget";
 import { WikipediaDescription } from "#components/wikipedia-description";
+import { usePopover } from "#hooks/use-popover";
 import { $everynoise, $itunes, $spotify, $wikipedia } from "#lib/api/index";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
 import { organizeArtistReleases } from "#lib/api/platforms/itunes-data";
@@ -10,6 +11,7 @@ import { trimItunesCollectionPostfix } from "#lib/api/platforms/itunes-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { artistLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
+import { formatDate } from "#lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { ResultAlbum } from "itunes-store-api";
 
@@ -135,18 +137,40 @@ function ArtistReleasesList(props: { releases: ResultAlbum[] }) {
 
           <div className="cool-grid">
             {releases.map((release) => (
-              <Chip
-                key={release.collectionId}
-                leading={release.artworkUrl60}
-                to="/album/$itunesId"
-                params={{ itunesId: String(release.collectionId) }}
-              >
-                {trimItunesCollectionPostfix(release.collectionName)}
-              </Chip>
+              <Release release={release} />
             ))}
           </div>
         </div>
       ))}
     </div>
+  );
+}
+
+function Release({ release }: { release: ResultAlbum }) {
+  const triggerProps = usePopover(
+    <div className="flex w-72 flex-col gap-3 border p-3">
+      <img className="size-36" src={release.artworkUrl100} />
+      {release.collectionName}
+
+      <dl>
+        <dt>release date</dt>
+        <dd>{formatDate(new Date(release.releaseDate))}</dd>
+
+        <dt>itunes genre</dt>
+        <dd>{release.primaryGenreName}</dd>
+      </dl>
+    </div>,
+  );
+
+  return (
+    <Chip
+      {...triggerProps}
+      key={release.collectionId}
+      leading={release.artworkUrl60}
+      to="/album/$itunesId"
+      params={{ itunesId: String(release.collectionId) }}
+    >
+      {trimItunesCollectionPostfix(release.collectionName)}
+    </Chip>
   );
 }

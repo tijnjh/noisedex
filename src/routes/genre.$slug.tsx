@@ -1,12 +1,14 @@
 import { Chip } from "#components/chip";
+import { GenreChip } from "#components/genre-chip";
 import { Layout } from "#components/layout";
 import { PlayButton } from "#components/play-button";
 import { SpotifyWidget } from "#components/spotify-widget";
 import { WikipediaDescription } from "#components/wikipedia-description";
+import { usePopover } from "#hooks/use-popover";
 import { $everynoise, $wikipedia } from "#lib/api/index";
 import {
   findSoundOfPlaylistId,
-  genreNameToSlug,
+  Genre,
 } from "#lib/api/platforms/everynoise-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
@@ -58,24 +60,7 @@ function RouteComponent() {
 
           <div className="cool-grid">
             {genre.relatedGenres?.map((genre) => (
-              <Chip
-                key={genre.genreName}
-                to="/genre/$slug"
-                params={{ slug: genreNameToSlug(genre.genreName) }}
-                trailing={
-                  <PlayButton
-                    title={genre.previewTitle!}
-                    className="btn size-9 shrink-0 justify-center"
-                    style={{ backgroundColor: genre.color }}
-                    track={{
-                      title: genre.previewTitle ?? undefined,
-                      url: genre.previewUrl ?? undefined,
-                    }}
-                  />
-                }
-              >
-                {genre.genreName}
-              </Chip>
+              <GenreChip genre={genre as Genre} />
             ))}
           </div>
         </>
@@ -89,28 +74,54 @@ function RouteComponent() {
 
           <div className="grid grid-cols-responsive gap-3">
             {genre.artists?.map((artist) => (
-              <Chip
-                key={artist.id}
-                to="/artist/$spotifyId"
-                params={{ spotifyId: artist.id }}
-                trailing={
-                  <PlayButton
-                    className="btn size-9 justify-center"
-                    style={{ backgroundColor: artist.color }}
-                    title={artist.previewTitle!}
-                    track={{
-                      title: artist.previewTitle ?? undefined,
-                      url: artist.previewUrl ?? undefined,
-                    }}
-                  />
-                }
-              >
-                {artist.artistName!}
-              </Chip>
+              <ArtistChip artist={artist} />
             ))}
           </div>
         </div>
       }
     />
+  );
+}
+
+function ArtistChip({
+  artist,
+}: {
+  artist: {
+    id: string | undefined;
+    color: string | undefined;
+    previewUrl: string | undefined;
+    previewTitle: string | undefined;
+    artistName: string;
+  };
+}) {
+  const triggerProps = usePopover(
+    <div className="flex w-72 flex-col gap-3 border p-3">
+      <dl>
+        <dt>example track</dt>
+        <dd>{artist.previewTitle}</dd>
+      </dl>
+    </div>,
+  );
+
+  return (
+    <Chip
+      {...triggerProps}
+      key={artist.id}
+      to="/artist/$spotifyId"
+      params={{ spotifyId: artist.id }}
+      trailing={
+        <PlayButton
+          className="btn size-9 justify-center"
+          style={{ backgroundColor: artist.color }}
+          title={artist.previewTitle!}
+          track={{
+            title: artist.previewTitle ?? undefined,
+            url: artist.previewUrl ?? undefined,
+          }}
+        />
+      }
+    >
+      {artist.artistName!}
+    </Chip>
   );
 }

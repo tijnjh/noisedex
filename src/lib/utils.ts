@@ -80,3 +80,10 @@ export function sortHexColorsToGradient<T>(
     })
     .map(({ item }) => item);
 }
+
+export function formatMillis(millis: number): string {
+  const totalSeconds = Math.trunc(millis / 1000);
+  const minutes = Math.trunc(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
