@@ -1,59 +1,63 @@
-import { Scrappy } from "#lib/scrappy";
-import { getAllGenres_serverOnly } from "#lib/server-only";
-import { genreNameToSlug } from "#lib/utils";
+import { scrappy } from "#lib/scrappy";
+import { getGenreCatalog } from "./everynoise-catalog.server";
+import {
+  everynoiseUrl,
+  genreNameToSlug,
+  trimLinkPostfix,
+} from "./everynoise-data";
+import { readGenreElement } from "./everynoise-html";
 import { createServerFn } from "@tanstack/react-start";
 import ky from "ky";
 import * as v from "valibot";
 
-const everynoiseUrl = "https://everynoise.com";
-
-export const everynoiseKy = ky.create({
-  baseUrl: everynoiseUrl,
-});
-
-export const getAllGenres = createServerFn().handler(getAllGenres_serverOnly);
+export const getAllGenres = createServerFn().handler(getGenreCatalog);
 
 export const getGenreBySlug = createServerFn()
   .validator(v.string())
-  .handler(async ({ data }) => {
-    const genreSlug = genreNameToSlug(data);
+  .handler(async ({ data: genreSlug }) => {
+    const $ = await scrappy({
+      url: `${everynoiseUrl}/engenremap-${genreSlug}.html`,
+    });
 
-    const scrappy = await Scrappy.init(
-      `${everynoiseUrl}/engenremap-${genreSlug}.html`,
-    );
+    const titleEl = $(".title");
 
-    const titleEl = scrappy.find(".title");
+    const genreName = titleEl.text().slice(22).split("\n")[0];
 
-    const genreName = scrappy
-      .find(".title")
-      ?.el.childNodes[1].textContent?.slice(3, -3);
+    const canvas = $('.canvas[role="main"]');
 
-    const artists = scrappy
-      .find(".canvas")
-      ?.findAll(".genre")
-      .map((el) => ({
-        artistName: el.childNodes[0].textContent,
-        id: el.querySelector<HTMLAnchorElement>("a")?.href?.slice(23),
-        color: el.style.getPropertyValue("color"),
-        previewUrl: el.getAttribute("preview_url"),
-        previewTitle: el.getAttribute("title"),
-      }));
-
-    const links = titleEl?.findAll<HTMLAnchorElement>("a").map((e) => ({
-      text: e.textContent,
-      href: e.href,
-    }));
-
-    const relatedGenres = scrappy
-      .find("#tunnel")
-      ?.find(".canvas")
-      ?.findAll(".genre")
-      .map((el) => ({
-        genreName: el.childNodes[0].textContent!,
-        color: el.style.getPropertyValue("color"),
-        previewUrl: el.getAttribute("preview_url"),
-        previewTitle: el.getAttribute("title"),
+    const artists = canvas
+      .find(".genre")
+      .map((_, el) => ({
+        artistName: trimLinkPostfix($(el).text()),
+        id:
+          new URL(
+            $(el).find("a").attr("href") ?? "",
+            everynoiseUrl,
+          ).searchParams.get("id") ?? undefined,
+        color: $(el).css("color"),
+        previewUrl: $(el).attr("preview_url"),
+        previewTitle: $(el).attr("title"),
       }))
+      .get()
+      .filter(
+        (artist): artist is typeof artist & { id: string } =>
+          !!artist.id && /^[a-zA-Z0-9]{22}$/.test(artist.id),
+      );
+
+    const links = titleEl
+      .find("a")
+      .map((_, el) => ({
+        text: $(el).text(),
+        href: new URL($(el).attr("href")!, everynoiseUrl).href,
+      }))
+      .get();
+
+    const relatedCanvas = $("#tunnel .canvas");
+
+    const relatedGenres = relatedCanvas
+      .find(".genre")
+      .map((_, el) => readGenreElement($(el)))
+      .get()
       .filter((g) => g.genreName !== genreName);
 
     return { genreName, artists, links, relatedGenres };
@@ -69,33 +73,3 @@ export const getGenresByArtistId = createServerFn()
 
     return (Object.values(res)[0] as string[]) ?? [];
   });
-
-let cachedToken: {
-  accessToken: string;
-  expiresAt: number;
-} | null = null;
-
-export async function swipeSpotifyToken(): Promise<string> {
-  if (cachedToken && Date.now() < cachedToken.expiresAt) {
-    return cachedToken.accessToken;
-  }
-
-  const { access_token, expires_in } = await everynoiseKy("spotify_auth.cgi", {
-    searchParams: {
-      action: "accesstoken",
-      secret: "fetch",
-    },
-  }).json(
-    v.object({
-      access_token: v.string(),
-      expires_in: v.number(),
-    }),
-  );
-
-  cachedToken = {
-    accessToken: access_token,
-    expiresAt: Date.now() + expires_in * 1000,
-  };
-
-  return access_token;
-}

@@ -1,4 +1,4 @@
-import { fixRelativeUrl } from "#lib/utils";
+import { scrollRegions } from "#lib/scroll-regions";
 import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import type { ComponentProps, ReactNode } from "react";
@@ -18,7 +18,7 @@ export function Layout({
       <Header {...header} />
 
       <div
-        data-scroll-restoration-id="page"
+        data-scroll-restoration-id={scrollRegions.page}
         className={cn("grid overflow-y-auto", !children && "p-3")}
       >
         {children ? (
@@ -34,7 +34,7 @@ export function Layout({
 
             <main className="grid h-full grid-cols-1 gap-6 max-lg:content-start lg:grid-cols-[auto_1fr] lg:overflow-hidden">
               <div
-                data-scroll-restoration-id="sidebar"
+                data-scroll-restoration-id={scrollRegions.sidebar}
                 className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto"
               >
                 {leading}
@@ -54,23 +54,15 @@ function Title({ title }: { title: string }) {
   );
 }
 
-export function Header({
+function Header({
   backHref,
   title,
-  links,
   children,
 }: {
   backHref?: string;
   title: string;
-} & MergeExclusive<
-  { links?: Array<{ text: string; href: string }> },
-  { children: ReactNode }
->) {
-  // This button is too wide and doesn't provide much functionality here.
-  const visibleLinks = links?.filter(
-    (link) => link.text !== "Every Noise at Once",
-  );
-
+  children?: ReactNode;
+}) {
   return (
     <header
       className={cn(
@@ -93,23 +85,7 @@ export function Header({
         <h1 className="truncate text-2xl font-bold max-md:hidden">{title}</h1>
       </div>
 
-      {children ||
-        (Boolean(visibleLinks?.length) && (
-          <ul className="flex scrollbar-none gap-3 overflow-x-auto">
-            {visibleLinks?.map((link) => (
-              <li key={link.href} className="first:ml-3 last:mr-3">
-                <a
-                  href={fixRelativeUrl(link.href)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-inverse"
-                >
-                  {link.text}
-                </a>
-              </li>
-            ))}
-          </ul>
-        ))}
+      {children}
     </header>
   );
 }

@@ -2,6 +2,7 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { $spotify } from "#lib/api/index";
 import { siteName } from "#lib/constants";
+import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import * as v from "valibot";
@@ -15,7 +16,6 @@ export const Route = createFileRoute("/search")({
   }),
   validateSearch: v.object({
     q: v.optional(v.string()),
-    // like googles "feeling lucky" button it will auto open the first result
     lucky: v.optional(v.boolean()),
   }),
 
@@ -50,7 +50,8 @@ function RouteComponent() {
   const [searchTerm, setSearchTerm] = useState(search.q ?? "");
 
   useEffect(() => {
-    setSearchTerm(search.q ?? "");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearchTerm(search.q ?? ""); // FIXME
   }, [search.q]);
 
   return (
@@ -98,7 +99,7 @@ function RouteComponent() {
     >
       {search.q?.trim() && (
         <div
-          data-scroll-restoration-id="content"
+          data-scroll-restoration-id={scrollRegions.content}
           className="h-full overflow-y-auto p-3"
         >
           {data?.artists.length ? (

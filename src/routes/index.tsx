@@ -2,11 +2,13 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlayButton } from "#components/play-button";
 import { VirtualGrid } from "#components/virtual-grid";
-import { useEnumToggle } from "#hooks/use-enum-toggle";
-import { useQueryState } from "#hooks/use-query-state";
+import { useGenreFilters } from "#hooks/use-genre-filters";
 import { $everynoise } from "#lib/api/index";
+import {
+  genreNameToSlug,
+  type Genre,
+} from "#lib/api/platforms/everynoise-data";
 import { siteUrl } from "#lib/constants";
-import { genreNameToSlug, sortHexColorsToGradient } from "#lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 
@@ -22,27 +24,7 @@ export const Route = createFileRoute("/")({
 function RouteComponent() {
   const data = Route.useLoaderData();
 
-  const [searchTerm, setSearchTerm] = useQueryState("q", {
-    defaultValue: "",
-  });
-
-  const [type, setType] = useQueryState("type", {
-    defaultValue: "genre",
-  });
-
-  const filterType = useEnumToggle(["genre", "preview"], {
-    onUpdate: setType,
-    defaultValue: type ?? "genre",
-  });
-
-  const [sort, setSort] = useQueryState("sort", {
-    defaultValue: "popularity",
-  });
-
-  const sortType = useEnumToggle(["popularity", "alphabetical", "color"], {
-    onUpdate: setSort,
-    defaultValue: sort ?? "popularity",
-  });
+  const filters = useGenreFilters();
 
   return (
     <Layout
@@ -51,98 +33,56 @@ function RouteComponent() {
         children: (
           <div className="flex min-w-0 gap-6">
             <div className="flex min-w-0 grow gap-3">
-              <button className="btn shrink-0" onClick={filterType.cycle}>
-                {filterType.current}
+              <button className="btn shrink-0" onClick={filters.cycleFilter}>
+                {filters.filter.value}
               </button>
 
               <input
-                value={searchTerm ?? ""}
-                onChange={(e) => setSearchTerm(e.currentTarget.value)}
+                value={filters.query}
+                onChange={(e) => filters.setQuery(e.currentTarget.value)}
                 aria-label="Filter genres"
                 className="h-9 min-w-0 grow bg-zinc-50-950 px-3"
                 name="q"
                 enterKeyHint="search"
                 autoCapitalize="none"
                 autoCorrect="off"
-                placeholder={
-                  {
-                    genre: "filter genre names",
-                    preview: "filter genre preview track name",
-                  }[filterType.current]
-                }
+                placeholder={filters.filter.placeholder}
               />
 
-              <button className="btn shrink-0" onClick={sortType.cycle}>
-                {sortType.current}
+              <button className="btn shrink-0" onClick={filters.cycleSort}>
+                {filters.sort.value}
               </button>
             </div>
           </div>
         ),
       }}
     >
-      <Genres
-        filterType={filterType.current}
-        sortType={sortType.current}
-        searchTerm={searchTerm}
-        genres={data.genres}
-        onClearFilter={() => setSearchTerm("")}
-      />
+      <Genres filters={filters} genres={data.genres} />
     </Layout>
   );
 }
 
 function Genres(props: {
-  genres: Everynoise.Genre[];
-  searchTerm: string;
-  filterType: string;
-  sortType: string;
-  onClearFilter: () => void;
+  genres: Genre[];
+  filters: ReturnType<typeof useGenreFilters>;
 }) {
-  const filteredGenres = useMemo(() => {
-    const t = props.searchTerm.toLowerCase();
-
-    switch (props.filterType) {
-      case "genre":
-        return t
-          ? props.genres.filter((g) => g.genreName.toLowerCase().includes(t))
-          : props.genres;
-
-      case "preview":
-        return t
-          ? props.genres.filter((g) => g.previewTitle.toLowerCase().includes(t))
-          : props.genres;
-
-      default:
-        return [];
-    }
-  }, [props.genres, props.searchTerm, props.filterType]);
-
+  const { query, filter, sort, setQuery } = props.filters;
   const sortedGenres = useMemo(() => {
-    const filtered = filteredGenres;
-
-    switch (props.sortType) {
-      case "popularity":
-        return filtered;
-
-      case "alphabetical":
-        return [...filtered].sort((a, b) =>
-          a.genreName.localeCompare(b.genreName),
-        );
-
-      case "color":
-        return sortHexColorsToGradient(filtered, (item) => item.color);
-
-      default:
-        return filtered;
-    }
-  }, [filteredGenres, props.sortType]);
+    const term = query.toLowerCase();
+    const filtered = term
+      ? props.genres.filter((genre) =>
+          filter.text(genre).toLowerCase().includes(term),
+        )
+      : props.genres;
+    return sort.apply(filtered);
+  }, [props.genres, query, filter, sort]);
 
   if (!sortedGenres.length) {
     return (
       <div className="flex flex-col items-start gap-3 p-3">
         <p role="status">No genres found.</p>
-        {props.searchTerm && (
-          <button type="button" className="btn" onClick={props.onClearFilter}>
+        {query && (
+          <button type="button" className="btn" onClick={() => setQuery("")}>
             Clear filter
           </button>
         )}

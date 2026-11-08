@@ -1,12 +1,7 @@
+import type { WikipediaSummary } from "./wikipedia-data";
 import { getGenres, getSummary } from "./wikipedia.server";
 import { createServerFn } from "@tanstack/react-start";
 import * as v from "valibot";
-
-export interface WikipediaSummary {
-  title: string;
-  extract: string;
-  url: string;
-}
 
 export const getArtistByName = createServerFn()
   .validator(v.string())
@@ -25,3 +20,13 @@ export const getAlbumByName = createServerFn()
 export const getGenresByTitle = createServerFn()
   .validator(v.string())
   .handler(({ data }) => getGenres(data));
+
+export function enrichWithGenres(pending: Promise<WikipediaSummary | null>) {
+  const summary = pending.catch(() => null);
+  const genres = summary
+    .then((article) =>
+      article ? getGenresByTitle({ data: article.title }) : [],
+    )
+    .catch(() => []);
+  return { summary, genres };
+}

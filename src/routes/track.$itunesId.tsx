@@ -3,28 +3,23 @@ import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
 import { $itunes, $soundcloud } from "#lib/api/index";
+import {
+  getBigItunesArtwork,
+  isSingleRelease,
+  parseItunesId,
+} from "#lib/api/platforms/itunes-data";
 import { siteName, siteUrl } from "#lib/constants";
-import { nowPlayingAtom } from "#lib/global";
-import { fmt, getBigItunesArtwork } from "#lib/utils";
+import { musicMetadata } from "#lib/music-metadata";
+import { trackLinks } from "#lib/platform-links";
+import { scrollRegions } from "#lib/scroll-regions";
+import { formatDate } from "#lib/utils";
 import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 
 export const Route = createFileRoute("/track/$itunesId")({
   loader: async ({ params }) => {
-    const id = Number(params.itunesId);
-    if (!/^\d+$/.test(params.itunesId) || !Number.isSafeInteger(id) || id <= 0)
-      throw notFound();
-
-    const response = await $itunes.isa.lookup("id", id, {
-      media: "music",
-      entity: "song",
-    });
-    const track = response.results.find(
-      (result) =>
-        result.wrapperType === "track" &&
-        result.kind === "song" &&
-        result.trackId === id,
-    );
+    const id = parseItunesId(params.itunesId);
+    if (id === undefined) throw notFound();
+    const track = await $itunes.getTrack(id);
     if (!track) throw notFound();
 
     const soundcloud = await $soundcloud.matchAlbum({
@@ -40,42 +35,29 @@ export const Route = createFileRoute("/track/$itunesId")({
     const url = `${siteUrl}/track/${params.itunesId}`;
     const artwork = getBigItunesArtwork(track);
 
-    return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:type", content: "music.song" },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:image", content: artwork },
-        { property: "og:url", content: url },
-      ],
-      links: [{ rel: "canonical", href: url }],
-      scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "MusicRecording",
-            "@id": url,
-            url,
-            name: track.trackName,
-            byArtist: { "@type": "MusicGroup", name: track.artistName },
-            inAlbum: {
-              "@type": "MusicAlbum",
-              name: track.collectionName,
-              url: `${siteUrl}/album/${track.collectionId}`,
-            },
-            datePublished: track.releaseDate,
-            genre: track.primaryGenreName,
-            image: artwork,
-            duration: Number.isFinite(track.trackTimeMillis)
-              ? `PT${Math.round(track.trackTimeMillis / 1000)}S`
-              : undefined,
-          }).replace(/</g, "\\u003c"),
+    return musicMetadata({
+      title,
+      description,
+      url,
+      artwork,
+      type: "music.song",
+      recording: {
+        "@type": "MusicRecording",
+        name: track.trackName,
+        byArtist: { "@type": "MusicGroup", name: track.artistName },
+        inAlbum: {
+          "@type": "MusicAlbum",
+          name: track.collectionName,
+          url: `${siteUrl}/album/${track.collectionId}`,
         },
-      ],
-    };
+        datePublished: track.releaseDate,
+        genre: track.primaryGenreName,
+        image: artwork,
+        duration: Number.isFinite(track.trackTimeMillis)
+          ? `PT${Math.round(track.trackTimeMillis / 1000)}S`
+          : undefined,
+      },
+    });
   },
 
   component: RouteComponent,
@@ -84,11 +66,7 @@ export const Route = createFileRoute("/track/$itunesId")({
 function RouteComponent() {
   const { track, soundcloud } = Route.useLoaderData();
   const router = useRouter();
-  const nowPlaying = useAtomValue(nowPlayingAtom);
 
-  const constructedSearchQuery = encodeURIComponent(
-    `${track.artistName} ${track.trackName}`,
-  );
   const seconds = Math.floor(track.trackTimeMillis / 1000);
   const duration = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
   const fullUrl = $soundcloud.trackUrl(
@@ -97,10 +75,8 @@ function RouteComponent() {
     track.artistName,
   );
   const playbackUrl = fullUrl ?? track.previewUrl;
-  const isPlaying = Boolean(playbackUrl) && nowPlaying.url === playbackUrl;
 
-  const isSingle =
-    track.collectionName.endsWith("- Single") && track.trackCount === 1;
+  const isSingle = isSingleRelease(track.collectionName, track.trackCount);
 
   const backHref = router.buildLocation(
     isSingle
@@ -135,8 +111,6 @@ function RouteComponent() {
             <div className="flex items-center gap-3">
               <PlayButton
                 className="btn-inverse size-9 shrink-0 justify-center"
-                aria-label={isPlaying ? "Stop playback" : "Play track"}
-                aria-pressed={isPlaying ? "true" : "false"}
                 track={{
                   title: `${track.artistName} — ${track.trackName}`,
                   url: playbackUrl,
@@ -150,40 +124,13 @@ function RouteComponent() {
             <p className="opacity-60">No preview available for this track.</p>
           )}
 
-          <PlatformLinks
-            links={[
-              {
-                name: "last.fm",
-                icon: "/last-fm.ico",
-                href: `https://last.fm/music/${encodeURIComponent(track.artistName)}/_/${encodeURIComponent(track.trackName)}`,
-              },
-              {
-                name: "spotify",
-                icon: "/spotify-com.png",
-                href: `https://open.spotify.com/search/${constructedSearchQuery}`,
-              },
-              {
-                name: "apple music",
-                icon: "/music-apple-com.png",
-                href: track.trackViewUrl,
-              },
-              {
-                name: "bandcamp",
-                icon: "/bandcamp-com.png",
-                href: `https://bandcamp.com/search?q=${constructedSearchQuery}&item_type=t`,
-              },
-              {
-                name: "soundcloak",
-                href: `https://sc.maid.zone/search?q=${constructedSearchQuery}&type=tracks`,
-              },
-            ]}
-          />
+          <PlatformLinks links={trackLinks(track)} />
         </div>
       }
       trailing={
         <section
           aria-label="Track details"
-          data-scroll-restoration-id="content"
+          data-scroll-restoration-id={scrollRegions.content}
           className="flex min-w-0 flex-col gap-3 pb-32 lg:overflow-y-auto"
         >
           {!isSingle && (
@@ -203,7 +150,7 @@ function RouteComponent() {
           <dl>
             <dt>released</dt>
             <dd>
-              {fmt("date", new Date(track.releaseDate), {
+              {formatDate(new Date(track.releaseDate), {
                 dateStyle: "long",
               })}
             </dd>

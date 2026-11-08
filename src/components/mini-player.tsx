@@ -1,4 +1,4 @@
-import { nowPlayingAtom } from "#lib/global";
+import { nowPlayingAtom, stoppedPlayback } from "#lib/playback";
 import type Hls from "hls.js";
 import { useAtom } from "jotai";
 import { useEffect, useRef } from "react";
@@ -70,7 +70,7 @@ export function MiniPlayer() {
             type="button"
             aria-label="Close player"
             className="btn-inverse size-9 shrink-0 justify-center"
-            onClick={() => setNowPlaying({ title: undefined, url: undefined })}
+            onClick={() => setNowPlaying(stoppedPlayback)}
           >
             &times;
           </button>
@@ -80,7 +80,7 @@ export function MiniPlayer() {
           ref={audioRef}
           className="w-full"
           controls
-          onEnded={() => setNowPlaying({ title: undefined, url: undefined })}
+          onEnded={() => setNowPlaying(stoppedPlayback)}
         />
       </div>
     )

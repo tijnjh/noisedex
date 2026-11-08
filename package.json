@@ -9,21 +9,19 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite dev",
+    "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
   "prettier": {
     "plugins": [
-      "@trivago/prettier-plugin-sort-imports",
-      "prettier-plugin-tailwindcss"
-    ],
-    "tailwindStylesheet": "./src/style.css"
+      "@trivago/prettier-plugin-sort-imports"
+    ]
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.105.3",
     "@tanstack/react-virtual": "^3.14.26",
+    "cheerio": "^1.2.0",
     "cn": "^0.5.0",
-    "domino": "^2.1.8",
     "hls.js": "^1.7.4",
     "itunes-store-api": "^2.1.0",
     "jotai": "^3.0.1",
@@ -35,6 +33,7 @@
     "valibot": "^1.5.0"
   },
   "devDependencies": {
+    "@eslint-react/eslint-plugin": "^5.28.8",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/nitro-v2-vite-plugin": "1.155.2",
     "@tanstack/react-router": "1.170.46",
@@ -45,9 +44,13 @@
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@typescript-eslint/parser": "^8.72.1",
     "@vitejs/plugin-react": "^6.2.1",
+    "eslint": "^10.14.0",
+    "eslint-plugin-better-tailwindcss": "^4.10.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
     "prettier": "^3.9.10",
-    "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwind-color-pairings": "^0.1.2",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.0",

@@ -1,5 +1,5 @@
-import type { WikipediaSummary } from "#lib/api/platforms/wikipedia";
-import { genreNameToSlug } from "#lib/utils";
+import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
+import type { WikipediaSummary } from "#lib/api/platforms/wikipedia-data";
 import { Await, Link } from "@tanstack/react-router";
 
 export function WikipediaDescription({

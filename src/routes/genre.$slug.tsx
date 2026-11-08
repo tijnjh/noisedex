@@ -4,8 +4,12 @@ import { PlayButton } from "#components/play-button";
 import { SpotifyWidget } from "#components/spotify-widget";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { $everynoise, $wikipedia } from "#lib/api/index";
+import {
+  findSoundOfPlaylistId,
+  genreNameToSlug,
+} from "#lib/api/platforms/everynoise-data";
 import { siteName, siteUrl } from "#lib/constants";
-import { findSoundOfPlaylistId, genreNameToSlug } from "#lib/utils";
+import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/genre/$slug")({
@@ -78,7 +82,7 @@ function RouteComponent() {
       }
       trailing={
         <div
-          data-scroll-restoration-id="content"
+          data-scroll-restoration-id={scrollRegions.content}
           className="flex flex-col gap-3 lg:overflow-y-auto"
         >
           <span className="section-divider">artists in this genre</span>

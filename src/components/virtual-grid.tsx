@@ -1,49 +1,48 @@
+import { scrollRegions } from "#lib/scroll-regions";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef, useState } from "react";
-import type { Key, ReactNode, Ref } from "react";
-
-const gap = { x: 12, y: 12 };
-const itemHeight = 36;
+import type { Key, ReactNode } from "react";
 
 export function VirtualGrid<T>({
   entries,
   children,
-  gridRef,
   getKey,
-  itemWidthInRem = 12,
 }: {
   entries: T[];
   children: (entry: T) => ReactNode;
-  gridRef?: Ref<HTMLUListElement>;
-  getKey?: (entry: T) => Key;
-  itemWidthInRem?: number;
+  getKey: (entry: T) => Key;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const metricsRef = useRef<HTMLDivElement>(null);
   const previousEntryCount = useRef(entries.length);
   const [viewport, setViewport] = useState({
     width: 300,
-    rem: 16,
+    minWidth: 192,
+    itemHeight: 36,
+    gap: 12,
     paddingTop: 12,
   });
-  const minWidth = itemWidthInRem * viewport.rem;
+  const { minWidth, itemHeight, gap } = viewport;
   const columns = Math.max(
     1,
-    Math.floor((viewport.width + gap.x) / (minWidth + gap.x)),
+    Math.floor((viewport.width + gap) / (minWidth + gap)),
   );
   const itemWidth = Math.max(
     0,
-    (viewport.width - gap.x * (columns - 1)) / columns,
+    (viewport.width - gap * (columns - 1)) / columns,
   );
   const rowCount = Math.ceil(entries.length / columns);
 
   useEffect(() => {
     const parent = parentRef.current;
     const content = contentRef.current;
-    if (!parent || !content) return;
+    const metrics = metricsRef.current;
+    if (!parent || !content || !metrics) return;
 
     const measure = () => {
       const style = getComputedStyle(content);
+      const metricStyle = getComputedStyle(metrics);
       const next = {
         width: Math.max(
           0,
@@ -51,12 +50,16 @@ export function VirtualGrid<T>({
             parseFloat(style.paddingLeft) -
             parseFloat(style.paddingRight),
         ),
-        rem: parseFloat(getComputedStyle(document.documentElement).fontSize),
+        minWidth: parseFloat(metricStyle.width),
+        itemHeight: parseFloat(metricStyle.height),
+        gap: parseFloat(metricStyle.paddingRight),
         paddingTop: parseFloat(style.paddingTop),
       };
       setViewport((previous) =>
         previous.width === next.width &&
-        previous.rem === next.rem &&
+        previous.minWidth === next.minWidth &&
+        previous.itemHeight === next.itemHeight &&
+        previous.gap === next.gap &&
         previous.paddingTop === next.paddingTop
           ? previous
           : next,
@@ -66,21 +69,27 @@ export function VirtualGrid<T>({
     const observer = new ResizeObserver(measure);
     observer.observe(parent);
     observer.observe(content);
+    observer.observe(metrics, { box: "border-box" });
     measure();
 
     return () => observer.disconnect();
   }, []);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => parentRef.current,
     estimateSize: () => itemHeight,
-    gap: gap.y,
+    gap,
     overscan: 8,
     scrollMargin: viewport.paddingTop,
     // Render the same initial rows on the server and during hydration.
     initialRect: { width: 300, height: 600 },
   });
+
+  useEffect(() => {
+    rowVirtualizer.measure();
+  }, [itemHeight, gap, rowVirtualizer]);
 
   useEffect(() => {
     const parent = parentRef.current;
@@ -103,12 +112,12 @@ export function VirtualGrid<T>({
   return (
     <div
       ref={parentRef}
-      data-scroll-restoration-id="genre-grid"
+      data-scroll-restoration-id={scrollRegions.genres}
       className="h-full overflow-x-hidden overflow-y-auto"
     >
-      <div ref={contentRef} className="p-3">
+      <div ref={contentRef} className="relative p-3">
+        <div ref={metricsRef} aria-hidden="true" className="grid-metrics" />
         <ul
-          ref={gridRef}
           className="relative"
           style={{
             height: rowVirtualizer.getTotalSize(),
@@ -124,12 +133,12 @@ export function VirtualGrid<T>({
 
               return (
                 <li
-                  key={getKey ? getKey(entry) : index}
+                  key={getKey(entry)}
                   className="absolute"
                   style={{
                     height: itemHeight,
                     width: itemWidth,
-                    transform: `translate(${column * (itemWidth + gap.x)}px, ${row.start - viewport.paddingTop}px)`,
+                    transform: `translate(${column * (itemWidth + gap)}px, ${row.start - viewport.paddingTop}px)`,
                   }}
                 >
                   {children(entry)}

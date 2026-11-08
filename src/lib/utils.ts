@@ -1,48 +1,5 @@
-import { everynoiseUrl } from "./constants";
-
-// i tested this against all 6000 genres
-export function genreNameToSlug(genre: string | undefined | null) {
-  if (!genre) return;
-  return genre.toLowerCase().replace(/[^a-z0-9]/gi, "");
-}
-
-export function fixRelativeUrl(url: string) {
-  if (url.startsWith("http")) return url;
-  return everynoiseUrl + url;
-}
-
-export function findSoundOfPlaylistId(
-  links: Array<{ text: string; href: string }>,
-) {
-  const fullUrl = links.find((l) => l.text === "playlist")?.href;
-  if (!fullUrl) return;
-  return fullUrl.replace("https://open.spotify.com/playlist/", "");
-}
-
-export function fmt(
-  as: "date",
-  subject: Date,
-  opts?: Intl.DateTimeFormatOptions,
-): string;
-export function fmt(
-  as: "number",
-  subject: number,
-  opts?: Intl.NumberFormatOptions,
-): string;
-export function fmt(
-  as: "number" | "date",
-  subject: number | Date,
-  opts?: object,
-): string {
-  const locale = "en";
-
-  switch (as) {
-    case "date":
-      return Intl.DateTimeFormat(locale, opts).format(subject);
-
-    case "number":
-      return Intl.NumberFormat(locale, opts).format(subject as number);
-  }
+export function formatDate(date: Date, options?: Intl.DateTimeFormatOptions) {
+  return Intl.DateTimeFormat("en", options).format(date);
 }
 
 export function getErrorMessage(error: unknown) {
@@ -72,25 +29,6 @@ export function isIos() {
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
   );
-}
-
-type AwaitedObject<T> = {
-  [K in keyof T]: Awaited<T[K]>;
-};
-
-export async function parallelize<const T extends Record<PropertyKey, unknown>>(
-  input: T,
-) {
-  const keys = Reflect.ownKeys(input) as Array<keyof T>;
-  const values = await Promise.all(keys.map((key) => input[key]));
-
-  return Object.fromEntries(
-    keys.map((key, index) => [key, values[index]]),
-  ) as AwaitedObject<T>;
-}
-
-export function trimItunesCollectionPostfix(collectionName: string) {
-  return collectionName.replace(" - Single", "").replace(" - EP", "");
 }
 
 function colorCoordinates(hex: string) {
@@ -141,12 +79,4 @@ export function sortHexColorsToGradient<T>(
       );
     })
     .map(({ item }) => item);
-}
-
-export function getBigItunesArtwork({
-  artworkUrl100,
-}: {
-  artworkUrl100: string;
-}) {
-  return artworkUrl100.replace("100x100bb", "600x600bb");
 }

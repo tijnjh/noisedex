@@ -17,9 +17,9 @@ export function Chip({
   className?: string;
 }) {
   return (
-    <div className="flex h-9 items-center">
+    <div className="flex h-control items-center">
       {typeof leading === "string" ? (
-        <img className="aspect-square size-9" src={leading} alt="" />
+        <img className="aspect-square size-control" src={leading} alt="" />
       ) : (
         leading
       )}

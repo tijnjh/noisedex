@@ -1,3 +1,4 @@
+import { platforms } from "../lib/platform-links.ts";
 import { createWriteStream } from "node:fs";
 import path from "node:path";
 import { cwd } from "node:process";
@@ -5,14 +6,9 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { ReadableStream } from "node:stream/web";
 
-const sites = [
-  "last.fm",
-  "spotify.com",
-  "music.apple.com",
-  "bandcamp.com",
-  "sc.maid.zone",
-  "rateyourmusic.com",
-];
+const sites = Object.values(platforms).flatMap((platform) =>
+  "domain" in platform ? [platform.domain] : [],
+);
 
 for (const site of sites) {
   try {

@@ -1,5 +1,5 @@
-import type { WikipediaSummary } from "./wikipedia";
-import { createWindow } from "domino";
+import { scrappy } from "#lib/scrappy";
+import type { WikipediaSummary } from "./wikipedia-data";
 
 type Subject =
   | { kind: "artist"; name: string }
@@ -217,33 +217,28 @@ export function getSummary(input: Subject) {
 }
 
 export function extractGenres(html: string) {
-  const document = createWindow(html).document;
+  const $ = scrappy({ html });
   const genres = new Map<string, string>();
 
-  for (const row of Array.from(document.querySelectorAll("table.infobox tr"))) {
-    const label = row.querySelector("th")?.textContent?.trim();
+  for (const row of $("table.infobox tr")) {
+    const $row = $(row);
+
+    const label = $row.find("th").text().trim();
+
     if (!/^genres?$/i.test(label ?? "")) continue;
 
-    const cell = row.querySelector("td");
-    if (!cell) continue;
+    const cell = $row.find("td");
 
-    for (const noise of Array.from(
-      cell.querySelectorAll("sup, style, script, .reference, .noprint"),
-    )) {
-      noise.parentNode?.removeChild(noise);
-    }
+    if (!cell.length) continue;
 
-    for (const separator of Array.from(cell.querySelectorAll("br"))) {
-      separator.parentNode?.replaceChild(
-        document.createTextNode("\n"),
-        separator,
-      );
-    }
-    const items = Array.from(cell.querySelectorAll("li"));
+    cell.find("sup, style, script, .reference, .noprint").remove();
+    cell.find("br").replaceWith("\n");
+
+    const items = Array.from(cell.find("li"));
 
     const texts = items.length
-      ? items.map((item) => item.textContent ?? "")
-      : [cell.textContent ?? ""];
+      ? items.map((item) => $(item).text() ?? "")
+      : [cell.text() ?? ""];
 
     for (const text of texts) {
       for (const part of text.split(/[\n,;•·]+/)) {

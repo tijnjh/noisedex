@@ -8,9 +8,7 @@ interface Track {
   policy?: string;
   streamable?: boolean;
   track_authorization: string;
-  permalink: string;
-  user: { username: string; permalink: string };
-  publisher_metadata?: { artist?: string };
+  user: { username: string };
   media?: {
     transcodings: {
       snipped: boolean;

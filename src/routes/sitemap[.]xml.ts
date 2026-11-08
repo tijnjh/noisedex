@@ -1,13 +1,12 @@
+import { getGenreCatalog } from "#lib/api/platforms/everynoise-catalog.server";
+import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
 import { siteUrl } from "#lib/constants";
-import { genreNameToSlug } from "#lib/utils";
-import genresCsv from "../data/genres.gen.csv?raw";
 import { createFileRoute } from "@tanstack/react-router";
-import CSV from "papaparse";
 
 const genreSlugs = [
   ...new Set(
-    CSV.parse<{ genreName: string }>(genresCsv, { header: true })
-      .data.map((genre) => genreNameToSlug(genre.genreName))
+    getGenreCatalog()
+      .map((genre) => genreNameToSlug(genre.genreName))
       .filter((slug): slug is string => Boolean(slug)),
   ),
 ];

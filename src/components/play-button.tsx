@@ -1,4 +1,8 @@
-import { nowPlayingAtom, type PlaybackTrack } from "#lib/global";
+import {
+  nowPlayingAtom,
+  stoppedPlayback,
+  type PlaybackTrack,
+} from "#lib/playback";
 import { useAtom } from "jotai";
 import type { ComponentProps } from "react";
 
@@ -21,9 +25,7 @@ export function PlayButton({
       onClick={(event) => {
         onClick?.(event);
         if (event.defaultPrevented) return;
-        setNowPlaying(
-          isThisTrackPlaying ? { title: undefined, url: undefined } : track,
-        );
+        setNowPlaying(isThisTrackPlaying ? stoppedPlayback : track);
       }}
     >
       {isThisTrackPlaying ? "☐" : "▶︎"}

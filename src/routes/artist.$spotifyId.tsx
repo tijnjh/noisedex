@@ -4,8 +4,12 @@ import { PlatformLinks } from "#components/platform-links";
 import { SpotifyWidget } from "#components/spotify-widget";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { $everynoise, $itunes, $spotify, $wikipedia } from "#lib/api/index";
+import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
+import { organizeArtistReleases } from "#lib/api/platforms/itunes-data";
+import { trimItunesCollectionPostfix } from "#lib/api/platforms/itunes-data";
 import { siteName, siteUrl } from "#lib/constants";
-import { genreNameToSlug, trimItunesCollectionPostfix } from "#lib/utils";
+import { artistLinks } from "#lib/platform-links";
+import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute } from "@tanstack/react-router";
 import { ResultAlbum } from "itunes-store-api";
 
@@ -15,18 +19,10 @@ export const Route = createFileRoute("/artist/$spotifyId")({
       data: params.spotifyId,
     });
 
-    // keep the promise in loader data so ssr can stream it and hydration reuses it
-    const wikipediaArtist = $wikipedia
-      .getArtistByName({
-        data: spotifyArtist.name,
-      })
-      .catch(() => null);
-
-    const wikipediaArtistGenres = wikipediaArtist
-      .then((article) =>
-        article ? $wikipedia.getGenresByTitle({ data: article.title }) : [],
-      )
-      .catch(() => []);
+    const { summary: wikipediaArtist, genres: wikipediaArtistGenres } =
+      $wikipedia.enrichWithGenres(
+        $wikipedia.getArtistByName({ data: spotifyArtist.name }),
+      );
 
     const [everynoiseArtistGenres, itunesArtistAlbums] = await Promise.all([
       $everynoise.getGenresByArtistId({ data: params.spotifyId }),
@@ -69,8 +65,6 @@ function RouteComponent() {
     wikipediaArtistGenres,
   } = Route.useLoaderData();
 
-  const encodedArtistName = encodeURIComponent(spotifyArtist.name);
-
   return (
     <Layout
       header={{
@@ -86,45 +80,11 @@ function RouteComponent() {
           />
 
           <PlatformLinks
-            links={[
-              {
-                name: "last.fm",
-                icon: "/last-fm.ico",
-                href: `https://last.fm/music/${encodedArtistName}`,
-              },
-              {
-                name: "spotify",
-                icon: "/spotify-com.png",
-                href: `https://open.spotify.com/artist/${params.spotifyId}`,
-              },
-              ...(itunesArtistAlbums.artistId
-                ? [
-                    {
-                      name: "apple music",
-                      icon: "/music-apple-com.png",
-                      href: `https://music.apple.com/artist/${itunesArtistAlbums.artistId}`,
-                    },
-                  ]
-                : []),
-              {
-                name: "AOTY",
-                href: `https://www.albumoftheyear.org/search/artists/?q=${encodedArtistName}`,
-              },
-              {
-                name: "RYM",
-                href: `https://rateyourmusic.com/artist/${encodedArtistName}-1`,
-              },
-              {
-                name: "bandcamp",
-                icon: "/bandcamp-com.png",
-                href: `https://bandcamp.com/search?q=${encodedArtistName}&item_type=b`,
-              },
-              {
-                name: "soundcloak",
-                // icon: "/sc-maid-zone.png",
-                href: `https://sc.maid.zone/search?q=${encodedArtistName}&type=users`,
-              },
-            ]}
+            links={artistLinks(
+              spotifyArtist.name,
+              params.spotifyId,
+              itunesArtistAlbums.artistId,
+            )}
           />
           <WikipediaDescription
             summary={wikipediaArtist}
@@ -165,7 +125,10 @@ function ArtistReleasesList(props: { releases: ResultAlbum[] }) {
   if (!sections.length) return <p role="status">No releases found.</p>;
 
   return (
-    <div data-scroll-restoration-id="content" className="lg:overflow-y-auto">
+    <div
+      data-scroll-restoration-id={scrollRegions.content}
+      className="lg:overflow-y-auto"
+    >
       {sections.map(([name, releases]) => (
         <div key={name} className="flex flex-col gap-3">
           <span className="section-divider">{name}</span>
@@ -186,33 +149,4 @@ function ArtistReleasesList(props: { releases: ResultAlbum[] }) {
       ))}
     </div>
   );
-}
-
-function organizeArtistReleases(releases: ResultAlbum[]) {
-  // remove cleaned version
-  releases = releases.filter((r) => r.collectionExplicitness !== "cleaned");
-
-  const albums: ResultAlbum[] = [];
-  const eps: ResultAlbum[] = [];
-  const singles: ResultAlbum[] = [];
-
-  for (const release of releases) {
-    const name = release.collectionName;
-
-    switch (true) {
-      case name.endsWith(" - Single"):
-        singles.push(release);
-        break;
-
-      case name.endsWith(" - EP"):
-        eps.push(release);
-        break;
-
-      default:
-        albums.push(release);
-        break;
-    }
-  }
-
-  return { albums, eps, singles };
 }

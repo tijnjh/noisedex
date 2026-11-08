@@ -1,8 +1,4 @@
-export interface PlatformLink {
-  name: string;
-  icon?: string;
-  href: string;
-}
+import type { PlatformLink } from "#lib/platform-links";
 
 export function PlatformLinks({ links }: { links: PlatformLink[] }) {
   return (

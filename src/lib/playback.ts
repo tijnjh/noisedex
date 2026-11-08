@@ -5,7 +5,9 @@ export interface PlaybackTrack {
   url: string | undefined;
 }
 
-export const nowPlayingAtom = atom<PlaybackTrack>({
+export const stoppedPlayback: PlaybackTrack = {
   title: undefined,
   url: undefined,
-});
+};
+
+export const nowPlayingAtom = atom<PlaybackTrack>(stoppedPlayback);

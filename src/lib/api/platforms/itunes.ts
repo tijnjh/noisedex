@@ -38,40 +38,44 @@ export const getAlbumsByArtistName = createServerFn()
   });
 
 // apple added some crazy redirect stuff with this api on on ios so i have to do it server side on there
-const proxyItunes = createServerFn()
-  .validator(
-    (
-      data:
-        | ["search", ...Parameters<typeof serverIsa.search>]
-        | ["lookup", ...Parameters<typeof serverIsa.lookup>],
-    ) => data,
-  )
+const lookupSongsOnServer = createServerFn()
+  .validator(v.number())
+  .handler(({ data }) => lookupSongs(data));
 
-  .handler(({ data }) => {
-    switch (data[0]) {
-      case "search": {
-        const [, search, options] = data;
-        return serverIsa.search(search, options);
-      }
-      case "lookup": {
-        const [, type, value, options] = data;
-        return serverIsa.lookup(type, value, options);
-      }
-    }
+async function lookupSongs(id: number) {
+  const response = await serverIsa.lookup("id", id, {
+    media: "music",
+    entity: "song",
   });
+  return response.results as Array<
+    serverIsa.ResultAlbum | serverIsa.ResultMusicTrack
+  >;
+}
 
-// more typed wrapper
-const proxied: {
-  search: typeof serverIsa.search;
-  lookup: typeof serverIsa.lookup;
-} = {
-  search: (search, options) =>
-    // @ts-expect-error
-    proxyItunes({ data: ["search", search, options] }),
-  lookup: (type, value, options) =>
-    // @ts-expect-error ffs these overloads bro
-    proxyItunes({ data: ["lookup", type, value, options] }),
-};
+async function musicResults(id: number) {
+  return isIos() ? lookupSongsOnServer({ data: id }) : lookupSongs(id);
+}
 
-// if not on ios you can just call itunes from the client directly
-export const isa = isIos() ? proxied : serverIsa;
+export async function getAlbum(id: number) {
+  const results = await musicResults(id);
+  const album = results[0];
+  if (album?.wrapperType !== "collection" || album.collectionType !== "Album")
+    return null;
+  const tracks = results.filter(
+    (result): result is serverIsa.ResultMusicTrack =>
+      result.wrapperType === "track",
+  );
+  return { album, tracks };
+}
+
+export async function getTrack(id: number) {
+  const results = await musicResults(id);
+  return (
+    results.find(
+      (result): result is serverIsa.ResultMusicTrack =>
+        result.wrapperType === "track" &&
+        result.kind === "song" &&
+        result.trackId === id,
+    ) ?? null
+  );
+}

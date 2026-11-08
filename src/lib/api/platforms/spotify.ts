@@ -1,9 +1,9 @@
-import { $everynoise } from "#lib/api/index";
+import { swipeSpotifyToken } from "./spotify-token.server";
 import { createServerFn } from "@tanstack/react-start";
 import ky from "ky";
 import * as v from "valibot";
 
-export const spotifyKy = ky.create({
+const spotifyKy = ky.create({
   baseUrl: "https://api.spotify.com",
   prefix: "v1",
   hooks: {
@@ -11,7 +11,7 @@ export const spotifyKy = ky.create({
       async ({ request }) => {
         request.headers.set(
           "Authorization",
-          `Bearer ${await $everynoise.swipeSpotifyToken()}`,
+          `Bearer ${await swipeSpotifyToken()}`,
         );
       },
     ],
@@ -45,7 +45,6 @@ export const lookupArtists = createServerFn()
       }),
     );
 
-    // filter out low quality "artists"
     const filteredArtists = spotifyRes.artists.items.filter(
       (i) => !!i.images.length,
     );
@@ -66,18 +65,5 @@ export const getArtistById = createServerFn()
       }),
     );
 
-    return res;
-  });
-
-export const getAlbumById = createServerFn()
-  .validator(v.string())
-  .handler(async ({ data: id }) => {
-    const res = await spotifyKy(`/albums/${id}`).json(
-      v.object({
-        name: v.string(),
-        id: v.string(),
-        external_ids: v.object({ upc: v.string() }),
-      }),
-    );
     return res;
   });

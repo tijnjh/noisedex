@@ -1,6 +1,20 @@
 @import "tailwindcss";
 @import "tailwind-color-pairings";
 
+@theme {
+  --spacing-control: 2.25rem;
+  --spacing-grid-gap: 0.75rem;
+  --spacing-grid-min: 12rem;
+}
+
+@utility grid-metrics {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  @apply h-control w-grid-min pr-grid-gap;
+  box-sizing: content-box;
+}
+
 dt {
   @apply border-b whitespace-nowrap opacity-50;
 }
@@ -10,7 +24,7 @@ dd {
 }
 
 @utility btn {
-  @apply flex h-9 items-center gap-2 bg-zinc-50-950 px-3 hover:bg-zinc-100-900 pointer-coarse:active:scale-95 pointer-fine:active:translate-y-px;
+  @apply flex h-control items-center gap-2 bg-zinc-50-950 px-3 hover:bg-zinc-100-900 pointer-coarse:active:scale-95 pointer-fine:active:translate-y-px;
 }
 
 @utility btn-inverse {
@@ -29,31 +43,32 @@ a.btn-inverse {
 }
 
 @utility cool-grid {
-  @apply grid auto-rows-min grid-cols-responsive content-start items-start gap-3;
+  @apply grid auto-rows-min grid-cols-responsive content-start items-start gap-grid-gap;
 }
 
 @utility grid-cols-responsive {
-  @apply grid-cols-[repeat(auto-fill,minmax(12rem,1fr))];
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(var(--spacing-grid-min), 1fr)
+  );
 }
 
 @utility section-divider {
   @apply flex h-9 items-center border-b border-zinc-300-700;
 }
 
-/* Suppress browser tap paint; controls retain their own :active feedback. */
 html {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
 }
 
-/* Keep content clear of cutouts in portrait and landscape. */
-.app-shell {
+[data-app-shell] {
   padding-top: env(safe-area-inset-top, 0px);
   padding-right: env(safe-area-inset-right, 0px);
   padding-left: env(safe-area-inset-left, 0px);
 }
 
-.app-navigation {
+[data-app-navigation] {
   padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
 }
 
@@ -76,11 +91,11 @@ button,
 }
 
 @media (min-width: 48rem) {
-  .app-shell {
+  [data-app-shell] {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  .app-navigation {
+  [data-app-navigation] {
     padding-bottom: 0.75rem;
   }
 }

@@ -16,7 +16,6 @@ probably buggy too
 
 - react with tanstack redact
 - tanstack start
-- tanstack query
 - jotai
 - tanstack virtual
 
