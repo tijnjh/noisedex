@@ -2,16 +2,16 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
-import { SpotifyWidget } from "#components/spotify-widget";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { $everynoise, $itunes, $spotify, $wikipedia } from "#lib/api/index";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
-import { organizeArtistReleases } from "#lib/api/platforms/itunes-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { artistLinks } from "#lib/platform-links";
+import { buildReleaseTimeline } from "#lib/release-timeline";
 import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute } from "@tanstack/react-router";
 import { ResultAlbum } from "itunes-store-api";
+import { Fragment } from "react";
 
 export const Route = createFileRoute("/artist/$spotifyId")({
   loader: async ({ params }) => {
@@ -112,29 +112,46 @@ function RouteComponent() {
 }
 
 function ArtistReleasesList(props: { releases: ResultAlbum[] }) {
-  const organizedReleases = organizeArtistReleases(props.releases);
-  const sections = Object.entries(organizedReleases).filter(
-    ([, releases]) => releases.length > 0,
-  );
+  const timeline = buildReleaseTimeline(props.releases);
 
-  if (!sections.length) return <p role="status">No releases found.</p>;
+  if (!timeline.length) return <p role="status">No releases found.</p>;
 
   return (
     <div
       data-scroll-restoration-id={scrollRegions.content}
-      className="lg:overflow-y-auto"
+      className="min-w-0 lg:overflow-y-auto"
     >
-      {sections.map(([name, releases]) => (
-        <div key={name} className="flex flex-col gap-3">
-          <span className="section-divider">{name}</span>
+      <div aria-label="Release timeline" className="flex flex-col gap-3">
+        {timeline.map(
+          ({ release, year, showYear, month, dateTime, gapLabel }) => (
+            <Fragment key={release.collectionId}>
+              {showYear && (
+                <h2 className="flex h-9 items-center gap-3 font-semibold tabular-nums not-first:mt-3">
+                  {year ?? "Unknown date"}
+                  <span className="grow border-t border-zinc-300-700" />
+                </h2>
+              )}
 
-          <div className="cool-grid">
-            {releases.map((release) => (
-              <MusicChip key={release.collectionId} music={release} />
-            ))}
-          </div>
-        </div>
-      ))}
+              <div className="grid min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-3">
+                <span className="text-sm opacity-50">
+                  {month && <time dateTime={dateTime}>{month}</time>}
+                </span>
+                <MusicChip music={release} />
+              </div>
+
+              {gapLabel && (
+                <div className="ml-13 flex items-center gap-3 py-3 text-sm opacity-50">
+                  <span
+                    aria-hidden="true"
+                    className="h-9 border-l border-dashed"
+                  />
+                  <span>{gapLabel} between releases</span>
+                </div>
+              )}
+            </Fragment>
+          ),
+        )}
+      </div>
     </div>
   );
 }
