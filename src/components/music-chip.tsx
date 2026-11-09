@@ -62,8 +62,8 @@ export function MusicChip({
           </span>
         ) : undefined
       }
-      to={track ? "/track/spotify/$spotifyId" : "/album/spotify/$spotifyId"}
-      params={{ spotifyId: music.id }}
+      to={track ? "/track/$id" : "/album/$id"}
+      params={{ id: music.id }}
     >
       {showArtist ? `${music.name} — ${artistName}` : music.name}
     </Chip>

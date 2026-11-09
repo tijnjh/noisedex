@@ -3,7 +3,7 @@
 music explorer client thingy
 
 uses Spotify for artist profiles, discographies, album/track metadata, and search.
-SoundCloud streams and matched iTunes previews are separate optional playback sources.
+SoundCloud supplies optional playback.
 
 initially started as a better version of everynoise.com, like a music genre explorer, but added some more stuff on top
 
@@ -30,14 +30,13 @@ probably buggy too
 
 ### catalog and playback
 
-- Spotify releases and tracks use `/album/spotify/:spotifyId` and `/track/spotify/:spotifyId`.
-  Existing numeric iTunes URLs remain available for old links.
+- Spotify releases and tracks use `/album/:id` and `/track/:id`.
+  Numeric IDs are looked up inline in iTunes, then redirected to an exact-title/artist Spotify match or return 404.
 - Catalog requests use the browser's preferred language region (US fallback), and artist
   discographies and album track lists follow all pages. Search shows up to ten results per type.
 - Release dates retain Spotify's precision. Spotify has no EP field, so multi-track singles
   display “Single / EP” unless the title explicitly identifies an EP.
-- iTunes previews are matched by album, artist, title, duration, and explicitness. Missing
-  audio does not prevent browsing. Spotify preview URLs and the Spotify playback SDK are not used.
+- Missing SoundCloud audio does not prevent browsing.
 - Authentication continues to use the existing Every Noise token helper. An app-owned
   Spotify OAuth client and its deployment quotas remain a separate setup task.
 - Run catalog regression tests with `node --test tests/*.test.mjs` (Node 26).

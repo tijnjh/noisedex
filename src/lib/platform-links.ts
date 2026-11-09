@@ -1,5 +1,3 @@
-import { trimItunesCollectionPostfix } from "./api/platforms/itunes-data.ts";
-
 export interface PlatformLink {
   name: string;
   icon?: string;
@@ -27,7 +25,6 @@ export const platforms = {
 export function artistLinks(
   artistName: string,
   spotifyId: string,
-  appleArtistId?: number,
 ): PlatformLink[] {
   const encodedArtistName = encodeURIComponent(artistName);
   return [
@@ -41,9 +38,7 @@ export function artistLinks(
     },
     {
       ...platforms.apple,
-      href: appleArtistId
-        ? `https://music.apple.com/artist/${appleArtistId}`
-        : `https://music.apple.com/search?term=${encodedArtistName}`,
+      href: `https://music.apple.com/search?term=${encodedArtistName}`,
     },
     {
       ...platforms.aoty,
@@ -66,32 +61,25 @@ export function artistLinks(
 
 export function albumLinks(album: {
   artistName: string;
-  collectionName: string;
-  collectionViewUrl?: string;
-  spotifyUrl?: string;
+  name: string;
+  spotifyUrl: string;
 }): PlatformLink[] {
-  const streamlinedCollectionName = trimItunesCollectionPostfix(
-    album.collectionName,
-  );
+  const albumName = album.name;
   const constructedSearchQuery = encodeURIComponent(
-    `${album.artistName} ${streamlinedCollectionName}`,
+    `${album.artistName} ${albumName}`,
   );
   return [
     {
       ...platforms.lastfm,
-      href: `https://last.fm/music/${encodeURIComponent(album.artistName)}/${encodeURIComponent(streamlinedCollectionName)}`,
+      href: `https://last.fm/music/${encodeURIComponent(album.artistName)}/${encodeURIComponent(albumName)}`,
     },
     {
       ...platforms.spotify,
-      href:
-        album.spotifyUrl ??
-        `https://open.spotify.com/search/${constructedSearchQuery}`,
+      href: album.spotifyUrl,
     },
     {
       ...platforms.apple,
-      href:
-        album.collectionViewUrl ??
-        `https://music.apple.com/search?term=${constructedSearchQuery}`,
+      href: `https://music.apple.com/search?term=${constructedSearchQuery}`,
     },
     {
       ...platforms.aoty,
@@ -99,7 +87,7 @@ export function albumLinks(album: {
     },
     {
       ...platforms.rym,
-      href: `https://rateyourmusic.com/release/album/${encodeURIComponent(album.artistName)}/${encodeURIComponent(streamlinedCollectionName)}/`,
+      href: `https://rateyourmusic.com/release/album/${encodeURIComponent(album.artistName)}/${encodeURIComponent(albumName)}/`,
     },
     {
       ...platforms.bandcamp,
@@ -115,8 +103,7 @@ export function albumLinks(album: {
 export function trackLinks(track: {
   artistName: string;
   trackName: string;
-  trackViewUrl?: string;
-  spotifyUrl?: string;
+  spotifyUrl: string;
 }): PlatformLink[] {
   const constructedSearchQuery = encodeURIComponent(
     `${track.artistName} ${track.trackName}`,
@@ -128,15 +115,11 @@ export function trackLinks(track: {
     },
     {
       ...platforms.spotify,
-      href:
-        track.spotifyUrl ??
-        `https://open.spotify.com/search/${constructedSearchQuery}`,
+      href: track.spotifyUrl,
     },
     {
       ...platforms.apple,
-      href:
-        track.trackViewUrl ??
-        `https://music.apple.com/search?term=${constructedSearchQuery}`,
+      href: `https://music.apple.com/search?term=${constructedSearchQuery}`,
     },
     {
       ...platforms.bandcamp,

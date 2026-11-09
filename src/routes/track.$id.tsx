@@ -3,30 +3,76 @@ import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
 import { $spotify, $soundcloud } from "#lib/api/index";
-import { getAlbumPreviews } from "#lib/api/platforms/music-previews";
 import { formatReleaseDate } from "#lib/api/platforms/spotify-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { musicMetadata } from "#lib/music-metadata";
-import { matchMusicPreview } from "#lib/music-preview-data";
 import { trackLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
+import { storeCountryFromLanguages } from "#lib/store-country";
 import { formatMillis } from "#lib/utils";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
+import * as v from "valibot";
 
-export const Route = createFileRoute("/track/spotify/$spotifyId")({
+// The only legacy support: resolve numeric IDs to a Spotify page, never render them.
+const resolveNumericId = createServerFn()
+  .validator(v.pipe(v.string(), v.regex(/^\d+$/)))
+  .handler(async ({ data }) => {
+    try {
+      const country = storeCountryFromLanguages(
+        getRequestHeader("accept-language"),
+      );
+      const response = await fetch(
+        `https://itunes.apple.com/lookup?id=${data}&country=${country}`,
+        { signal: AbortSignal.timeout(8000) },
+      );
+      if (!response.ok) return null;
+      const { results } = await response.json();
+      const legacy = results.find(
+        (item: { wrapperType: string }) => item.wrapperType === "track",
+      );
+      if (!legacy?.trackName || !legacy.artistName) return null;
+      const normalize = (name: string) =>
+        name
+          .replace(/ - (Single|EP)$/i, "")
+          .trim()
+          .toLowerCase();
+      const matches = await $spotify.searchMusic({
+        data: `${legacy.artistName} ${normalize(legacy.trackName)}`,
+      });
+      return (
+        matches.tracks.find(
+          (item) =>
+            normalize(item.name) === normalize(legacy.trackName) &&
+            item.artists.some(
+              (artist) =>
+                normalize(artist.name) === normalize(legacy.artistName),
+            ) &&
+            Math.abs(item.duration_ms - legacy.trackTimeMillis) <= 2000,
+        )?.id ?? null
+      );
+    } catch {
+      return null;
+    }
+  });
+
+export const Route = createFileRoute("/track/$id")({
   loader: async ({ params }) => {
-    if (!/^[A-Za-z0-9]{22}$/.test(params.spotifyId)) throw notFound();
-    const track = await $spotify.getTrack({ data: params.spotifyId });
+    if (/^\d+$/.test(params.id)) {
+      const id = await resolveNumericId({ data: params.id });
+      if (!id) throw notFound();
+      throw redirect({ to: "/track/$id", params: { id }, replace: true });
+    }
+    if (!/^[A-Za-z0-9]{22}$/.test(params.id)) throw notFound();
+    const track = await $spotify.getTrack({ data: params.id });
     if (!track) throw notFound();
     const query = {
       artist: track.album.artists[0]?.name ?? "",
       album: track.album.name,
     };
-    const [soundcloud, previews] = await Promise.all([
-      $soundcloud.matchAlbum({ data: query }),
-      getAlbumPreviews({ data: query }),
-    ]);
-    return { track, soundcloud, previews };
+    const soundcloud = await $soundcloud.matchAlbum({ data: query });
+    return { track, soundcloud };
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) return {};
@@ -35,7 +81,7 @@ export const Route = createFileRoute("/track/spotify/$spotifyId")({
     return musicMetadata({
       title: `${track.name} by ${artistName} | ${siteName}`,
       description: `Explore ${track.name} by ${artistName} from ${track.album.name}: release date and listening links.`,
-      url: `${siteUrl}/track/spotify/${params.spotifyId}`,
+      url: `${siteUrl}/track/${params.id}`,
       artwork: track.album.images[0]?.url ?? "",
       type: "music.song",
       recording: {
@@ -48,7 +94,7 @@ export const Route = createFileRoute("/track/spotify/$spotifyId")({
         inAlbum: {
           "@type": "MusicAlbum",
           name: track.album.name,
-          url: `${siteUrl}/album/spotify/${track.album.id}`,
+          url: `${siteUrl}/album/${track.album.id}`,
         },
         datePublished: track.album.release_date,
         duration: `PT${Math.round(track.duration_ms / 1000)}S`,
@@ -59,18 +105,17 @@ export const Route = createFileRoute("/track/spotify/$spotifyId")({
 });
 
 function TrackPage() {
-  const { track, soundcloud, previews } = Route.useLoaderData();
+  const { track, soundcloud } = Route.useLoaderData();
   const album = track.album;
   const artistName = track.artists.map((a) => a.name).join(", ");
-  const fullUrl = $soundcloud.trackUrl(
+  const url = $soundcloud.trackUrl(
     soundcloud,
     track.name,
     track.artists[0]?.name ?? "",
   );
-  const url = fullUrl ?? matchMusicPreview(track, previews);
   return (
     <Layout
-      header={{ title: track.name, backHref: `/album/spotify/${album.id}` }}
+      header={{ title: track.name, backHref: `/album/${album.id}` }}
       leading={
         <div className="flex min-w-0 flex-col gap-3">
           {album.images[0] && (
@@ -100,12 +145,10 @@ function TrackPage() {
                   url,
                 }}
               />
-              <span>
-                {fullUrl ? "Listen on SoundCloud" : "Listen to a preview"}
-              </span>
+              <span>Listen on SoundCloud</span>
             </div>
           ) : (
-            <p className="opacity-60">No preview available for this track.</p>
+            <p className="opacity-60">No audio available for this track.</p>
           )}
           <PlatformLinks
             links={trackLinks({
@@ -124,8 +167,8 @@ function TrackPage() {
         >
           <h2 className="section-divider">from the release</h2>
           <Chip
-            to="/album/spotify/$spotifyId"
-            params={{ spotifyId: album.id }}
+            to="/album/$id"
+            params={{ id: album.id }}
             leading={album.images.at(-1)?.url}
           >
             {album.name}

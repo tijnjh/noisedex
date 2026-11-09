@@ -4,38 +4,82 @@ import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { $spotify, $soundcloud, $wikipedia } from "#lib/api/index";
-import { getAlbumPreviews } from "#lib/api/platforms/music-previews";
 import {
   formatReleaseDate,
   spotifyReleaseType,
 } from "#lib/api/platforms/spotify-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { musicMetadata } from "#lib/music-metadata";
-import { matchMusicPreview } from "#lib/music-preview-data";
 import { albumLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
+import { storeCountryFromLanguages } from "#lib/store-country";
 import { formatMillis } from "#lib/utils";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
+import * as v from "valibot";
 
-export const Route = createFileRoute("/album/spotify/$spotifyId")({
+// The only legacy support: resolve numeric IDs to a Spotify page, never render them.
+const resolveNumericId = createServerFn()
+  .validator(v.pipe(v.string(), v.regex(/^\d+$/)))
+  .handler(async ({ data }) => {
+    try {
+      const country = storeCountryFromLanguages(
+        getRequestHeader("accept-language"),
+      );
+      const response = await fetch(
+        `https://itunes.apple.com/lookup?id=${data}&country=${country}`,
+        { signal: AbortSignal.timeout(8000) },
+      );
+      if (!response.ok) return null;
+      const { results } = await response.json();
+      const legacy = results.find(
+        (item: { wrapperType: string }) => item.wrapperType === "collection",
+      );
+      if (!legacy?.collectionName || !legacy.artistName) return null;
+      const normalize = (name: string) =>
+        name
+          .replace(/ - (Single|EP)$/i, "")
+          .trim()
+          .toLowerCase();
+      const matches = await $spotify.searchMusic({
+        data: `${legacy.artistName} ${normalize(legacy.collectionName)}`,
+      });
+      return (
+        matches.albums.find(
+          (item) =>
+            normalize(item.name) === normalize(legacy.collectionName) &&
+            item.artists.some(
+              (artist) =>
+                normalize(artist.name) === normalize(legacy.artistName),
+            ),
+        )?.id ?? null
+      );
+    } catch {
+      return null;
+    }
+  });
+
+export const Route = createFileRoute("/album/$id")({
   loader: async ({ params }) => {
-    if (!/^[A-Za-z0-9]{22}$/.test(params.spotifyId)) throw notFound();
-    const result = await $spotify.getAlbum({ data: params.spotifyId });
+    if (/^\d+$/.test(params.id)) {
+      const id = await resolveNumericId({ data: params.id });
+      if (!id) throw notFound();
+      throw redirect({ to: "/album/$id", params: { id }, replace: true });
+    }
+    if (!/^[A-Za-z0-9]{22}$/.test(params.id)) throw notFound();
+    const result = await $spotify.getAlbum({ data: params.id });
     if (!result) throw notFound();
     const { album, tracks } = result;
     const artist = album.artists[0];
     const query = { album: album.name, artist: artist?.name ?? "" };
     const { summary: wikipediaAlbum, genres: wikipediaAlbumGenres } =
       $wikipedia.enrichWithGenres($wikipedia.getAlbumByName({ data: query }));
-    const [soundcloud, previews] = await Promise.all([
-      $soundcloud.matchAlbum({ data: query }),
-      getAlbumPreviews({ data: query }),
-    ]);
+    const soundcloud = await $soundcloud.matchAlbum({ data: query });
     return {
       album,
       tracks,
       soundcloud,
-      previews,
       wikipediaAlbum,
       wikipediaAlbumGenres,
     };
@@ -47,7 +91,7 @@ export const Route = createFileRoute("/album/spotify/$spotifyId")({
     return musicMetadata({
       title: `${album.name} by ${artistName} | ${siteName}`,
       description: `Explore ${album.name} by ${artistName}: release date, tracks, and listening links.`,
-      url: `${siteUrl}/album/spotify/${params.spotifyId}`,
+      url: `${siteUrl}/album/${params.id}`,
       artwork: album.images[0]?.url ?? "",
       type: "music.album",
       recording: {
@@ -107,7 +151,7 @@ function AlbumPage() {
           <PlatformLinks
             links={albumLinks({
               artistName: album.artists.map((a) => a.name).join(", "),
-              collectionName: album.name,
+              name: album.name,
               spotifyUrl: album.external_urls.spotify,
             })}
           />
@@ -128,12 +172,11 @@ function AlbumPage() {
           <div className="grid grid-cols-[max-content_minmax(0,1fr)] gap-3">
             {tracks.map((track) => {
               const artistName = track.artists.map((a) => a.name).join(", ");
-              const fullUrl = $soundcloud.trackUrl(
+              const url = $soundcloud.trackUrl(
                 data.soundcloud,
                 track.name,
                 track.artists[0]?.name ?? "",
               );
-              const url = fullUrl ?? matchMusicPreview(track, data.previews);
               return (
                 <div
                   key={track.id}
@@ -144,8 +187,8 @@ function AlbumPage() {
                     {track.track_number}
                   </span>
                   <Chip
-                    to="/track/spotify/$spotifyId"
-                    params={{ spotifyId: track.id }}
+                    to="/track/$id"
+                    params={{ id: track.id }}
                     trailing={
                       <>
                         <span className="px-2 text-xs opacity-60">
@@ -154,11 +197,7 @@ function AlbumPage() {
                         <PlayButton
                           className="btn-inverse size-9 shrink-0 justify-center disabled:opacity-30"
                           title={
-                            url
-                              ? fullUrl
-                                ? "Play on SoundCloud"
-                                : "Play preview"
-                              : "No audio available"
+                            url ? "Play on SoundCloud" : "No audio available"
                           }
                           track={{
                             title: track.name,

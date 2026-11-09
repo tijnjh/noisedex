@@ -4,7 +4,6 @@ import {
   spotifyReleaseType,
   formatReleaseDate,
 } from "../src/lib/api/platforms/spotify-data.ts";
-import { matchMusicPreview } from "../src/lib/music-preview-data.ts";
 import { buildReleaseTimeline } from "../src/lib/release-timeline.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -108,33 +107,4 @@ test("release labels do not claim an inferred EP classification as certain", () 
     }),
     "Compilation",
   );
-});
-
-test("preview matching rejects different artists, versions, lengths and explicitness", () => {
-  const track = {
-    name: "Geronimo",
-    artists: [{ name: "Sheppard" }],
-    duration_ms: 218000,
-    explicit: false,
-  };
-  const preview = {
-    name: "Geronimo",
-    artist: "Sheppard",
-    durationMs: 218100,
-    explicit: false,
-    url: "https://example.test/preview",
-  };
-  assert.equal(matchMusicPreview(track, [preview]), preview.url);
-  for (const change of [
-    { artist: "Someone Else" },
-    { name: "Geronimo (Remix)" },
-    { durationMs: 250000 },
-    { explicit: true },
-  ]) {
-    assert.equal(
-      matchMusicPreview(track, [{ ...preview, ...change }]),
-      undefined,
-    );
-  }
-  assert.equal(matchMusicPreview(track, []), undefined);
 });

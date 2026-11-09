@@ -4,11 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  itunes-store-api@2.1.0:
-    hash: paf6epy4ukl2a3gvqgo2vlyyfa
-    path: patches/itunes-store-api@2.1.0.patch
-
 importers:
   .:
     dependencies:
@@ -24,9 +19,6 @@ importers:
       hls.js:
         specifier: ^1.7.4
         version: 1.7.4
-      itunes-store-api:
-        specifier: ^2.1.0
-        version: 2.1.0(patch_hash=paf6epy4ukl2a3gvqgo2vlyyfa)
       jotai:
         specifier: ^3.0.1
         version: 3.0.1(@types/react@19.3.0)(react@19.3.1)
@@ -3306,13 +3298,6 @@ packages:
       {
         integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==,
       }
-
-  itunes-store-api@2.1.0:
-    resolution:
-      {
-        integrity: sha512-d3weC2lLdtmmlK+Ya9hULXeT0bOFuBuylamtjOWZKUBr84nQfFOv9QequIy+vNz9Zmy4MAvMWg2c49oyuhKfOg==,
-      }
-    engines: { node: ^14.13.1 || >=16.0.0 }
 
   javascript-natural-sort@0.7.1:
     resolution:
@@ -7012,8 +6997,6 @@ snapshots:
   isbot@5.2.2: {}
 
   isexe@2.0.0: {}
-
-  itunes-store-api@2.1.0(patch_hash=paf6epy4ukl2a3gvqgo2vlyyfa): {}
 
   javascript-natural-sort@0.7.1: {}
 

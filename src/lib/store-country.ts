@@ -1,8 +1,4 @@
-import type { Options } from "itunes-store-api";
-
-export type StoreCountry = Options["country"];
-
-export function storeCountryFromLanguages(header = ""): StoreCountry {
+export function storeCountryFromLanguages(header = ""): string {
   const languages = header
     .split(",")
     .map((entry) => {
@@ -19,8 +15,7 @@ export function storeCountryFromLanguages(header = ""): StoreCountry {
     try {
       const locale = new Intl.Locale(tag);
       const region = locale.region ?? locale.maximize().region;
-      if (region && /^[A-Z]{2}$/.test(region))
-        return region.toLowerCase() as StoreCountry;
+      if (region && /^[A-Z]{2}$/.test(region)) return region.toLowerCase();
     } catch {}
   }
   return "us";

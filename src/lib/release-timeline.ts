@@ -1,4 +1,4 @@
-type TimelineRelease = { releaseDate: string } | { release_date: string };
+type TimelineRelease = { release_date: string };
 
 const monthFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -8,8 +8,7 @@ const monthFormatter = new Intl.DateTimeFormat("en", {
 export function buildReleaseTimeline<T extends TimelineRelease>(releases: T[]) {
   const sorted = releases
     .map((release) => {
-      const rawDate =
-        "release_date" in release ? release.release_date : release.releaseDate;
+      const rawDate = release.release_date;
       const date = new Date(rawDate);
       return {
         release,
