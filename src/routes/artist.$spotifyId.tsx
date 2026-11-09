@@ -24,15 +24,15 @@ export const Route = createFileRoute("/artist/$spotifyId")({
         $wikipedia.getArtistByName({ data: spotifyArtist.name }),
       );
 
-    const [everynoiseArtistGenres, itunesArtistAlbums] = await Promise.all([
-      $everynoise.getGenresByArtistId({ data: params.spotifyId }),
+    const [everynoiseArtist, itunesArtistAlbums] = await Promise.all([
+      $everynoise.getArtistById(params.spotifyId),
       $itunes.getAlbumsByArtistName({ data: spotifyArtist.name }),
     ]);
 
     return {
       spotifyArtist,
       itunesArtistAlbums,
-      everynoiseArtistGenres,
+      everynoiseArtist,
       wikipediaArtist,
       wikipediaArtistGenres,
     };
@@ -60,7 +60,7 @@ function RouteComponent() {
   const {
     spotifyArtist,
     itunesArtistAlbums,
-    everynoiseArtistGenres,
+    everynoiseArtist,
     wikipediaArtist,
     wikipediaArtistGenres,
   } = Route.useLoaderData();
@@ -86,12 +86,12 @@ function RouteComponent() {
             genres={wikipediaArtistGenres}
           />
 
-          {everynoiseArtistGenres.length > 0 && (
+          {everynoiseArtist.genres.length > 0 && (
             <>
               <span className="section-divider">genres this artist is in</span>
 
               <div className="cool-grid">
-                {everynoiseArtistGenres.map((genre) => (
+                {everynoiseArtist.genres.map((genre) => (
                   <Chip
                     key={genre}
                     to="/genre/$slug"

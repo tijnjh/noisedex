@@ -8,7 +8,6 @@ import { usePopover } from "#hooks/use-popover";
 import { $everynoise, $wikipedia } from "#lib/api/index";
 import {
   findSoundOfPlaylistId,
-  Genre,
   splitPreviewTitle,
 } from "#lib/api/platforms/everynoise-data";
 import { siteName, siteUrl } from "#lib/constants";
@@ -17,7 +16,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/genre/$slug")({
   loader: async ({ params }) => {
-    const genre = await $everynoise.getGenreBySlug({ data: params.slug });
+    const genre = await $everynoise.getGenreBySlug(params.slug);
 
     const wikipediaGenre = genre.genreName
       ? $wikipedia.getGenreByName({ data: genre.genreName }).catch(() => null)
@@ -61,7 +60,7 @@ function RouteComponent() {
 
           <div className="cool-grid">
             {genre.relatedGenres?.map((genre) => (
-              <GenreChip genre={genre as Genre} />
+              <GenreChip genre={genre} />
             ))}
           </div>
         </>
@@ -84,27 +83,17 @@ function RouteComponent() {
   );
 }
 
-function ArtistChip({
-  artist,
-}: {
-  artist: {
-    id: string | undefined;
-    color: string | undefined;
-    previewUrl: string | undefined;
-    previewTitle: string | undefined;
-    artistName: string;
-  };
-}) {
+function ArtistChip({ artist }: { artist: $everynoise.Artist }) {
   const triggerProps = usePopover(
     <div className="flex w-72 flex-col gap-3 border p-3">
       <dl>
         <dt>example track</dt>
-        <dd>{artist.previewTitle}</dd>
+        <dd>{artist.preview.title}</dd>
       </dl>
     </div>,
   );
 
-  const previewTrack = splitPreviewTitle(artist.previewTitle);
+  const previewTrack = splitPreviewTitle(artist.preview.title);
 
   return (
     <Chip
@@ -115,12 +104,12 @@ function ArtistChip({
       trailing={
         <PlayButton
           className="btn size-9 justify-center"
-          style={{ backgroundColor: artist.color }}
+          style={{ backgroundColor: artist.style.color }}
           title={previewTrack?.title}
           track={{
             title: previewTrack?.title,
             artist: previewTrack?.artist,
-            url: artist.previewUrl,
+            url: artist.preview.url,
             artworkSrc: undefined,
           }}
         />

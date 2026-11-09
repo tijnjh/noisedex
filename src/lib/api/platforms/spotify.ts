@@ -1,34 +1,25 @@
 import { swipeSpotifyToken } from "./spotify-token.server";
 import { createServerFn } from "@tanstack/react-start";
-import ky from "ky";
+import { up } from "up-fetch";
 import * as v from "valibot";
 
-const spotifyKy = ky.create({
-  baseUrl: "https://api.spotify.com",
-  prefix: "v1",
-  hooks: {
-    beforeRequest: [
-      async ({ request }) => {
-        request.headers.set(
-          "Authorization",
-          `Bearer ${await swipeSpotifyToken()}`,
-        );
-      },
-    ],
+const spotifyFetch = up(fetch, async () => ({
+  baseUrl: "https://api.spotify.com/v1",
+  headers: {
+    Authorization: `Bearer ${await swipeSpotifyToken()}`,
   },
-});
+}));
 
 export const lookupArtists = createServerFn()
   .validator(v.string())
   .handler(async ({ data }) => {
-    const spotifyRes = await spotifyKy("/search", {
-      searchParams: {
+    const spotifyRes = await spotifyFetch("/search", {
+      params: {
         type: "artist",
         q: data,
         limit: 50,
       },
-    }).json(
-      v.object({
+      schema: v.object({
         artists: v.object({
           items: v.array(
             v.object({
@@ -43,7 +34,7 @@ export const lookupArtists = createServerFn()
           ),
         }),
       }),
-    );
+    });
 
     const filteredArtists = spotifyRes.artists.items.filter(
       (i) => !!i.images.length,
@@ -55,15 +46,15 @@ export const lookupArtists = createServerFn()
 export const getArtistById = createServerFn()
   .validator(v.string())
   .handler(async ({ data }) => {
-    const res = await spotifyKy(`artists/${data}`).json(
-      v.object({
+    const res = await spotifyFetch(`artists/${data}`, {
+      schema: v.object({
         name: v.string(),
         followers: v.object({
           total: v.number(),
         }),
         id: v.string(),
       }),
-    );
+    });
 
     return res;
   });

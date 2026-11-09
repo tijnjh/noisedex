@@ -1,5 +1,5 @@
-import { scrappy } from "#lib/scrappy";
 import type { WikipediaSummary } from "./wikipedia-data";
+import * as cheerio from "cheerio";
 
 type Subject =
   | { kind: "artist"; name: string }
@@ -217,7 +217,7 @@ export function getSummary(input: Subject) {
 }
 
 export function extractGenres(html: string) {
-  const $ = scrappy({ html });
+  const $ = cheerio.load(html);
   const genres = new Map<string, string>();
 
   for (const row of $("table.infobox tr")) {

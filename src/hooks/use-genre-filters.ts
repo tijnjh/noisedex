@@ -1,4 +1,4 @@
-import type { Genre } from "#lib/api/platforms/everynoise-data";
+import { $everynoise } from "#lib/api/index";
 import { sortHexColorsToGradient } from "#lib/utils";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 
@@ -6,26 +6,29 @@ const filters = [
   {
     value: "genre",
     placeholder: "filter genre names",
-    text: (genre: Genre) => genre.genreName,
+    text: (genre: $everynoise.Genre) => genre.genreName,
   },
   {
     value: "preview",
     placeholder: "filter genre preview track name",
-    text: (genre: Genre) => genre.previewTitle,
+    text: (genre: $everynoise.Genre) => genre.preview!.title,
   },
 ] as const;
 
 const sorts = [
-  { value: "popularity", apply: (genres: Genre[]) => genres },
+  {
+    value: "popularity",
+    apply: (genres: $everynoise.Genre[]) => genres,
+  },
   {
     value: "alphabetical",
-    apply: (genres: Genre[]) =>
+    apply: (genres: $everynoise.Genre[]) =>
       [...genres].sort((a, b) => a.genreName.localeCompare(b.genreName)),
   },
   {
     value: "color",
-    apply: (genres: Genre[]) =>
-      sortHexColorsToGradient(genres, (genre) => genre.color),
+    apply: (genres: $everynoise.Genre[]) =>
+      sortHexColorsToGradient(genres, (genre) => genre.style!.color),
   },
 ] as const;
 

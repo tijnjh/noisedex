@@ -3,7 +3,6 @@ import { Layout } from "#components/layout";
 import { VirtualGrid } from "#components/virtual-grid";
 import { useGenreFilters } from "#hooks/use-genre-filters";
 import { $everynoise } from "#lib/api/index";
-import { type Genre } from "#lib/api/platforms/everynoise-data";
 import { siteUrl } from "#lib/constants";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
@@ -59,7 +58,7 @@ function RouteComponent() {
 }
 
 function Genres(props: {
-  genres: Genre[];
+  genres: $everynoise.Genre[];
   filters: ReturnType<typeof useGenreFilters>;
 }) {
   const { query, filter, sort, setQuery } = props.filters;

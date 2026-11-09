@@ -1,13 +1,13 @@
-import { getGenreCatalog } from "#lib/api/platforms/everynoise-catalog.server";
+import { getAllGenres } from "#lib/api/platforms/everynoise";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
 import { siteUrl } from "#lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
 
 const genreSlugs = [
   ...new Set(
-    getGenreCatalog()
-      .map((genre) => genreNameToSlug(genre.genreName))
-      .filter((slug): slug is string => Boolean(slug)),
+    await getAllGenres().then((r) =>
+      r.map((genre) => genreNameToSlug(genre.genreName)).filter(Boolean),
+    ),
   ),
 ];
 

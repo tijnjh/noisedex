@@ -1,3 +1,7 @@
+import { up } from "up-fetch";
+
+export const upfetch = up(fetch);
+
 export function formatDate(date: Date, options?: Intl.DateTimeFormatOptions) {
   return Intl.DateTimeFormat("en", options).format(date);
 }

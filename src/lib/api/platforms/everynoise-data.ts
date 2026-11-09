@@ -1,12 +1,3 @@
-export interface Genre {
-  genreName: string;
-  color: string;
-  previewUrl: string;
-  previewTitle: string;
-}
-
-export const everynoiseUrl = "https://everynoise.com";
-
 export function genreNameToSlug(genre: string | undefined | null) {
   if (!genre) return;
   return genre.toLowerCase().replace(/[^a-z0-9]/gi, "");
