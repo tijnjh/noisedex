@@ -39,14 +39,12 @@ export function artistLinks(
       ...platforms.spotify,
       href: `https://open.spotify.com/artist/${spotifyId}`,
     },
-    ...(appleArtistId
-      ? [
-          {
-            ...platforms.apple,
-            href: `https://music.apple.com/artist/${appleArtistId}`,
-          },
-        ]
-      : []),
+    {
+      ...platforms.apple,
+      href: appleArtistId
+        ? `https://music.apple.com/artist/${appleArtistId}`
+        : `https://music.apple.com/search?term=${encodedArtistName}`,
+    },
     {
       ...platforms.aoty,
       href: `https://www.albumoftheyear.org/search/artists/?q=${encodedArtistName}`,
@@ -69,7 +67,8 @@ export function artistLinks(
 export function albumLinks(album: {
   artistName: string;
   collectionName: string;
-  collectionViewUrl: string;
+  collectionViewUrl?: string;
+  spotifyUrl?: string;
 }): PlatformLink[] {
   const streamlinedCollectionName = trimItunesCollectionPostfix(
     album.collectionName,
@@ -84,11 +83,15 @@ export function albumLinks(album: {
     },
     {
       ...platforms.spotify,
-      href: `https://open.spotify.com/search/${constructedSearchQuery}`,
+      href:
+        album.spotifyUrl ??
+        `https://open.spotify.com/search/${constructedSearchQuery}`,
     },
     {
       ...platforms.apple,
-      href: album.collectionViewUrl,
+      href:
+        album.collectionViewUrl ??
+        `https://music.apple.com/search?term=${constructedSearchQuery}`,
     },
     {
       ...platforms.aoty,
@@ -112,7 +115,8 @@ export function albumLinks(album: {
 export function trackLinks(track: {
   artistName: string;
   trackName: string;
-  trackViewUrl: string;
+  trackViewUrl?: string;
+  spotifyUrl?: string;
 }): PlatformLink[] {
   const constructedSearchQuery = encodeURIComponent(
     `${track.artistName} ${track.trackName}`,
@@ -124,11 +128,15 @@ export function trackLinks(track: {
     },
     {
       ...platforms.spotify,
-      href: `https://open.spotify.com/search/${constructedSearchQuery}`,
+      href:
+        track.spotifyUrl ??
+        `https://open.spotify.com/search/${constructedSearchQuery}`,
     },
     {
       ...platforms.apple,
-      href: track.trackViewUrl,
+      href:
+        track.trackViewUrl ??
+        `https://music.apple.com/search?term=${constructedSearchQuery}`,
     },
     {
       ...platforms.bandcamp,

@@ -1,7 +1,7 @@
 import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
-import { $itunes, $spotify } from "#lib/api/index";
+import { $spotify } from "#lib/api/index";
 import { siteName } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute, redirect } from "@tanstack/react-router";
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/search")({
       $spotify.lookupArtists({ data: query }),
       search.lucky
         ? Promise.resolve({ albums: [], tracks: [] })
-        : $itunes.searchMusic({ data: query }),
+        : $spotify.searchMusic({ data: query }),
     ]);
 
     if (search.lucky && artists.length) {
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/search")({
 
     return {
       artists,
-      ...(search.lucky ? await $itunes.searchMusic({ data: query }) : music),
+      ...(search.lucky ? await $spotify.searchMusic({ data: query }) : music),
     };
   },
 
@@ -133,11 +133,7 @@ function RouteComponent() {
               <h2 className="section-divider">albums</h2>
               <div className="cool-grid">
                 {data.albums.map((album) => (
-                  <MusicChip
-                    key={album.collectionId}
-                    music={album}
-                    showArtist
-                  />
+                  <MusicChip key={album.id} music={album} showArtist />
                 ))}
               </div>
             </section>
@@ -147,7 +143,7 @@ function RouteComponent() {
               <h2 className="section-divider">tracks</h2>
               <div className="cool-grid">
                 {data.tracks.map((track) => (
-                  <MusicChip key={track.trackId} music={track} showArtist />
+                  <MusicChip key={track.id} music={track} showArtist />
                 ))}
               </div>
             </section>

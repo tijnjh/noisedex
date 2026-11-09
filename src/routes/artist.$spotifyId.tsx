@@ -3,14 +3,14 @@ import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
 import { WikipediaDescription } from "#components/wikipedia-description";
-import { $everynoise, $itunes, $spotify, $wikipedia } from "#lib/api/index";
+import { $everynoise, $spotify, $wikipedia } from "#lib/api/index";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
+import type { SpotifyAlbum } from "#lib/api/platforms/spotify-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { artistLinks } from "#lib/platform-links";
 import { buildReleaseTimeline } from "#lib/release-timeline";
 import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute } from "@tanstack/react-router";
-import { ResultAlbum } from "itunes-store-api";
 import { Fragment } from "react";
 
 export const Route = createFileRoute("/artist/$spotifyId")({
@@ -24,14 +24,14 @@ export const Route = createFileRoute("/artist/$spotifyId")({
         $wikipedia.getArtistByName({ data: spotifyArtist.name }),
       );
 
-    const [everynoiseArtistGenres, itunesArtistAlbums] = await Promise.all([
+    const [everynoiseArtistGenres, spotifyReleases] = await Promise.all([
       $everynoise.getGenresByArtistId({ data: params.spotifyId }),
-      $itunes.getAlbumsByArtistName({ data: spotifyArtist.name }),
+      $spotify.getArtistReleases({ data: params.spotifyId }),
     ]);
 
     return {
       spotifyArtist,
-      itunesArtistAlbums,
+      spotifyReleases,
       everynoiseArtistGenres,
       wikipediaArtist,
       wikipediaArtistGenres,
@@ -59,7 +59,7 @@ function RouteComponent() {
 
   const {
     spotifyArtist,
-    itunesArtistAlbums,
+    spotifyReleases,
     everynoiseArtistGenres,
     wikipediaArtist,
     wikipediaArtistGenres,
@@ -74,11 +74,7 @@ function RouteComponent() {
       leading={
         <>
           <PlatformLinks
-            links={artistLinks(
-              spotifyArtist.name,
-              params.spotifyId,
-              itunesArtistAlbums.artistId,
-            )}
+            links={artistLinks(spotifyArtist.name, params.spotifyId)}
           />
 
           <WikipediaDescription
@@ -106,12 +102,12 @@ function RouteComponent() {
         </>
       }
 
-      trailing={<ArtistReleasesList releases={itunesArtistAlbums.albums} />}
+      trailing={<ArtistReleasesList releases={spotifyReleases} />}
     />
   );
 }
 
-function ArtistReleasesList(props: { releases: ResultAlbum[] }) {
+function ArtistReleasesList(props: { releases: SpotifyAlbum[] }) {
   const timeline = buildReleaseTimeline(props.releases);
 
   if (!timeline.length) return <p role="status">No releases found.</p>;
@@ -124,7 +120,7 @@ function ArtistReleasesList(props: { releases: ResultAlbum[] }) {
       <div aria-label="Release timeline" className="flex flex-col gap-3">
         {timeline.map(
           ({ release, year, showYear, month, dateTime, gapLabel }) => (
-            <Fragment key={release.collectionId}>
+            <Fragment key={release.id}>
               {showYear && (
                 <h2 className="flex h-9 items-center gap-3 font-semibold tabular-nums not-first:mt-3">
                   {year ?? "Unknown date"}

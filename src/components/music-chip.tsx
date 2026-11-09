@@ -1,89 +1,71 @@
 import { Chip } from "#components/chip";
 import { usePopover } from "#hooks/use-popover";
 import {
-  getReleaseType,
-  trimItunesCollectionPostfix,
-} from "#lib/api/platforms/itunes-data";
-import { formatDate, formatMillis } from "#lib/utils";
-import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
+  formatReleaseDate,
+  spotifyReleaseType,
+  type SpotifyAlbum,
+  type SpotifyTrack,
+} from "#lib/api/platforms/spotify-data";
+import { formatMillis } from "#lib/utils";
 
 export function MusicChip({
   music,
   showArtist = false,
   showReleaseType = false,
 }: {
-  music: ResultAlbum | ResultMusicTrack;
+  music: SpotifyAlbum | SpotifyTrack;
   showArtist?: boolean;
   showReleaseType?: boolean;
 }) {
-  const track = music.wrapperType === "track" ? music : undefined;
-  const title = track?.trackName ?? music.collectionName;
-  const date = new Date(music.releaseDate);
+  const track = "album" in music ? music : undefined;
+  const album = "album" in music ? music.album : music;
+  const artistName = music.artists.map((artist) => artist.name).join(", ");
   const triggerProps = usePopover(
     <div className="flex w-72 flex-col gap-3 border p-3 wrap-break-word">
-      {music.artworkUrl100 && (
-        <img className="size-36" src={music.artworkUrl100} alt="" />
+      {album.images[0] && (
+        <img className="size-36" src={album.images[0].url} alt="" />
       )}
-      {title}
-
+      {music.name}
       <dl>
-        {music.artistName && (
-          <>
-            <dt>artist</dt>
-            <dd>{music.artistName}</dd>
-          </>
-        )}
-        {track && music.collectionName && (
+        <dt>artist</dt>
+        <dd>{artistName}</dd>
+        {track && (
           <>
             <dt>album</dt>
-            <dd>{music.collectionName}</dd>
+            <dd>{album.name}</dd>
           </>
         )}
-        {Number.isFinite(date.getTime()) && (
-          <>
-            <dt>release date</dt>
-            <dd>{formatDate(date)}</dd>
-          </>
-        )}
-        {music.primaryGenreName && (
-          <>
-            <dt>itunes genre</dt>
-            <dd>{music.primaryGenreName}</dd>
-          </>
-        )}
-        {track && track.trackTimeMillis > 0 && (
+        <dt>release date</dt>
+        <dd>{formatReleaseDate(album.release_date)}</dd>
+        {track ? (
           <>
             <dt>duration</dt>
-            <dd>{formatMillis(track.trackTimeMillis)}</dd>
+            <dd>{formatMillis(track.duration_ms)}</dd>
           </>
-        )}
-        {!track && music.trackCount > 0 && (
+        ) : (
           <>
             <dt>tracks</dt>
-            <dd>{music.trackCount}</dd>
+            <dd>{album.total_tracks}</dd>
           </>
         )}
       </dl>
     </div>,
   );
-
-  const label = track ? title : trimItunesCollectionPostfix(title);
-
   return (
     <Chip
       {...triggerProps}
-      leading={music.artworkUrl60}
+      leading={album.images.at(-1)?.url}
       trailing={
         showReleaseType && !track ? (
-          <span className="flex h-control w-14 shrink-0 items-center justify-center bg-zinc-50-950 text-xs">
-            {getReleaseType(music.collectionName)}
+          <span className="flex h-control shrink-0 items-center justify-center bg-zinc-50-950 px-3 text-xs">
+            {spotifyReleaseType(album)}
           </span>
         ) : undefined
       }
-      to={track ? "/track/$itunesId" : "/album/$itunesId"}
-      params={{ itunesId: String(track?.trackId ?? music.collectionId) }}
+      to={track ? "/track/spotify/$spotifyId" : "/album/spotify/$spotifyId"}
+      params={{ spotifyId: music.id }}
     >
-      {showArtist ? `${label} — ${music.artistName}` : label}
+      {showArtist ? `${music.name} — ${artistName}` : music.name}
     </Chip>
   );
 }
