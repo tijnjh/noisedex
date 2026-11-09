@@ -5,7 +5,7 @@ import { useGenreFilters } from "#hooks/use-genre-filters";
 import { $everynoise } from "#lib/api/index";
 import { type Genre } from "#lib/api/platforms/everynoise-data";
 import { siteUrl } from "#lib/constants";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 export const Route = createFileRoute("/")({
@@ -77,6 +77,15 @@ function Genres(props: {
     return (
       <div className="flex flex-col items-start gap-3 p-3">
         <p role="status">No genres found.</p>
+        {query.trim() && (
+          <Link
+            to="/search"
+            search={{ q: query.trim() }}
+            className="btn-inverse h-auto min-h-control py-2"
+          >
+            Search artists, albums, and tracks instead
+          </Link>
+        )}
         {query && (
           <button type="button" className="btn" onClick={() => setQuery("")}>
             Clear filter

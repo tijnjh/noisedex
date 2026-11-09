@@ -3,6 +3,17 @@ import { createServerFn } from "@tanstack/react-start";
 import * as serverIsa from "itunes-store-api";
 import * as v from "valibot";
 
+export const searchMusic = createServerFn()
+  .validator(v.string())
+  .handler(async ({ data }) => {
+    const [albums, tracks] = await Promise.all([
+      serverIsa.search(data, { media: "music", entity: "album", limit: 25 }),
+      serverIsa.search(data, { media: "music", entity: "song", limit: 25 }),
+    ]);
+
+    return { albums: albums.results, tracks: tracks.results };
+  });
+
 export const getAlbumsByArtistName = createServerFn()
   .validator(v.string())
   .handler(async ({ data: artistName }) => {
