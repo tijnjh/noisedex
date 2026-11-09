@@ -75,12 +75,6 @@ function RouteComponent() {
 
       leading={
         <>
-          <SpotifyWidget
-            id={params.spotifyId}
-            type="artist"
-            className="h-38!"
-          />
-
           <PlatformLinks
             links={artistLinks(
               spotifyArtist.name,
@@ -88,6 +82,7 @@ function RouteComponent() {
               itunesArtistAlbums.artistId,
             )}
           />
+
           <WikipediaDescription
             summary={wikipediaArtist}
             genres={wikipediaArtistGenres}

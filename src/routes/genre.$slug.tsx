@@ -9,6 +9,7 @@ import { $everynoise, $wikipedia } from "#lib/api/index";
 import {
   findSoundOfPlaylistId,
   Genre,
+  splitPreviewTitle,
 } from "#lib/api/platforms/everynoise-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
@@ -103,6 +104,8 @@ function ArtistChip({
     </div>,
   );
 
+  const previewTrack = splitPreviewTitle(artist.previewTitle);
+
   return (
     <Chip
       {...triggerProps}
@@ -113,10 +116,12 @@ function ArtistChip({
         <PlayButton
           className="btn size-9 justify-center"
           style={{ backgroundColor: artist.color }}
-          title={artist.previewTitle!}
+          title={previewTrack?.title}
           track={{
-            title: artist.previewTitle ?? undefined,
-            url: artist.previewUrl ?? undefined,
+            title: previewTrack?.title,
+            artist: previewTrack?.artist,
+            url: artist.previewUrl,
+            artworkSrc: undefined,
           }}
         />
       }

@@ -112,7 +112,9 @@ function RouteComponent() {
               <PlayButton
                 className="btn-inverse size-9 shrink-0 justify-center"
                 track={{
-                  title: `${track.artistName} — ${track.trackName}`,
+                  title: track.trackName,
+                  artist: track.artistName,
+                  artworkSrc: track.artworkUrl100,
                   url: playbackUrl,
                 }}
               />

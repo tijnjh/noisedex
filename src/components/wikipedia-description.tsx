@@ -27,7 +27,7 @@ export function WikipediaDescription({
                 href={article.url}
                 target="_blank"
                 rel="noreferrer"
-                className="underline opacity-50 hover:opacity-100"
+                className="w-fit underline opacity-50 hover:opacity-100"
               >
                 read more on wikipedia
               </a>
