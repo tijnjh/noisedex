@@ -7,7 +7,6 @@ const monthFormatter = new Intl.DateTimeFormat("en", {
 
 export function buildReleaseTimeline(releases: ResultAlbum[]) {
   const sorted = releases
-    .filter((release) => release.collectionExplicitness !== "cleaned")
     .map((release) => {
       const date = new Date(release.releaseDate);
       return { release, date: Number.isFinite(date.getTime()) ? date : null };

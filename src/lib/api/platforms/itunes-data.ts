@@ -40,3 +40,9 @@ export function organizeArtistReleases(releases: ResultAlbum[]) {
   }
   return sections;
 }
+
+export function getReleaseType(collectionName: string) {
+  if (/ - Single$/i.test(collectionName)) return "Single";
+  if (/ - EP$/i.test(collectionName)) return "EP";
+  return "LP";
+}

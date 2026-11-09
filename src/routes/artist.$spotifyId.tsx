@@ -136,7 +136,7 @@ function ArtistReleasesList(props: { releases: ResultAlbum[] }) {
                 <span className="text-sm opacity-50">
                   {month && <time dateTime={dateTime}>{month}</time>}
                 </span>
-                <MusicChip music={release} />
+                <MusicChip music={release} showReleaseType />
               </div>
 
               {gapLabel && (

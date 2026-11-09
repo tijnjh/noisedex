@@ -1,14 +1,32 @@
-import { isIos } from "#lib/utils";
+import {
+  getArtistCatalog,
+  lookupCatalogSongs,
+} from "#lib/api/platforms/itunes-catalog";
+import { storeCountryFromLanguages } from "#lib/store-country";
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
 import * as serverIsa from "itunes-store-api";
 import * as v from "valibot";
 
 export const searchMusic = createServerFn()
   .validator(v.string())
   .handler(async ({ data }) => {
+    const country = storeCountryFromLanguages(
+      getRequestHeader("accept-language"),
+    );
     const [albums, tracks] = await Promise.all([
-      serverIsa.search(data, { media: "music", entity: "album", limit: 25 }),
-      serverIsa.search(data, { media: "music", entity: "song", limit: 25 }),
+      serverIsa.search(data, {
+        media: "music",
+        entity: "album",
+        limit: 25,
+        country,
+      }),
+      serverIsa.search(data, {
+        media: "music",
+        entity: "song",
+        limit: 25,
+        country,
+      }),
     ]);
 
     return { albums: albums.results, tracks: tracks.results };
@@ -17,10 +35,14 @@ export const searchMusic = createServerFn()
 export const getAlbumsByArtistName = createServerFn()
   .validator(v.string())
   .handler(async ({ data: artistName }) => {
+    const country = storeCountryFromLanguages(
+      getRequestHeader("accept-language"),
+    );
     const artists = await serverIsa
       .search(artistName, {
         media: "music",
         entity: "musicArtist",
+        country,
       })
       .then((response) => response.results);
     const artistId = artists.find(
@@ -33,42 +55,22 @@ export const getAlbumsByArtistName = createServerFn()
         albums: [],
       };
 
-    const albums = await serverIsa
-      .lookup("id", artistId, {
-        media: "music",
-        entity: "album",
-      })
-      .then((response) =>
-        response.results.filter(
-          (result): result is serverIsa.ResultAlbum =>
-            result.wrapperType === "collection",
-        ),
-      );
+    const albums = await getArtistCatalog(artistId, country);
 
     return { artistId, albums };
   });
 
-// apple added some crazy redirect stuff with this api on on ios so i have to do it server side on there
 const lookupSongsOnServer = createServerFn()
   .validator(v.number())
-  .handler(({ data }) => lookupSongs(data));
-
-async function lookupSongs(id: number) {
-  const response = await serverIsa.lookup("id", id, {
-    media: "music",
-    entity: "song",
-  });
-  return response.results as Array<
-    serverIsa.ResultAlbum | serverIsa.ResultMusicTrack
-  >;
-}
-
-async function musicResults(id: number) {
-  return isIos() ? lookupSongsOnServer({ data: id }) : lookupSongs(id);
-}
+  .handler(({ data }) =>
+    lookupCatalogSongs(
+      data,
+      storeCountryFromLanguages(getRequestHeader("accept-language")),
+    ),
+  );
 
 export async function getAlbum(id: number) {
-  const results = await musicResults(id);
+  const results = await lookupSongsOnServer({ data: id });
   const album = results[0];
   if (album?.wrapperType !== "collection" || album.collectionType !== "Album")
     return null;
@@ -80,7 +82,7 @@ export async function getAlbum(id: number) {
 }
 
 export async function getTrack(id: number) {
-  const results = await musicResults(id);
+  const results = await lookupSongsOnServer({ data: id });
   return (
     results.find(
       (result): result is serverIsa.ResultMusicTrack =>
