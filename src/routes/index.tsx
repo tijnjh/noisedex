@@ -4,7 +4,7 @@ import { VirtualGrid } from "#components/virtual-grid";
 import { useGenreFilters } from "#hooks/use-genre-filters";
 import { $everynoise } from "#lib/api/index";
 import { siteUrl } from "#lib/constants";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 export const Route = createFileRoute("/")({
@@ -22,36 +22,7 @@ function RouteComponent() {
   const filters = useGenreFilters();
 
   return (
-    <Layout
-      header={{
-        title: "all genres",
-        children: (
-          <div className="flex min-w-0 gap-6">
-            <div className="flex min-w-0 grow gap-3">
-              <button className="btn shrink-0" onClick={filters.cycleFilter}>
-                {filters.filter.value}
-              </button>
-
-              <input
-                value={filters.query}
-                onChange={(e) => filters.setQuery(e.currentTarget.value)}
-                aria-label="Filter genres"
-                className="h-9 min-w-0 grow px-3 surface"
-                name="q"
-                enterKeyHint="search"
-                autoCapitalize="none"
-                autoCorrect="off"
-                placeholder={filters.filter.placeholder}
-              />
-
-              <button className="btn shrink-0" onClick={filters.cycleSort}>
-                {filters.sort.value}
-              </button>
-            </div>
-          </div>
-        ),
-      }}
-    >
+    <Layout header={{ title: "all genres" }}>
       <Genres filters={filters} genres={data.genres} />
     </Layout>
   );
@@ -75,19 +46,13 @@ function Genres(props: {
   if (!sortedGenres.length) {
     return (
       <div className="flex flex-col items-start gap-3 p-3">
-        <p role="status">No genres found.</p>
-        {query.trim() && (
-          <Link
-            to="/search"
-            search={{ q: query.trim() }}
-            className="btn-inverse h-auto min-h-control py-2"
-          >
-            Search artists, albums, and tracks instead
-          </Link>
-        )}
+        <p role="status">
+          no genres found.
+          {query.trim() && " press enter to search artists, albums and tracks."}
+        </p>
         {query && (
           <button type="button" className="btn" onClick={() => setQuery("")}>
-            Clear filter
+            clear filter
           </button>
         )}
       </div>

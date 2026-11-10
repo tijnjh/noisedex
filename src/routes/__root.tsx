@@ -9,7 +9,6 @@ import {
   CatchBoundary,
   createRootRoute,
   HeadContent,
-  Link,
   Outlet,
   Scripts,
 } from "@tanstack/react-router";
@@ -65,10 +64,9 @@ function RootComponent() {
         <body className="relative isolate touch-manipulation bg-zinc-100 text-black scheme-light-dark dark:bg-black dark:text-white">
           <div
             data-app-shell
-            className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto_auto] md:grid-cols-[auto_1fr]"
+            className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[auto_auto] md:grid-cols-1"
           >
             <NavigationSpinner />
-            <Aside />
 
             <CatchBoundary
               getResetKey={() => "reset"}
@@ -86,34 +84,5 @@ function RootComponent() {
         </body>
       </html>
     </Provider>
-  );
-}
-
-function Aside() {
-  return (
-    <aside
-      data-app-navigation
-      className="z-999 flex h-full flex-col gap-3 p-3 max-md:order-2 md:w-60"
-    >
-      <span
-        {...vtName`${siteName}`}
-        className="h-9 text-2xl font-bold max-md:hidden"
-      >
-        {siteName}
-      </span>
-
-      <div className="flex gap-3 md:contents">
-        {tabs.map(([name, to]) => (
-          <Link
-            key={to}
-            activeProps={{ className: "btn-inverse" }}
-            inactiveProps={{ className: "btn" }}
-            to={to}
-          >
-            {name}
-          </Link>
-        ))}
-      </div>
-    </aside>
   );
 }

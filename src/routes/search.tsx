@@ -4,9 +4,7 @@ import { MusicChip } from "#components/music-chip";
 import { $itunes } from "#lib/api/index";
 import { siteName } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
-import { vtName } from "#lib/utils";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import * as v from "valibot";
 
 export const Route = createFileRoute("/search")({
@@ -54,60 +52,10 @@ export const Route = createFileRoute("/search")({
 
 function RouteComponent() {
   const search = Route.useSearch();
-  const navigate = Route.useNavigate();
   const data = Route.useLoaderData();
 
-  const [searchTerm, setSearchTerm] = useState(search.q ?? "");
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSearchTerm(search.q ?? ""); // FIXME
-  }, [search.q]);
-
   return (
-    <Layout
-      header={{
-        title: "search",
-        children: (
-          <form
-            {...vtName`search`}
-            className="flex grow gap-3 md:max-w-md"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const query = searchTerm.trim();
-              if (!query) return;
-              navigate({
-                to: "/search",
-                search: {
-                  q: query,
-                },
-              });
-            }}
-          >
-            <input
-              value={searchTerm ?? ""}
-              onChange={(e) => setSearchTerm(e.currentTarget.value)}
-              required
-              aria-label="Search artists, albums, and tracks"
-              className="h-9 min-w-0 grow px-3 surface"
-              name="q"
-              enterKeyHint="search"
-              autoCapitalize="none"
-              autoCorrect="off"
-              placeholder="look up an artist, album, or track"
-            />
-
-            <button
-              type="submit"
-              aria-label="Search"
-              className="btn-inverse size-9 justify-center"
-            >
-              →
-            </button>
-          </form>
-        ),
-      }}
-    >
+    <Layout header={{ title: "search" }}>
       {search.q?.trim() && (
         <div
           data-scroll-restoration-id={scrollRegions.content}
