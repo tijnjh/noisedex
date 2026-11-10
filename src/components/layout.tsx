@@ -1,4 +1,5 @@
 import { scrollRegions } from "#lib/scroll-regions";
+import { vtName } from "#lib/utils";
 import { cn } from "cn";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import type { MergeExclusive } from "type-fest";
@@ -28,13 +29,13 @@ export function Layout({
         {children ? (
           <main className="flex min-h-0 flex-col overflow-hidden">
             <div className="px-3 pt-3 md:hidden">
-              <Title title={header.title} />
+              <Title title={header.title} titleVt={header.titleVt} />
             </div>
             <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
           </main>
         ) : (
           <>
-            <Title title={header.title} />
+            <Title title={header.title} titleVt={header.titleVt} />
 
             <main className="grid h-full grid-cols-1 gap-6 max-lg:content-start lg:grid-cols-[auto_1fr] lg:overflow-hidden">
               <div
@@ -52,13 +53,26 @@ export function Layout({
   );
 }
 
-function Title({ title }: { title: string }) {
+function Title({ title, titleVt }: { title: string; titleVt?: string }) {
   return (
-    <h1 className="mb-3 h-9 truncate text-2xl font-bold md:hidden">{title}</h1>
+    <h1
+      {...vtName`${titleVt}`}
+      className="mb-3 h-9 truncate text-2xl font-bold md:hidden md:w-fit"
+    >
+      {title}
+    </h1>
   );
 }
 
-function Header({ title, children }: { title: string; children?: ReactNode }) {
+function Header({
+  title,
+  titleVt,
+  children,
+}: {
+  title: string;
+  titleVt?: string;
+  children?: ReactNode;
+}) {
   return (
     <header
       className={cn(
@@ -67,7 +81,12 @@ function Header({ title, children }: { title: string; children?: ReactNode }) {
       )}
     >
       <div className={cn("flex items-center gap-3 max-md:hidden")}>
-        <h1 className="truncate text-2xl font-bold max-md:hidden">{title}</h1>
+        <h1
+          {...vtName`${titleVt}`}
+          className="truncate text-2xl font-bold max-md:hidden"
+        >
+          {title}
+        </h1>
       </div>
 
       {children}

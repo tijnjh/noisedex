@@ -68,6 +68,14 @@ export function MusicChip({
     <Chip
       {...triggerProps}
       leading={music.artworkUrl60}
+      vt={
+        track
+          ? undefined
+          : {
+              title: `album-${music.collectionId}`,
+              img: `album-artwork-${music.collectionId}`,
+            }
+      }
       to={track ? "/track/$itunesId" : "/album/$itunesId"}
       params={{ itunesId: String(track?.trackId ?? music.collectionId) }}
     >

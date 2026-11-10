@@ -13,7 +13,7 @@ import { siteName, siteUrl } from "#lib/constants";
 import { musicMetadata } from "#lib/music-metadata";
 import { trackLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
-import { formatDate } from "#lib/utils";
+import { formatDate, vtName } from "#lib/utils";
 import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/track/$itunesId")({
@@ -84,11 +84,15 @@ function RouteComponent() {
 
   return (
     <Layout
-      header={{ title: track.trackName }}
+      header={{
+        title: track.trackName,
+        titleVt: isSingle ? `album-${track.collectionId}` : undefined,
+      }}
       accentColor={accentColor}
       leading={
         <div className="flex min-w-0 flex-col gap-3">
           <img
+            {...vtName`${isSingle ? `album-artwork-${track.collectionId}` : undefined}`}
             src={getBigItunesArtwork(track)}
             alt={`${track.collectionName} album cover`}
             className="mx-auto aspect-square w-full max-w-72"
@@ -135,6 +139,10 @@ function RouteComponent() {
                 to="/album/$itunesId"
                 params={{ itunesId: String(track.collectionId) }}
                 leading={track.artworkUrl60}
+                vt={{
+                  title: `album-${track.collectionId}`,
+                  img: `album-artwork-${track.collectionId}`,
+                }}
               >
                 {track.collectionName}
               </Chip>

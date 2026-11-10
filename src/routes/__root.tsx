@@ -3,7 +3,7 @@ import { ErrorAlert } from "#components/error-alert";
 import { MiniPlayer } from "#components/mini-player";
 import { NavigationSpinner } from "#components/navigation-spinner";
 import { siteName } from "#lib/constants";
-import { getErrorMessage } from "#lib/utils";
+import { getErrorMessage, vtName } from "#lib/utils";
 import styleCss from "../style.css?url";
 import {
   CatchBoundary,
@@ -95,7 +95,12 @@ function Aside() {
       data-app-navigation
       className="z-999 flex h-full flex-col gap-3 p-3 max-md:order-2 md:w-60"
     >
-      <span className="h-9 text-2xl font-bold max-md:hidden">{siteName}</span>
+      <span
+        {...vtName`${siteName}`}
+        className="h-9 text-2xl font-bold max-md:hidden"
+      >
+        {siteName}
+      </span>
 
       <div className="flex gap-3 md:contents">
         {tabs.map(([name, to]) => (

@@ -1,5 +1,6 @@
 import { ArtistMeta, Genre, GenreMeta } from "./everynoise-types";
-import { up } from "up-fetch";
+import { lookupArtists } from "./spotify";
+import { isResponseError, up } from "up-fetch";
 
 export type * from "./everynoise-types";
 
@@ -16,7 +17,26 @@ export async function getGenreBySlug(genreSlug: string) {
 }
 
 export async function getArtistById(artistId: string) {
-  return await everynoiseFetch<ArtistMeta>(
-    `/artists/${artistId}.json`,
+  return await everynoiseFetch<ArtistMeta>(`/artists/${artistId}.json`);
+}
+
+export async function getArtistByName(artistName: string) {
+  artistName = artistName.trim();
+
+  if (!artistName) return;
+
+  const artists = await lookupArtists({ data: artistName });
+
+  const artist = artists.find(
+    (a) => a.name.trim().toLowerCase() === artistName.toLowerCase(),
   );
+
+  if (!artist) return;
+
+  try {
+    return await getArtistById(artist.id);
+  } catch (error) {
+    if (isResponseError(error) && error.status === 404) return;
+    throw error;
+  }
 }

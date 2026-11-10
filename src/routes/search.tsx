@@ -4,6 +4,7 @@ import { MusicChip } from "#components/music-chip";
 import { $itunes } from "#lib/api/index";
 import { siteName } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
+import { vtName } from "#lib/utils";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import * as v from "valibot";
@@ -69,6 +70,7 @@ function RouteComponent() {
         title: "search",
         children: (
           <form
+            {...vtName`search`}
             className="flex grow gap-3 md:max-w-md"
             onSubmit={(e) => {
               e.preventDefault();
@@ -118,6 +120,7 @@ function RouteComponent() {
                 {data?.artists.map((artist) => (
                   <Chip
                     key={artist.artistId}
+                    vt={{ title: `artist-${artist.artistId}` }}
                     to="/artist/$itunesId"
                     params={{ itunesId: String(artist.artistId) }}
                   >

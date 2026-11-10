@@ -3,7 +3,7 @@ import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
 import { WikipediaDescription } from "#components/wikipedia-description";
-import { $itunes, $wikipedia } from "#lib/api/index";
+import { $everynoise, $itunes, $wikipedia } from "#lib/api/index";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
 import { getReleaseType, parseItunesId } from "#lib/api/platforms/itunes-data";
 import { siteName, siteUrl } from "#lib/constants";
@@ -13,9 +13,15 @@ import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { cn } from "cn";
 import type { ResultAlbum } from "itunes-store-api";
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
+import * as v from "valibot";
 
 export const Route = createFileRoute("/artist/$itunesId")({
+  validateSearch: v.object({
+    filter: v.optional(
+      v.fallback(v.picklist(["All", "LPs", "EPs", "Singles"]), "All"),
+    ),
+  }),
   loader: async ({ params }) => {
     const itunesId = parseItunesId(params.itunesId);
     if (itunesId === undefined) throw notFound();
@@ -29,11 +35,16 @@ export const Route = createFileRoute("/artist/$itunesId")({
         $wikipedia.getArtistByName({ data: artist.artistName }),
       );
 
+    const everynoiseArtist = await $everynoise.getArtistByName(
+      artist.artistName,
+    );
+
     return {
       artist,
       albums,
       wikipediaArtist,
       wikipediaArtistGenres,
+      everynoiseArtist,
     };
   },
   head: ({ loaderData, params }) => ({
@@ -52,13 +63,22 @@ export const Route = createFileRoute("/artist/$itunesId")({
 });
 
 function RouteComponent() {
-  const { artist, albums, wikipediaArtist, wikipediaArtistGenres } =
-    Route.useLoaderData();
+  const {
+    artist,
+    albums,
+    wikipediaArtist,
+    wikipediaArtistGenres,
+    everynoiseArtist,
+  } = Route.useLoaderData();
   const genre = artist.primaryGenreName;
 
   return (
     <Layout
-      header={{ title: artist.artistName }}
+      header={{
+        title: artist.artistName,
+        titleVt: `artist-${artist.artistId}`,
+      }}
+      accentColor={everynoiseArtist?.style.color}
       leading={
         <>
           <PlatformLinks
@@ -70,6 +90,23 @@ function RouteComponent() {
             genres={wikipediaArtistGenres}
           />
 
+          {everynoiseArtist && everynoiseArtist.genres.length > 0 && (
+            <>
+              <span className="section-divider">genres this artist is in</span>
+
+              <div className="cool-grid">
+                {everynoiseArtist.genres.map((genre) => (
+                  <Chip
+                    key={genre}
+                    to="/genre/$slug"
+                    params={{ slug: genreNameToSlug(genre) }}
+                  >
+                    {genre}
+                  </Chip>
+                ))}
+              </div>
+            </>
+          )}
           {genre && (
             <>
               <span className="section-divider">itunes genre</span>
@@ -91,9 +128,8 @@ function RouteComponent() {
 }
 
 function ArtistReleasesList({ releases }: { releases: ResultAlbum[] }) {
-  const [filter, setFilter] = useState<"All" | "LPs" | "EPs" | "Singles">(
-    "All",
-  );
+  const { filter = "All" } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const timeline = buildReleaseTimeline(
     releases.filter(
       (release) =>
@@ -114,7 +150,15 @@ function ArtistReleasesList({ releases }: { releases: ResultAlbum[] }) {
             key={type}
             type="button"
             aria-pressed={filter === type}
-            onClick={() => setFilter(type)}
+            onClick={() =>
+              navigate({
+                search: (previous) => ({
+                  ...previous,
+                  filter: type === "All" ? undefined : type,
+                }),
+                resetScroll: false,
+              })
+            }
             className={cn(
               "cursor-pointer",
               filter === type ? "btn-inverse h-9" : "btn h-9",

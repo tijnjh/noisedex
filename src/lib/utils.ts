@@ -2,6 +2,20 @@ import { up } from "up-fetch";
 
 export const upfetch = up(fetch);
 
+export function vtName(strs: TemplateStringsArray, ...args: unknown[]) {
+  const selector = strs.map((s, i) => s + (args[i] ?? '')).join('')
+
+  if (!selector) {
+    return {}
+  }
+
+  return {
+    style: {
+      viewTransitionName: selector,
+    },
+  }
+}
+
 export function formatDate(date: Date, options?: Intl.DateTimeFormatOptions) {
   return Intl.DateTimeFormat("en", options).format(date);
 }

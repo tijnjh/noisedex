@@ -15,7 +15,7 @@ import { siteName, siteUrl } from "#lib/constants";
 import { musicMetadata } from "#lib/music-metadata";
 import { albumLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
-import { formatDate, formatMillis } from "#lib/utils";
+import { formatDate, formatMillis, vtName } from "#lib/utils";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import { ResultMusicTrack } from "itunes-store-api";
 
@@ -103,17 +103,25 @@ function RouteComponent() {
 
   return (
     <Layout
-      header={{ title: data.album.collectionName }}
+      header={{
+        title: data.album.collectionName,
+        titleVt: `album-${data.album.collectionId}`,
+      }}
       accentColor={data.accentColor}
       leading={
         <div className="flex flex-col gap-3">
           <img
+            {...vtName`album-artwork-${data.album.collectionId}`}
             src={getBigItunesArtwork(data.album)}
             alt={`${data.album.collectionName} album cover`}
             className="mx-auto aspect-square w-full max-w-72"
           />
 
-          <Chip to="/search" search={{ lucky: true, q: data.album.artistName }}>
+          <Chip
+            vt={{ title: `artist-${data.album.artistId}` }}
+            to="/search"
+            search={{ lucky: true, q: data.album.artistName }}
+          >
             {data.album.artistName}
           </Chip>
           <p>
