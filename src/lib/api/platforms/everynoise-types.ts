@@ -9,6 +9,7 @@ export interface Genre {
 
 export interface GenreMeta {
   genreName: string;
+  style?: Style;
   artists: Artist[];
   links: Link[];
   relatedGenres: Genre[];
@@ -27,6 +28,10 @@ export interface Artist {
   elementId: string;
   href: string;
   id: string;
+}
+
+export interface ArtistMeta extends Artist {
+  genres: string[];
 }
 
 export interface Preview {

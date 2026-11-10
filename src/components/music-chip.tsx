@@ -1,26 +1,21 @@
 import { Chip } from "#components/chip";
 import { usePopover } from "#hooks/use-popover";
-import {
-  getReleaseType,
-  trimItunesCollectionPostfix,
-} from "#lib/api/platforms/itunes-data";
+import { trimItunesCollectionPostfix } from "#lib/api/platforms/itunes-data";
 import { formatDate, formatMillis } from "#lib/utils";
 import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
 export function MusicChip({
   music,
   showArtist = false,
-  showReleaseType = false,
 }: {
   music: ResultAlbum | ResultMusicTrack;
   showArtist?: boolean;
-  showReleaseType?: boolean;
 }) {
   const track = music.wrapperType === "track" ? music : undefined;
   const title = track?.trackName ?? music.collectionName;
   const date = new Date(music.releaseDate);
   const triggerProps = usePopover(
-    <div className="flex w-72 flex-col gap-3 border p-3 wrap-break-word">
+    <div className="flex w-72 flex-col gap-3 p-3 wrap-break-word">
       {music.artworkUrl100 && (
         <img className="size-36" src={music.artworkUrl100} alt="" />
       )}
@@ -73,13 +68,6 @@ export function MusicChip({
     <Chip
       {...triggerProps}
       leading={music.artworkUrl60}
-      trailing={
-        showReleaseType && !track ? (
-          <span className="flex h-control w-14 shrink-0 items-center justify-center bg-zinc-50-950 text-xs">
-            {getReleaseType(music.collectionName)}
-          </span>
-        ) : undefined
-      }
       to={track ? "/track/$itunesId" : "/album/$itunesId"}
       params={{ itunesId: String(track?.trackId ?? music.collectionId) }}
     >

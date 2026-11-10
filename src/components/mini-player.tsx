@@ -80,7 +80,7 @@ export function MiniPlayer() {
 
   return (
     nowPlaying.url && (
-      <div className="z-999 mx-3 mb-3 flex min-w-0 flex-col gap-3 border border-zinc-300-700 bg-zinc-200-800 p-3 max-md:order-1 md:fixed md:bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] md:left-[calc(0.75rem+env(safe-area-inset-left,0px))] md:m-0 md:w-100">
+      <div className="z-999 mx-3 mb-3 flex min-w-0 flex-col gap-3 p-3 surface max-md:order-1 md:fixed md:bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] md:left-[calc(0.75rem+env(safe-area-inset-left,0px))] md:m-0 md:w-100">
         <div className="flex items-center justify-between">
           <div className="flex flex-col truncate">
             <span title={nowPlaying.title} className="truncate">

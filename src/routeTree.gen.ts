@@ -14,6 +14,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AlbumItunesIdRouteImport } from './routes/album.$itunesId'
+import { Route as ArtistItunesIdRouteImport } from './routes/artist.$itunesId'
 import { Route as ArtistSpotifyIdRouteImport } from './routes/artist.$spotifyId'
 import { Route as GenreSlugRouteImport } from './routes/genre.$slug'
 import { Route as TrackItunesIdRouteImport } from './routes/track.$itunesId'
@@ -43,6 +44,11 @@ const AlbumItunesIdRoute = AlbumItunesIdRouteImport.update({
   path: '/album/$itunesId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArtistItunesIdRoute = ArtistItunesIdRouteImport.update({
+  id: '/artist/$itunesId',
+  path: '/artist/$itunesId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArtistSpotifyIdRoute = ArtistSpotifyIdRouteImport.update({
   id: '/artist/$spotifyId',
   path: '/artist/$spotifyId',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/album/$itunesId': typeof AlbumItunesIdRoute
+  '/artist/$itunesId': typeof ArtistItunesIdRoute
   '/artist/$spotifyId': typeof ArtistSpotifyIdRoute
   '/genre/$slug': typeof GenreSlugRoute
   '/track/$itunesId': typeof TrackItunesIdRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/album/$itunesId': typeof AlbumItunesIdRoute
+  '/artist/$itunesId': typeof ArtistItunesIdRoute
   '/artist/$spotifyId': typeof ArtistSpotifyIdRoute
   '/genre/$slug': typeof GenreSlugRoute
   '/track/$itunesId': typeof TrackItunesIdRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/album/$itunesId': typeof AlbumItunesIdRoute
+  '/artist/$itunesId': typeof ArtistItunesIdRoute
   '/artist/$spotifyId': typeof ArtistSpotifyIdRoute
   '/genre/$slug': typeof GenreSlugRoute
   '/track/$itunesId': typeof TrackItunesIdRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/album/$itunesId'
+    | '/artist/$itunesId'
     | '/artist/$spotifyId'
     | '/genre/$slug'
     | '/track/$itunesId'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/album/$itunesId'
+    | '/artist/$itunesId'
     | '/artist/$spotifyId'
     | '/genre/$slug'
     | '/track/$itunesId'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/album/$itunesId'
+    | '/artist/$itunesId'
     | '/artist/$spotifyId'
     | '/genre/$slug'
     | '/track/$itunesId'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AlbumItunesIdRoute: typeof AlbumItunesIdRoute
+  ArtistItunesIdRoute: typeof ArtistItunesIdRoute
   ArtistSpotifyIdRoute: typeof ArtistSpotifyIdRoute
   GenreSlugRoute: typeof GenreSlugRoute
   TrackItunesIdRoute: typeof TrackItunesIdRoute
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlbumItunesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/artist/$itunesId': {
+      id: '/artist/$itunesId'
+      path: '/artist/$itunesId'
+      fullPath: '/artist/$itunesId'
+      preLoaderRoute: typeof ArtistItunesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/artist/$spotifyId': {
       id: '/artist/$spotifyId'
       path: '/artist/$spotifyId'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AlbumItunesIdRoute: AlbumItunesIdRoute,
+  ArtistItunesIdRoute: ArtistItunesIdRoute,
   ArtistSpotifyIdRoute: ArtistSpotifyIdRoute,
   GenreSlugRoute: GenreSlugRoute,
   TrackItunesIdRoute: TrackItunesIdRoute,

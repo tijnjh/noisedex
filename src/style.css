@@ -23,23 +23,88 @@ dd {
   @apply text-right;
 }
 
+:root {
+  --surface-base: #ffffff;
+  --surface-hover: #f4f4f5;
+  --surface-text: #27272a;
+  --surface-edge: #18181b1f;
+  --surface-selected: #27272a;
+  --surface-selected-hover: #3f3f46;
+  --surface-selected-text: #fafafa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-base: #27272a;
+    --surface-hover: #3f3f46;
+    --surface-text: #fafafa;
+    --surface-edge: #ffffff24;
+    --surface-selected: #e4e4e7;
+    --surface-selected-hover: #ffffff;
+    --surface-selected-text: #18181b;
+  }
+}
+
+@utility surface {
+  color: var(--surface-text);
+  background: color-mix(
+    in srgb,
+    var(--surface-base) 94%,
+    var(--page-accent, var(--surface-base))
+  );
+  box-shadow: inset 0 0 0 1px var(--surface-edge);
+}
+
 @utility btn {
-  @apply flex h-control items-center gap-2 bg-zinc-50-950 px-3 hover:bg-zinc-100-900 pointer-coarse:active:scale-95 pointer-fine:active:translate-y-px;
+  @apply surface flex h-control items-center gap-2 px-3;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+
+  @media (hover: hover) {
+    &:hover:not(:disabled):not([aria-disabled="true"]) {
+      background: color-mix(
+        in srgb,
+        var(--surface-hover) 90%,
+        var(--page-accent, var(--surface-hover))
+      );
+    }
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
 }
 
 @utility btn-inverse {
-  @apply btn bg-zinc-950-50 text-zinc-50-950 hover:bg-zinc-800-200;
+  @apply btn;
+  color: var(--surface-selected-text);
+  background: var(--surface-selected);
+
+  @media (hover: hover) {
+    &:hover:not(:disabled):not([aria-disabled="true"]) {
+      background: var(--surface-selected-hover);
+    }
+  }
 }
 
 input,
 .btn,
 .btn-inverse {
-  @apply ring-blue-500 outline-none focus-visible:ring-2;
+  &:focus-visible {
+    outline: 2px solid var(--surface-text);
+    outline-offset: 3px;
+  }
 }
 
-a.btn,
-a.btn-inverse {
-  @apply hover:underline;
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn-inverse {
+    transition: none;
+  }
 }
 
 @utility cool-grid {
@@ -98,4 +163,25 @@ button,
   [data-app-navigation] {
     padding-bottom: 0.75rem;
   }
+}
+
+[data-page-backdrop] {
+  position: fixed;
+  z-index: -1;
+  inset: -14rem;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 20% 18%,
+      color-mix(in srgb, var(--page-accent, transparent) 38%, transparent),
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at 82% 78%,
+      color-mix(in srgb, var(--page-accent, transparent) 24%, transparent),
+      transparent 42%
+    );
+  filter: blur(5rem) saturate(1.2);
+  opacity: 0.72;
+  transform: translateZ(0);
 }

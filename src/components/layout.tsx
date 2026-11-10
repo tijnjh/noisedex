@@ -1,7 +1,6 @@
 import { scrollRegions } from "#lib/scroll-regions";
-import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import type { MergeExclusive } from "type-fest";
 
 export function Layout({
@@ -9,12 +8,17 @@ export function Layout({
   children,
   leading,
   trailing,
+  accentColor,
 }: { header: ComponentProps<typeof Header> } & MergeExclusive<
   { children?: ReactNode },
   { leading: ReactNode; trailing: ReactNode }
->) {
+> & { accentColor?: string }) {
   return (
-    <div className="grid grid-rows-[1fr_auto] overflow-hidden md:grid-rows-[auto_1fr]">
+    <div
+      className="relative isolate grid grid-rows-[1fr_auto] overflow-hidden md:grid-rows-[auto_1fr]"
+      style={{ "--page-accent": accentColor } as CSSProperties}
+    >
+      {accentColor && <div data-page-backdrop aria-hidden="true" />}
       <Header {...header} />
 
       <div
@@ -54,34 +58,15 @@ function Title({ title }: { title: string }) {
   );
 }
 
-function Header({
-  backHref,
-  title,
-  children,
-}: {
-  backHref?: string;
-  title: string;
-  children?: ReactNode;
-}) {
+function Header({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <header
       className={cn(
-        "flex gap-3 overflow-hidden border-zinc-300-700 p-3 max-md:order-1 max-md:flex-col max-md:border-t md:h-15 md:items-center md:justify-between md:border-b",
-        !backHref && !children && "max-md:hidden",
+        "flex gap-3 overflow-hidden p-3 max-md:order-1 max-md:flex-col md:h-15 md:items-center md:justify-between",
+        !children && "max-md:hidden",
       )}
     >
-      <div
-        className={cn("flex items-center gap-3", !backHref && "max-md:hidden")}
-      >
-        {backHref && (
-          <Link
-            to={backHref}
-            aria-label="Back"
-            className="btn-inverse size-9 justify-center"
-          >
-            ←
-          </Link>
-        )}
+      <div className={cn("flex items-center gap-3 max-md:hidden")}>
         <h1 className="truncate text-2xl font-bold max-md:hidden">{title}</h1>
       </div>
 

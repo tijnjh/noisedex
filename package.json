@@ -25,6 +25,7 @@
     "hls.js": "^1.7.4",
     "itunes-store-api": "^2.1.0",
     "jotai": "^3.0.1",
+    "node-vibrant": "^4.0.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "type-fest": "^5.10.0",

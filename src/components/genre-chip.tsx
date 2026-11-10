@@ -11,7 +11,7 @@ export function GenreChip({ genre }: { genre: $everynoise.Genre }) {
   const previewTrack = splitPreviewTitle(genre.preview.title);
 
   const triggerProps = usePopover(
-    <div className="flex w-72 flex-col gap-3 border p-3">
+    <div className="flex w-72 flex-col gap-3 p-3">
       <dl>
         <dt>{previewTrack?.artist}</dt>
         <dd>{previewTrack?.title}</dd>

@@ -26,7 +26,6 @@ export const platforms = {
 
 export function artistLinks(
   artistName: string,
-  spotifyId: string,
   appleArtistId?: number,
 ): PlatformLink[] {
   const encodedArtistName = encodeURIComponent(artistName);
@@ -37,7 +36,7 @@ export function artistLinks(
     },
     {
       ...platforms.spotify,
-      href: `https://open.spotify.com/artist/${spotifyId}`,
+      href: `https://open.spotify.com/search/${encodedArtistName}`,
     },
     ...(appleArtistId
       ? [

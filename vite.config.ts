@@ -9,7 +9,7 @@ export default defineConfig({
   // Bundle React consumers so their imports also resolve to Redact during SSR.
   ssr: {
     noExternal: true,
-    external: ["cheerio"],
+    external: ["cheerio", "node-vibrant", "node-vibrant/node"],
   },
   plugins: [
     tanstackStart(),

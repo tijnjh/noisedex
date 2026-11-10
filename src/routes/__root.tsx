@@ -62,7 +62,7 @@ function RootComponent() {
           <HeadContent />
         </head>
 
-        <body className="relative isolate touch-manipulation bg-zinc-200-800 text-black scheme-light-dark dark:text-white">
+        <body className="relative isolate touch-manipulation bg-zinc-100 text-black scheme-light-dark dark:bg-black dark:text-white">
           <div
             data-app-shell
             className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto_auto] md:grid-cols-[auto_1fr]"
@@ -93,7 +93,7 @@ function Aside() {
   return (
     <aside
       data-app-navigation
-      className="z-999 flex h-full flex-col gap-3 border-zinc-300-700 p-3 max-md:order-2 max-md:border-t md:w-60 md:border-r"
+      className="z-999 flex h-full flex-col gap-3 p-3 max-md:order-2 md:w-60"
     >
       <span className="h-9 text-2xl font-bold max-md:hidden">{siteName}</span>
 

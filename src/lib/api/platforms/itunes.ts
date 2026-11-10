@@ -32,6 +32,49 @@ export const searchMusic = createServerFn()
     return { albums: albums.results, tracks: tracks.results };
   });
 
+export const searchArtists = createServerFn()
+  .validator(v.string())
+  .handler(async ({ data }) => {
+    const country = storeCountryFromLanguages(
+      getRequestHeader("accept-language"),
+    );
+    const response = await serverIsa.search(data, {
+      media: "music",
+      entity: "musicArtist",
+      limit: 25,
+      country,
+    });
+
+    return response.results.filter(
+      (result): result is serverIsa.ResultMusicArtist =>
+        result.wrapperType === "artist",
+    );
+  });
+
+export const getArtistById = createServerFn()
+  .validator(v.number())
+  .handler(async ({ data: artistId }) => {
+    const country = storeCountryFromLanguages(
+      getRequestHeader("accept-language"),
+    );
+    const response = await serverIsa.lookup("id", artistId, {
+      media: "music",
+      entity: "musicArtist",
+      country,
+    });
+    const artist = response.results.find(
+      (result): result is serverIsa.ResultMusicArtist =>
+        result.wrapperType === "artist",
+    );
+
+    if (!artist) return null;
+
+    return {
+      artist,
+      albums: await getArtistCatalog(artistId, country),
+    };
+  });
+
 export const getAlbumsByArtistName = createServerFn()
   .validator(v.string())
   .handler(async ({ data: artistName }) => {

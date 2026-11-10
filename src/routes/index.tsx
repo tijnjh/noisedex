@@ -36,7 +36,7 @@ function RouteComponent() {
                 value={filters.query}
                 onChange={(e) => filters.setQuery(e.currentTarget.value)}
                 aria-label="Filter genres"
-                className="h-9 min-w-0 grow bg-zinc-50-950 px-3"
+                className="h-9 min-w-0 grow px-3 surface"
                 name="q"
                 enterKeyHint="search"
                 autoCapitalize="none"

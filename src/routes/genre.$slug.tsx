@@ -50,6 +50,7 @@ function RouteComponent() {
   return (
     <Layout
       header={{ title: genre.genreName ?? params.slug }}
+      accentColor={genre.style?.color}
       leading={
         <>
           {playlistId && <SpotifyWidget id={playlistId} type="playlist" />}
@@ -85,7 +86,7 @@ function RouteComponent() {
 
 function ArtistChip({ artist }: { artist: $everynoise.Artist }) {
   const triggerProps = usePopover(
-    <div className="flex w-72 flex-col gap-3 border p-3">
+    <div className="flex w-72 flex-col gap-3 p-3">
       <dl>
         <dt>example track</dt>
         <dd>{artist.preview.title}</dd>
@@ -99,8 +100,8 @@ function ArtistChip({ artist }: { artist: $everynoise.Artist }) {
     <Chip
       {...triggerProps}
       key={artist.id}
-      to="/artist/$spotifyId"
-      params={{ spotifyId: artist.id }}
+      to="/search"
+      search={{ q: artist.artistName, lucky: true }}
       trailing={
         <PlayButton
           className="btn size-9 justify-center"

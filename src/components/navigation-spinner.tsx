@@ -37,7 +37,7 @@ export function NavigationSpinner() {
 
       {isNavigating && (
         <>
-          <div className="mx-auto mt-9 flex h-control w-fit items-center gap-3 bg-zinc-50-950 px-3 shadow-xl">
+          <div className="mx-auto mt-9 flex h-control w-fit items-center gap-3 px-3 surface shadow-xl">
             <Spinner className="size-4 border-2" />
             loading...
           </div>

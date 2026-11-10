@@ -1,10 +1,10 @@
-import { Artist, Genre, GenreMeta } from "./everynoise-types";
+import { ArtistMeta, Genre, GenreMeta } from "./everynoise-types";
 import { up } from "up-fetch";
 
 export type * from "./everynoise-types";
 
 export const everynoiseFetch = up(fetch, () => ({
-  baseUrl: "https://cdn.jsdelivr.net/gh/tijnjh/everynoise-json/data",
+  baseUrl: "https://cdn.jsdelivr.net/gh/tijnjh/everynoise-json/data-min",
 }));
 
 export async function getAllGenres() {
@@ -16,7 +16,7 @@ export async function getGenreBySlug(genreSlug: string) {
 }
 
 export async function getArtistById(artistId: string) {
-  return await everynoiseFetch<Artist & { genres: string[] }>(
+  return await everynoiseFetch<ArtistMeta>(
     `/artists/${artistId}.json`,
   );
 }

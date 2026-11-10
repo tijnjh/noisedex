@@ -8,6 +8,7 @@ import {
   isSingleRelease,
   parseItunesId,
 } from "#lib/api/platforms/itunes-data";
+import { getArtworkColor } from "#lib/artwork-color";
 import { siteName, siteUrl } from "#lib/constants";
 import { musicMetadata } from "#lib/music-metadata";
 import { trackLinks } from "#lib/platform-links";
@@ -22,10 +23,14 @@ export const Route = createFileRoute("/track/$itunesId")({
     const track = await $itunes.getTrack(id);
     if (!track) throw notFound();
 
-    const soundcloud = await $soundcloud.matchAlbum({
-      data: { artist: track.artistName, album: track.collectionName },
-    });
-    return { track, soundcloud };
+    const [soundcloud, accentColor] = await Promise.all([
+      $soundcloud.matchAlbum({
+        data: { artist: track.artistName, album: track.collectionName },
+      }),
+      getArtworkColor({ data: track.artworkUrl100 }),
+    ]);
+
+    return { track, soundcloud, accentColor };
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) return {};
@@ -64,8 +69,7 @@ export const Route = createFileRoute("/track/$itunesId")({
 });
 
 function RouteComponent() {
-  const { track, soundcloud } = Route.useLoaderData();
-  const router = useRouter();
+  const { track, soundcloud, accentColor } = Route.useLoaderData();
 
   const seconds = Math.floor(track.trackTimeMillis / 1000);
   const duration = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
@@ -78,21 +82,10 @@ function RouteComponent() {
 
   const isSingle = isSingleRelease(track.collectionName, track.trackCount);
 
-  const backHref = router.buildLocation(
-    isSingle
-      ? {
-          to: "/search",
-          search: { lucky: true, q: track.artistName },
-        }
-      : {
-          to: "/album/$itunesId",
-          params: { itunesId: String(track.collectionId) },
-        },
-  ).href;
-
   return (
     <Layout
-      header={{ title: track.trackName, backHref }}
+      header={{ title: track.trackName }}
+      accentColor={accentColor}
       leading={
         <div className="flex min-w-0 flex-col gap-3">
           <img

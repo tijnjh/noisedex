@@ -1,7 +1,7 @@
 import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
-import { $itunes, $spotify } from "#lib/api/index";
+import { $itunes } from "#lib/api/index";
 import { siteName } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute, redirect } from "@tanstack/react-router";
@@ -26,18 +26,18 @@ export const Route = createFileRoute("/search")({
     const query = search.q?.trim();
     if (!query) return;
     const [artists, music] = await Promise.all([
-      $spotify.lookupArtists({ data: query }),
+      $itunes.searchArtists({ data: query }),
       search.lucky
         ? Promise.resolve({ albums: [], tracks: [] })
         : $itunes.searchMusic({ data: query }),
     ]);
 
     if (search.lucky && artists.length) {
-      const topResultId = artists[0].id;
+      const topResultId = artists[0].artistId;
 
       throw redirect({
-        to: "/artist/$spotifyId",
-        params: { spotifyId: topResultId },
+        to: "/artist/$itunesId",
+        params: { itunesId: String(topResultId) },
         replace: true,
       });
     }
@@ -87,7 +87,7 @@ function RouteComponent() {
               onChange={(e) => setSearchTerm(e.currentTarget.value)}
               required
               aria-label="Search artists, albums, and tracks"
-              className="h-9 min-w-0 grow bg-zinc-50-950 px-3"
+              className="h-9 min-w-0 grow px-3 surface"
               name="q"
               enterKeyHint="search"
               autoCapitalize="none"
@@ -117,12 +117,11 @@ function RouteComponent() {
               <div className="cool-grid">
                 {data?.artists.map((artist) => (
                   <Chip
-                    key={artist.id}
-                    to="/artist/$spotifyId"
-                    leading={artist.images.at(-1)?.url}
-                    params={{ spotifyId: artist.id }}
+                    key={artist.artistId}
+                    to="/artist/$itunesId"
+                    params={{ itunesId: String(artist.artistId) }}
                   >
-                    {artist.name}
+                    {artist.artistName}
                   </Chip>
                 ))}
               </div>

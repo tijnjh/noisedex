@@ -19,7 +19,6 @@ export function buildReleaseTimeline(releases: ResultAlbum[]) {
 
   return sorted.map(({ release, date }, index) => {
     const previous = sorted[index - 1]?.date;
-    const next = sorted[index + 1]?.date;
     const year = date?.getUTCFullYear() ?? null;
 
     const showYear =
@@ -28,28 +27,6 @@ export function buildReleaseTimeline(releases: ResultAlbum[]) {
     const showMonth =
       showYear || date?.getUTCMonth() !== previous?.getUTCMonth();
 
-    // count complete months, so a short gap crossing month boundaries isn't inflated.
-    const gapMonths =
-      date && next
-        ? (date.getUTCFullYear() - next.getUTCFullYear()) * 12 +
-          date.getUTCMonth() -
-          next.getUTCMonth() -
-          (date.getUTCDate() < next.getUTCDate() ? 1 : 0)
-        : 0;
-
-    const years = Math.floor(gapMonths / 12);
-    const months = gapMonths % 12;
-
-    const gapLabel =
-      gapMonths >= 6
-        ? [
-            years && `${years} ${years === 1 ? "year" : "years"}`,
-            months && `${months} ${months === 1 ? "month" : "months"}`,
-          ]
-            .filter(Boolean)
-            .join(", ")
-        : null;
-
     return {
       release,
       year,
@@ -57,7 +34,6 @@ export function buildReleaseTimeline(releases: ResultAlbum[]) {
       month:
         date && showMonth ? monthFormatter.format(date).toLowerCase() : null,
       dateTime: date?.toISOString().slice(0, 7),
-      gapLabel,
     };
   });
 }

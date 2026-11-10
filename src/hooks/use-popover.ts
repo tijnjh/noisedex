@@ -28,7 +28,7 @@ export function usePopover(content: ReactNode) {
       "flip-block, flip-inline, flip-block flip-inline",
     );
 
-    el.className = "absolute bg-zinc-50-950 pointer-coarse:hidden";
+    el.className = "surface absolute pointer-coarse:hidden";
 
     document.body.appendChild(el);
 

@@ -10,17 +10,13 @@ import {
   getBigItunesArtwork,
   trimItunesCollectionPostfix,
 } from "#lib/api/platforms/itunes-data";
+import { getArtworkColor } from "#lib/artwork-color";
 import { siteName, siteUrl } from "#lib/constants";
 import { musicMetadata } from "#lib/music-metadata";
 import { albumLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
 import { formatDate, formatMillis } from "#lib/utils";
-import {
-  createFileRoute,
-  notFound,
-  redirect,
-  useRouter,
-} from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import { ResultMusicTrack } from "itunes-store-api";
 
 export const Route = createFileRoute("/album/$itunesId")({
@@ -48,17 +44,21 @@ export const Route = createFileRoute("/album/$itunesId")({
         }),
       );
 
-    const soundcloud = await $soundcloud.matchAlbum({
-      data: {
-        artist: album.artistName,
-        album: trimItunesCollectionPostfix(album.collectionName),
-      },
-    });
+    const [soundcloud, accentColor] = await Promise.all([
+      $soundcloud.matchAlbum({
+        data: {
+          artist: album.artistName,
+          album: trimItunesCollectionPostfix(album.collectionName),
+        },
+      }),
+      getArtworkColor({ data: album.artworkUrl100 }),
+    ]);
 
     return {
       album,
       tracks,
       soundcloud,
+      accentColor,
       wikipediaAlbum,
       wikipediaAlbumGenres,
     };
@@ -100,16 +100,11 @@ export const Route = createFileRoute("/album/$itunesId")({
 
 function RouteComponent() {
   const data = Route.useLoaderData();
-  const router = useRouter();
-
-  const backHref = router.buildLocation({
-    to: "/search",
-    search: { lucky: true, q: data.album.artistName },
-  }).href;
 
   return (
     <Layout
-      header={{ title: data.album.collectionName, backHref }}
+      header={{ title: data.album.collectionName }}
+      accentColor={data.accentColor}
       leading={
         <div className="flex flex-col gap-3">
           <img
@@ -177,7 +172,7 @@ function Track({
   playUrl: string;
 }) {
   const triggerProps = usePopover(
-    <div className="flex w-72 flex-col gap-3 border p-3">
+    <div className="flex w-72 flex-col gap-3 p-3">
       <dl>
         <dt>duration</dt>
         <dd>{formatMillis(track.trackTimeMillis)}</dd>
