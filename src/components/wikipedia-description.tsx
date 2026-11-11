@@ -1,6 +1,15 @@
-import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
+import { AsyncContent } from "#components/async-content";
+import { GenreList } from "#components/genre-list";
 import type { WikipediaSummary } from "#lib/api/platforms/wikipedia-data";
-import { Await, Link } from "@tanstack/react-router";
+import { Collapsible } from "@base-ui/react/collapsible";
+import { useEffect, useRef, useState } from "react";
+
+const sampleArticle: WikipediaSummary = {
+  title: "Wikipedia description",
+  extract:
+    "Music brings together a wide range of sounds, influences, and traditions. Artists develop their own distinctive styles through recordings and performances. Their work connects musical ideas across generations and reaches listeners around the world. Each release explores new themes and builds on the music that came before it. These influences shape the sound and its place in music history.",
+  url: "https://en.wikipedia.org/",
+};
 
 export function WikipediaDescription({
   summary,
@@ -11,62 +20,80 @@ export function WikipediaDescription({
 }) {
   return (
     <>
-      <Await
+      <AsyncContent
         promise={summary}
-        fallback={
-          <p role="status" className="text-sm opacity-50">
-            loading wikipedia description…
-          </p>
-        }
+        sample={sampleArticle}
+        label="Loading Wikipedia description"
       >
         {(article) =>
-          article && (
-            <div className="flex flex-col gap-2">
-              <p className="whitespace-pre-line">{article.extract}</p>
-              <a
-                href={article.url}
-                target="_blank"
-                rel="noreferrer"
-                className="w-fit underline opacity-50 hover:opacity-100"
-              >
-                read more on wikipedia
-              </a>
-            </div>
-          )
+          article && <Article key={article.url} article={article} />
         }
-      </Await>
+      </AsyncContent>
 
       {genres && (
-        <Await
+        <AsyncContent
           promise={genres}
-          fallback={
-            <p role="status" className="text-sm opacity-50">
-              Loading Wikipedia genres…
-            </p>
-          }
+          sample={["alternative rock", "indie rock"]}
+          label="Loading Wikipedia genres"
         >
-          {(names) =>
-            names.length > 0 && (
-              <section className="flex flex-col gap-3">
-                <h2 className="section-divider">genres from wikipedia</h2>
-
-                <ul className="cool-grid">
-                  {names.map((name) => (
-                    <Link
-                      to="/genre/$slug"
-                      params={{ slug: genreNameToSlug(name.toLowerCase())! }}
-                      key={name}
-                      className="btn"
-                    >
-                      {name.toLowerCase()}
-                    </Link>
-                  ))}
-                </ul>
-              </section>
-            )
-          }
-        </Await>
+          {(names) => <GenreList title="genres from wikipedia" names={names} />}
+        </AsyncContent>
       )}
     </>
+  );
+}
+
+function Article({ article }: { article: WikipediaSummary }) {
+  const [open, setOpen] = useState(false);
+  const [overflows, setOverflows] = useState(true);
+  const previewRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const preview = previewRef.current;
+    if (!preview) return;
+
+    const observer = new ResizeObserver(() => {
+      setOverflows(preview.scrollHeight > preview.clientHeight + 1);
+    });
+
+    observer.observe(preview);
+    return () => observer.disconnect();
+  }, [article.extract]);
+
+  return (
+    <Collapsible.Root
+      open={open}
+      onOpenChange={setOpen}
+      data-wikipedia-description
+    >
+      <p
+        ref={previewRef}
+        aria-hidden={open || undefined}
+        data-wikipedia-preview
+        className="line-clamp-4 whitespace-pre-line"
+      >
+        {article.extract}
+      </p>
+
+      <Collapsible.Panel data-wikipedia-panel>
+        <p className="whitespace-pre-line">{article.extract}</p>
+      </Collapsible.Panel>
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+        {(overflows || open) && (
+          <Collapsible.Trigger className="btn">
+            {open ? "show less" : "show more"}
+          </Collapsible.Trigger>
+        )}
+        <a
+          href={article.url}
+          target="_blank"
+          rel="noreferrer"
+          className="w-fit underline opacity-50 hover:opacity-100"
+        >
+          read more on wikipedia
+        </a>
+      </div>
+    </Collapsible.Root>
   );
 }

@@ -3,7 +3,7 @@ import { ErrorAlert } from "#components/error-alert";
 import { MiniPlayer } from "#components/mini-player";
 import { NavigationSpinner } from "#components/navigation-spinner";
 import { siteName } from "#lib/constants";
-import { getErrorMessage, vtName } from "#lib/utils";
+import { getErrorMessage } from "#lib/utils";
 import styleCss from "../style.css?url";
 import {
   CatchBoundary,
@@ -13,6 +13,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { Provider } from "jotai";
+import { SkulletProvider } from "skullet/react";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -43,6 +44,12 @@ export const Route = createRootRoute({
       { property: "og:site_name", content: siteName },
     ],
     links: [{ href: styleCss, rel: "stylesheet" }],
+    scripts: [
+      // {
+      //   crossOrigin: "anonymous",
+      //   src: "https://unpkg.com/react-scan/dist/auto.global.js",
+      // },
+    ],
   }),
 
   component: RootComponent,
@@ -69,7 +76,9 @@ function RootComponent() {
                 <ErrorAlert message={getErrorMessage(error)} />
               )}
             >
-              <Outlet />
+              <SkulletProvider mode="system">
+                <Outlet />
+              </SkulletProvider>
             </CatchBoundary>
 
             <MiniPlayer />

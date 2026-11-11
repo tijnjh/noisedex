@@ -1,4 +1,6 @@
+import { AsyncContent } from "#components/async-content";
 import { Chip } from "#components/chip";
+import { GenreList } from "#components/genre-list";
 import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
@@ -14,12 +16,7 @@ import { siteName, siteUrl } from "#lib/constants";
 import { artistLinks } from "#lib/platform-links";
 import { buildReleaseTimeline } from "#lib/release-timeline";
 import { scrollRegions } from "#lib/scroll-regions";
-import {
-  Await,
-  createFileRoute,
-  notFound,
-  redirect,
-} from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import { cn } from "cn";
 import type { ResultAlbum } from "itunes-store-api";
 import { Fragment } from "react";
@@ -109,30 +106,18 @@ function RouteComponent() {
             genres={wikipediaArtistGenres}
           />
 
-          <Await promise={everynoiseArtist} fallback={<></>}>
-            {(everynoiseArtist) =>
-              everynoiseArtist &&
-              everynoiseArtist.genres.length > 0 && (
-                <>
-                  <span className="section-divider">
-                    genres this artist is in
-                  </span>
-
-                  <div className="cool-grid">
-                    {everynoiseArtist.genres.map((genre) => (
-                      <Chip
-                        key={genre}
-                        to="/genre/$slug"
-                        params={{ slug: genreNameToSlug(genre) }}
-                      >
-                        {genre}
-                      </Chip>
-                    ))}
-                  </div>
-                </>
-              )
-            }
-          </Await>
+          <AsyncContent<{ genres: string[] } | undefined>
+            promise={everynoiseArtist}
+            sample={{ genres: ["alternative rock", "indie rock"] }}
+            label="Loading artist genres"
+          >
+            {(result) => (
+              <GenreList
+                title="genres this artist is in"
+                names={result?.genres ?? []}
+              />
+            )}
+          </AsyncContent>
           {genre && (
             <>
               <span className="section-divider">itunes genre</span>

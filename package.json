@@ -19,6 +19,7 @@
     ]
   },
   "dependencies": {
+    "@base-ui/react": "^1.9.0",
     "@fontsource/atkinson-hyperlegible": "^5.3.0",
     "@tanstack/react-virtual": "^3.14.26",
     "cheerio": "^1.2.0",
@@ -29,6 +30,7 @@
     "node-vibrant": "^4.0.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "skullet": "^0.0.3",
     "type-fest": "^5.10.0",
     "up-fetch": "^2.6.1",
     "valibot": "^1.5.0"
