@@ -136,7 +136,7 @@ input,
 }
 
 @utility section-divider {
-  @apply flex h-9 items-center border-b border-zinc-950-50/20;
+  @apply flex h-9 font-display items-center border-b border-zinc-950-50/20;
 }
 
 html {

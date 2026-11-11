@@ -89,15 +89,34 @@ export function Layout({
 }
 
 function Title({ title, titleVt }: { title?: string; titleVt?: string }) {
+  const pathname = useLocation({ select: (l) => l.pathname });
+
+  const isOnHomepage = pathname === "/";
+
+  const coolSegmentClassName = !isOnHomepage
+    ? "w-0 transition-[width] group-hover:w-auto"
+    : "w-auto";
+
   return (
     <div className="flex items-center gap-3 font-bold">
       <Link to="/" className="font-display text-2xl hover:underline">
-        {siteName}
+        <div className="group flex *:block *:overflow-hidden *:transition-[width]">
+          <span {...vtName`header-title-n`}>n</span>
+          <span {...vtName`header-title-oise`} className={coolSegmentClassName}>
+            oise
+          </span>
+          <span {...vtName`header-title-d`}>d</span>
+          <span {...vtName`header-title-ex`} className={coolSegmentClassName}>
+            ex
+          </span>
+        </div>
+
+        <span className="sr-only">noisedex</span>
       </Link>
 
       {title && (
         <>
-          &rarr;
+          &bull;
           <h1 {...vtName`${titleVt}`} className="truncate text-2xl font-bold">
             {title}
           </h1>
