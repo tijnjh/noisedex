@@ -178,7 +178,7 @@ export function AlbumPage({ data }: { data: AlbumData }) {
           data-scroll-restoration-id={scrollRegions.content}
           className="flex h-full flex-col gap-3 overflow-x-hidden overflow-y-auto pb-32"
         >
-          <h2 className="text-xl font-semibold">Tracks</h2>
+          <h2 className="text-xl font-semibold">tracks</h2>
 
           <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
             {data.tracks.map((track) => (

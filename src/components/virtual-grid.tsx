@@ -115,7 +115,7 @@ export function VirtualGrid<T>({
       data-scroll-restoration-id={scrollRegions.genres}
       className="h-full overflow-x-hidden overflow-y-auto"
     >
-      <div ref={contentRef} className="relative p-3">
+      <div ref={contentRef} className="relative px-3 pb-32">
         <div ref={metricsRef} aria-hidden="true" className="grid-metrics" />
         <ul
           className="relative"

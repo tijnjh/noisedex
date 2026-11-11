@@ -75,7 +75,7 @@ export function Layout({
             <main className="grid h-full grid-cols-1 gap-6 max-lg:content-start lg:grid-cols-[auto_1fr] lg:overflow-hidden">
               <div
                 data-scroll-restoration-id={scrollRegions.sidebar}
-                className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto"
+                className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto xl:w-172"
               >
                 {leading}
               </div>
@@ -88,16 +88,21 @@ export function Layout({
   );
 }
 
-function Title({ title, titleVt }: { title: string; titleVt?: string }) {
+function Title({ title, titleVt }: { title?: string; titleVt?: string }) {
   return (
     <div className="flex items-center gap-3 font-bold">
-      <Link to="/" className="text-2xl hover:underline">
+      <Link to="/" className="font-display text-2xl hover:underline">
         {siteName}
       </Link>
-      &rarr;
-      <h1 {...vtName`${titleVt}`} className="truncate text-2xl font-bold">
-        {title}
-      </h1>
+
+      {title && (
+        <>
+          &rarr;
+          <h1 {...vtName`${titleVt}`} className="truncate text-2xl font-bold">
+            {title}
+          </h1>
+        </>
+      )}
     </div>
   );
 }

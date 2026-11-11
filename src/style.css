@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tailwind-color-pairings";
 @import "@fontsource/atkinson-hyperlegible";
+@import "@fontsource/zen-dots";
 
 @theme {
   --spacing-control: 2.25rem;
@@ -8,6 +9,16 @@
   --spacing-grid-min: 12rem;
 
   --font-sans: "Atkinson Hyperlegible", system-ui;
+  --font-display: "Zen Dots";
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-display;
 }
 
 @utility grid-metrics {
@@ -27,6 +38,8 @@ dd {
 }
 
 :root {
+  interpolate-size: allow-keywords;
+
   --surface-base: #ffffff;
   --surface-hover: #f4f4f5;
   --surface-text: #27272a;

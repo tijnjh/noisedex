@@ -22,7 +22,7 @@ function RouteComponent() {
   const filters = useGenreFilters();
 
   return (
-    <Layout header={{ title: "all genres" }}>
+    <Layout header={{ title: "" }}>
       <Genres filters={filters} genres={data.genres} />
     </Layout>
   );
