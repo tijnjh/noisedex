@@ -48,15 +48,10 @@ export const Route = createRootRoute({
   component: RootComponent,
 });
 
-const tabs = [
-  ["genres", "/"],
-  ["search", "/search"],
-] as const;
-
 function RootComponent() {
   return (
     <Provider>
-      <html lang="en" className="pointer-coarse:overscroll-none">
+      <html lang="en" className="antialiased pointer-coarse:overscroll-none">
         <head>
           <HeadContent />
         </head>
