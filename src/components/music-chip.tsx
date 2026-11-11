@@ -80,7 +80,9 @@ export function MusicChip({
             }
       }
       to={track ? "/track/$itunesId" : "/album/$itunesId"}
-      params={{ itunesId: encodeItunesId(track?.trackId ?? music.collectionId) }}
+      params={{
+        itunesId: encodeItunesId(track?.trackId ?? music.collectionId),
+      }}
     >
       {showArtist ? `${label} — ${music.artistName}` : label}
     </Chip>

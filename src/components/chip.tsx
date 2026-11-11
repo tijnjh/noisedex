@@ -41,7 +41,11 @@ export function Chip({
           className,
         )}
       >
-        <span {...vtName`${vt?.title}`} className="truncate px-3" title={children}>
+        <span
+          {...vtName`${vt?.title}`}
+          className="truncate px-3"
+          title={children}
+        >
           {children}
         </span>
       </Link>

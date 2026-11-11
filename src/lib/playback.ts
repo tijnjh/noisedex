@@ -2,8 +2,8 @@ import { atom } from "jotai";
 
 export interface PlaybackTrack {
   title: string | undefined;
-  artist: string | undefined
-  artworkSrc: string | undefined
+  artist: string | undefined;
+  artworkSrc: string | undefined;
   url: string | undefined;
 }
 
