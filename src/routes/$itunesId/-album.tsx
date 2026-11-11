@@ -128,12 +128,6 @@ export function AlbumPage({ data }: { data: AlbumData }) {
               dateStyle: "long",
             })}
           </p>
-          <p
-            className="cursor-help"
-            title="this genre comes from itunes and is often vague or non-specific"
-          >
-            genre: {data.album.primaryGenreName}
-          </p>
 
           <PlatformLinks links={albumLinks(data.album)} />
 
