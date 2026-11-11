@@ -13,11 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as AlbumItunesIdRouteImport } from './routes/album.$itunesId'
-import { Route as ArtistItunesIdRouteImport } from './routes/artist.$itunesId'
-import { Route as ArtistSpotifyIdRouteImport } from './routes/artist.$spotifyId'
+import { Route as ItunesIdIndexRouteImport } from './routes/$itunesId/index'
 import { Route as GenreSlugRouteImport } from './routes/genre.$slug'
-import { Route as TrackItunesIdRouteImport } from './routes/track.$itunesId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,29 +36,14 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AlbumItunesIdRoute = AlbumItunesIdRouteImport.update({
-  id: '/album/$itunesId',
-  path: '/album/$itunesId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArtistItunesIdRoute = ArtistItunesIdRouteImport.update({
-  id: '/artist/$itunesId',
-  path: '/artist/$itunesId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArtistSpotifyIdRoute = ArtistSpotifyIdRouteImport.update({
-  id: '/artist/$spotifyId',
-  path: '/artist/$spotifyId',
+const ItunesIdIndexRoute = ItunesIdIndexRouteImport.update({
+  id: '/$itunesId/',
+  path: '/$itunesId/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GenreSlugRoute = GenreSlugRouteImport.update({
   id: '/genre/$slug',
   path: '/genre/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TrackItunesIdRoute = TrackItunesIdRouteImport.update({
-  id: '/track/$itunesId',
-  path: '/track/$itunesId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -70,22 +52,16 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/album/$itunesId': typeof AlbumItunesIdRoute
-  '/artist/$itunesId': typeof ArtistItunesIdRoute
-  '/artist/$spotifyId': typeof ArtistSpotifyIdRoute
   '/genre/$slug': typeof GenreSlugRoute
-  '/track/$itunesId': typeof TrackItunesIdRoute
+  '/$itunesId/': typeof ItunesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/album/$itunesId': typeof AlbumItunesIdRoute
-  '/artist/$itunesId': typeof ArtistItunesIdRoute
-  '/artist/$spotifyId': typeof ArtistSpotifyIdRoute
   '/genre/$slug': typeof GenreSlugRoute
-  '/track/$itunesId': typeof TrackItunesIdRoute
+  '/$itunesId': typeof ItunesIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -93,11 +69,8 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/album/$itunesId': typeof AlbumItunesIdRoute
-  '/artist/$itunesId': typeof ArtistItunesIdRoute
-  '/artist/$spotifyId': typeof ArtistSpotifyIdRoute
   '/genre/$slug': typeof GenreSlugRoute
-  '/track/$itunesId': typeof TrackItunesIdRoute
+  '/$itunesId/': typeof ItunesIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -106,33 +79,24 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
-    | '/album/$itunesId'
-    | '/artist/$itunesId'
-    | '/artist/$spotifyId'
     | '/genre/$slug'
-    | '/track/$itunesId'
+    | '/$itunesId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
-    | '/album/$itunesId'
-    | '/artist/$itunesId'
-    | '/artist/$spotifyId'
     | '/genre/$slug'
-    | '/track/$itunesId'
+    | '/$itunesId'
   id:
     | '__root__'
     | '/'
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
-    | '/album/$itunesId'
-    | '/artist/$itunesId'
-    | '/artist/$spotifyId'
     | '/genre/$slug'
-    | '/track/$itunesId'
+    | '/$itunesId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -140,11 +104,8 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  AlbumItunesIdRoute: typeof AlbumItunesIdRoute
-  ArtistItunesIdRoute: typeof ArtistItunesIdRoute
-  ArtistSpotifyIdRoute: typeof ArtistSpotifyIdRoute
   GenreSlugRoute: typeof GenreSlugRoute
-  TrackItunesIdRoute: typeof TrackItunesIdRoute
+  ItunesIdIndexRoute: typeof ItunesIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -177,25 +138,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/album/$itunesId': {
-      id: '/album/$itunesId'
-      path: '/album/$itunesId'
-      fullPath: '/album/$itunesId'
-      preLoaderRoute: typeof AlbumItunesIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/artist/$itunesId': {
-      id: '/artist/$itunesId'
-      path: '/artist/$itunesId'
-      fullPath: '/artist/$itunesId'
-      preLoaderRoute: typeof ArtistItunesIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/artist/$spotifyId': {
-      id: '/artist/$spotifyId'
-      path: '/artist/$spotifyId'
-      fullPath: '/artist/$spotifyId'
-      preLoaderRoute: typeof ArtistSpotifyIdRouteImport
+    '/$itunesId/': {
+      id: '/$itunesId/'
+      path: '/$itunesId'
+      fullPath: '/$itunesId/'
+      preLoaderRoute: typeof ItunesIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/genre/$slug': {
@@ -203,13 +150,6 @@ declare module '@tanstack/react-router' {
       path: '/genre/$slug'
       fullPath: '/genre/$slug'
       preLoaderRoute: typeof GenreSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/track/$itunesId': {
-      id: '/track/$itunesId'
-      path: '/track/$itunesId'
-      fullPath: '/track/$itunesId'
-      preLoaderRoute: typeof TrackItunesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -220,11 +160,8 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  AlbumItunesIdRoute: AlbumItunesIdRoute,
-  ArtistItunesIdRoute: ArtistItunesIdRoute,
-  ArtistSpotifyIdRoute: ArtistSpotifyIdRoute,
   GenreSlugRoute: GenreSlugRoute,
-  TrackItunesIdRoute: TrackItunesIdRoute,
+  ItunesIdIndexRoute: ItunesIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

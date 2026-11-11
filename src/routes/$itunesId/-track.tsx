@@ -2,12 +2,11 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
-import { $itunes, $soundcloud } from "#lib/api/index";
+import { $soundcloud } from "#lib/api/index";
 import {
   encodeItunesId,
   getBigItunesArtwork,
   isSingleRelease,
-  parseItunesId,
 } from "#lib/api/platforms/itunes-data";
 import { getArtworkColor } from "#lib/artwork-color";
 import { siteName, siteUrl } from "#lib/constants";
@@ -15,76 +14,58 @@ import { musicMetadata } from "#lib/music-metadata";
 import { trackLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
 import { formatDate, vtName } from "#lib/utils";
-import {
-  Await,
-  createFileRoute,
-  notFound,
-  redirect,
-} from "@tanstack/react-router";
+import { Await } from "@tanstack/react-router";
+import type { ResultMusicTrack } from "itunes-store-api";
 
-export const Route = createFileRoute("/track/$itunesId")({
-  loader: async ({ params }) => {
-    const id = parseItunesId(params.itunesId);
-    if (id === undefined) throw notFound();
-    if (params.itunesId !== encodeItunesId(id)) {
-      throw redirect({
-        to: "/track/$itunesId",
-        params: { itunesId: encodeItunesId(id) },
-        replace: true,
-      });
-    }
-    const track = await $itunes.getTrack(id);
-    if (!track) throw notFound();
+type TrackData = ReturnType<typeof loadTrack>;
 
-    const soundcloud = $soundcloud
-      .matchAlbum({
-        data: { artist: track.artistName, album: track.collectionName },
-      })
-      .catch(() => []);
-    const accentColor = getArtworkColor({ data: track.artworkUrl100 }).catch(
-      () => undefined,
-    );
+export function loadTrack({ track }: { track: ResultMusicTrack }) {
+  const soundcloud = $soundcloud
+    .matchAlbum({
+      data: { artist: track.artistName, album: track.collectionName },
+    })
+    .catch(() => []);
+  const accentColor = getArtworkColor({ data: track.artworkUrl100 }).catch(
+    () => undefined,
+  );
 
-    return { track, soundcloud, accentColor };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) return {};
-    const { track } = loaderData;
-    const title = `${track.trackName} by ${track.artistName} | ${siteName}`;
-    const description = `Explore ${track.trackName} by ${track.artistName} from ${track.collectionName}: release date, genre, and listening links on ${siteName}.`;
-    const url = `${siteUrl}/track/${encodeItunesId(track.trackId)}`;
-    const artwork = getBigItunesArtwork(track);
+  return { track, soundcloud, accentColor };
+}
 
-    return musicMetadata({
-      title,
-      description,
-      url,
-      artwork,
-      type: "music.song",
-      recording: {
-        "@type": "MusicRecording",
-        name: track.trackName,
-        byArtist: { "@type": "MusicGroup", name: track.artistName },
-        inAlbum: {
-          "@type": "MusicAlbum",
-          name: track.collectionName,
-          url: `${siteUrl}/album/${encodeItunesId(track.collectionId)}`,
-        },
-        datePublished: track.releaseDate,
-        genre: track.primaryGenreName,
-        image: artwork,
-        duration: Number.isFinite(track.trackTimeMillis)
-          ? `PT${Math.round(track.trackTimeMillis / 1000)}S`
-          : undefined,
+export function trackHead(data: TrackData) {
+  const { track } = data;
+  const title = `${track.trackName} by ${track.artistName} | ${siteName}`;
+  const description = `Explore ${track.trackName} by ${track.artistName} from ${track.collectionName}: release date, genre, and listening links on ${siteName}.`;
+  const url = `${siteUrl}/${encodeItunesId(track.trackId)}`;
+  const artwork = getBigItunesArtwork(track);
+
+  return musicMetadata({
+    title,
+    description,
+    url,
+    artwork,
+    type: "music.song",
+    recording: {
+      "@type": "MusicRecording",
+      name: track.trackName,
+      byArtist: { "@type": "MusicGroup", name: track.artistName },
+      inAlbum: {
+        "@type": "MusicAlbum",
+        name: track.collectionName,
+        url: `${siteUrl}/${encodeItunesId(track.collectionId)}`,
       },
-    });
-  },
+      datePublished: track.releaseDate,
+      genre: track.primaryGenreName,
+      image: artwork,
+      duration: Number.isFinite(track.trackTimeMillis)
+        ? `PT${Math.round(track.trackTimeMillis / 1000)}S`
+        : undefined,
+    },
+  });
+}
 
-  component: RouteComponent,
-});
-
-function RouteComponent() {
-  const { track, soundcloud, accentColor } = Route.useLoaderData();
+export function TrackPage({ data }: { data: TrackData }) {
+  const { track, soundcloud, accentColor } = data;
 
   const seconds = Math.floor(track.trackTimeMillis / 1000);
   const duration = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
@@ -130,7 +111,7 @@ function RouteComponent() {
           />
 
           <Chip
-            to="/artist/$itunesId"
+            to="/$itunesId"
             params={{ itunesId: encodeItunesId(track.artistId) }}
           >
             {track.artistName}
@@ -161,7 +142,7 @@ function RouteComponent() {
             <>
               <h2 className="section-divider">from the album</h2>
               <Chip
-                to="/album/$itunesId"
+                to="/$itunesId"
                 params={{ itunesId: encodeItunesId(track.collectionId) }}
                 leading={track.artworkUrl60}
                 vt={{

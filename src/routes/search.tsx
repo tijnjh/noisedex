@@ -36,7 +36,7 @@ export const Route = createFileRoute("/search")({
       const topResultId = artists[0].artistId;
 
       throw redirect({
-        to: "/artist/$itunesId",
+        to: "/$itunesId",
         params: { itunesId: encodeItunesId(topResultId) },
         replace: true,
       });
@@ -70,7 +70,7 @@ function RouteComponent() {
                   <Chip
                     key={artist.artistId}
                     vt={{ title: `artist-${artist.artistId}` }}
-                    to="/artist/$itunesId"
+                    to="/$itunesId"
                     params={{ itunesId: encodeItunesId(artist.artistId) }}
                   >
                     {artist.artistName}

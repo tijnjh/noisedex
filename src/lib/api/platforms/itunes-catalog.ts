@@ -69,7 +69,7 @@ export const lookupCatalogSongs = cached(async function (
     limit: catalogLimit,
   });
   return response.results as Array<
-    itunes.ResultAlbum | itunes.ResultMusicTrack
+    itunes.ResultMusicArtist | itunes.ResultAlbum | itunes.ResultMusicTrack
   >;
 });
 

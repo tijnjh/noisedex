@@ -31,11 +31,6 @@ export function encodeItunesId(id: number) {
 }
 
 export function parseItunesId(value: string) {
-  if (/^\d{9,}$/.test(value)) {
-    const id = Number(value);
-    return Number.isSafeInteger(id) ? id : undefined;
-  }
-
   if (!/^[\w-]{1,9}$/.test(value)) {
     return;
   }

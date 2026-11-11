@@ -79,7 +79,7 @@ export function MusicChip({
               img: `album-artwork-${music.collectionId}`,
             }
       }
-      to={track ? "/track/$itunesId" : "/album/$itunesId"}
+      to="/$itunesId"
       params={{
         itunesId: encodeItunesId(track?.trackId ?? music.collectionId),
       }}

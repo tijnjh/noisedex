@@ -5,79 +5,69 @@ import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
 import { WikipediaDescription } from "#components/wikipedia-description";
-import { $everynoise, $itunes, $wikipedia } from "#lib/api/index";
+import { $everynoise, $wikipedia } from "#lib/api/index";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
-import {
-  encodeItunesId,
-  getReleaseType,
-  parseItunesId,
-} from "#lib/api/platforms/itunes-data";
+import { encodeItunesId, getReleaseType } from "#lib/api/platforms/itunes-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { artistLinks } from "#lib/platform-links";
 import { buildReleaseTimeline } from "#lib/release-timeline";
 import { scrollRegions } from "#lib/scroll-regions";
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { cn } from "cn";
-import type { ResultAlbum } from "itunes-store-api";
+import type { ResultAlbum, ResultMusicArtist } from "itunes-store-api";
 import { Fragment } from "react";
-import * as v from "valibot";
 
-export const Route = createFileRoute("/artist/$itunesId")({
-  validateSearch: v.object({
-    filter: v.optional(
-      v.fallback(v.picklist(["All", "LPs", "EPs", "Singles"]), "All"),
-    ),
-  }),
-  loader: async ({ params }) => {
-    const itunesId = parseItunesId(params.itunesId);
-    if (itunesId === undefined) throw notFound();
-    if (params.itunesId !== encodeItunesId(itunesId)) {
-      throw redirect({
-        to: "/artist/$itunesId",
-        params: { itunesId: encodeItunesId(itunesId) },
-        search: true,
-        replace: true,
-      });
-    }
+const musicRoute = getRouteApi("/$itunesId/");
 
-    const artistData = await $itunes.getArtistById({ data: itunesId });
-    if (!artistData) throw notFound();
+type ArtistData = ReturnType<typeof loadArtist>;
 
-    const { artist, albums } = artistData;
-    const { summary: wikipediaArtist, genres: wikipediaArtistGenres } =
-      $wikipedia.enrichWithGenres(
-        $wikipedia.getArtistByName({ data: artist.artistName }),
-      );
+export function loadArtist({
+  artist,
+  albums,
+}: {
+  artist: ResultMusicArtist;
+  albums: ResultAlbum[];
+}) {
+  const { summary: wikipediaArtist, genres: wikipediaArtistGenres } =
+    $wikipedia.enrichWithGenres(
+      $wikipedia.getArtistByName({ data: artist.artistName }),
+    );
 
-    const everynoiseArtist = $everynoise
-      .getArtistByName(artist.artistName)
-      .catch(() => undefined);
+  const everynoiseArtist = $everynoise
+    .getArtistByName(artist.artistName)
+    .catch(() => undefined);
 
-    return {
-      artist,
-      albums,
-      wikipediaArtist,
-      wikipediaArtistGenres,
-      everynoiseArtist,
-      accentColor: everynoiseArtist.then((artist) => artist?.style.color),
-    };
-  },
-  head: ({ loaderData, params }) => ({
+  return {
+    artist,
+    albums,
+    wikipediaArtist,
+    wikipediaArtistGenres,
+    everynoiseArtist,
+    accentColor: everynoiseArtist.then((artist) => artist?.style.color),
+  };
+}
+
+export function artistHead(data: ArtistData) {
+  return {
     meta: [
       {
-        title: `${loaderData?.artist.artistName ?? "Artist"} albums | ${siteName}`,
+        title: `${data.artist.artistName} albums | ${siteName}`,
       },
       {
         name: "description",
-        content: `Browse albums and music genres for ${loaderData?.artist.artistName ?? "this artist"} on ${siteName}.`,
+        content: `Browse albums and music genres for ${data.artist.artistName} on ${siteName}.`,
       },
     ],
-    links: [{ rel: "canonical", href: `${siteUrl}/artist/${params.itunesId}` }],
-  }),
-  component: RouteComponent,
-});
+    links: [
+      {
+        rel: "canonical",
+        href: `${siteUrl}/${encodeItunesId(data.artist.artistId)}`,
+      },
+    ],
+  };
+}
 
-function RouteComponent() {
+export function ArtistPage({ data }: { data: ArtistData }) {
   const {
     artist,
     albums,
@@ -85,7 +75,7 @@ function RouteComponent() {
     wikipediaArtistGenres,
     everynoiseArtist,
     accentColor,
-  } = Route.useLoaderData();
+  } = data;
   const genre = artist.primaryGenreName;
 
   return (
@@ -139,8 +129,8 @@ function RouteComponent() {
 }
 
 function ArtistReleasesList({ releases }: { releases: ResultAlbum[] }) {
-  const { filter = "All" } = Route.useSearch();
-  const navigate = Route.useNavigate();
+  const { filter = "All" } = musicRoute.useSearch();
+  const navigate = musicRoute.useNavigate();
   const timeline = buildReleaseTimeline(
     releases.filter(
       (release) =>

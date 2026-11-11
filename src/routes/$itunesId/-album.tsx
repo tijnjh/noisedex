@@ -4,12 +4,8 @@ import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { usePopover } from "#hooks/use-popover";
-import { $itunes, $soundcloud, $wikipedia } from "#lib/api/index";
-import {
-  encodeItunesId,
-  isSingleRelease,
-  parseItunesId,
-} from "#lib/api/platforms/itunes-data";
+import { $soundcloud, $wikipedia } from "#lib/api/index";
+import { encodeItunesId } from "#lib/api/platforms/itunes-data";
 import {
   getBigItunesArtwork,
   trimItunesCollectionPostfix,
@@ -20,105 +16,80 @@ import { musicMetadata } from "#lib/music-metadata";
 import { albumLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
 import { formatDate, formatMillis, vtName } from "#lib/utils";
-import {
-  Await,
-  createFileRoute,
-  notFound,
-  redirect,
-} from "@tanstack/react-router";
-import { ResultMusicTrack } from "itunes-store-api";
+import { Await } from "@tanstack/react-router";
+import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
-export const Route = createFileRoute("/album/$itunesId")({
-  loader: async ({ params }) => {
-    const id = parseItunesId(params.itunesId);
-    if (id === undefined) throw notFound();
-    if (params.itunesId !== encodeItunesId(id)) {
-      throw redirect({
-        to: "/album/$itunesId",
-        params: { itunesId: encodeItunesId(id) },
-        replace: true,
-      });
-    }
-    const result = await $itunes.getAlbum(id);
-    if (!result) throw notFound();
-    const { album, tracks } = result;
-    const isSingle = isSingleRelease(album.collectionName, tracks.length);
+type AlbumData = ReturnType<typeof loadAlbum>;
 
-    if (isSingle) {
-      throw redirect({
-        throw: true,
-        to: "/track/$itunesId",
-        params: { itunesId: encodeItunesId(tracks[0].trackId) },
-        replace: true,
-      });
-    }
-
-    const { summary: wikipediaAlbum, genres: wikipediaAlbumGenres } =
-      $wikipedia.enrichWithGenres(
-        $wikipedia.getAlbumByName({
-          data: { album: album.collectionName, artist: album.artistName },
-        }),
-      );
-
-    const soundcloud = $soundcloud
-      .matchAlbum({
-        data: {
-          artist: album.artistName,
-          album: trimItunesCollectionPostfix(album.collectionName),
-        },
-      })
-      .catch(() => []);
-    const accentColor = getArtworkColor({ data: album.artworkUrl100 }).catch(
-      () => undefined,
+export function loadAlbum({
+  album,
+  tracks,
+}: {
+  album: ResultAlbum;
+  tracks: ResultMusicTrack[];
+}) {
+  const { summary: wikipediaAlbum, genres: wikipediaAlbumGenres } =
+    $wikipedia.enrichWithGenres(
+      $wikipedia.getAlbumByName({
+        data: { album: album.collectionName, artist: album.artistName },
+      }),
     );
 
-    return {
-      album,
-      tracks,
-      soundcloud,
-      accentColor,
-      wikipediaAlbum,
-      wikipediaAlbumGenres,
-    };
-  },
-  head: ({ loaderData, params }) => {
-    if (!loaderData) return {};
-    const { album, tracks } = loaderData;
-
-    const title = `${album.collectionName} by ${album.artistName} | ${siteName}`;
-    const description = `Explore ${album.collectionName} by ${album.artistName}: release date, genre, and ${tracks.length} tracks with previews on ${siteName}.`;
-    const url = `${siteUrl}/album/${encodeItunesId(album.collectionId)}`;
-    const artwork = getBigItunesArtwork(album);
-
-    return musicMetadata({
-      title,
-      description,
-      url,
-      artwork,
-      type: "music.album",
-      recording: {
-        "@type": "MusicAlbum",
-        name: album.collectionName,
-        byArtist: { "@type": "MusicGroup", name: album.artistName },
-        datePublished: album.releaseDate,
-        genre: album.primaryGenreName,
-        image: artwork,
-        numTracks: tracks.length,
-        track: tracks.map((track) => ({
-          "@type": "MusicRecording",
-          name: track.trackName,
-          position: track.trackNumber,
-          duration: `PT${Math.round(track.trackTimeMillis / 1000)}S`,
-        })),
+  const soundcloud = $soundcloud
+    .matchAlbum({
+      data: {
+        artist: album.artistName,
+        album: trimItunesCollectionPostfix(album.collectionName),
       },
-    });
-  },
-  component: RouteComponent,
-});
+    })
+    .catch(() => []);
+  const accentColor = getArtworkColor({ data: album.artworkUrl100 }).catch(
+    () => undefined,
+  );
 
-function RouteComponent() {
-  const data = Route.useLoaderData();
+  return {
+    album,
+    tracks,
+    soundcloud,
+    accentColor,
+    wikipediaAlbum,
+    wikipediaAlbumGenres,
+  };
+}
 
+export function albumHead(data: AlbumData) {
+  const { album, tracks } = data;
+
+  const title = `${album.collectionName} by ${album.artistName} | ${siteName}`;
+  const description = `Explore ${album.collectionName} by ${album.artistName}: release date, genre, and ${tracks.length} tracks with previews on ${siteName}.`;
+  const url = `${siteUrl}/${encodeItunesId(album.collectionId)}`;
+  const artwork = getBigItunesArtwork(album);
+
+  return musicMetadata({
+    title,
+    description,
+    url,
+    artwork,
+    type: "music.album",
+    recording: {
+      "@type": "MusicAlbum",
+      name: album.collectionName,
+      byArtist: { "@type": "MusicGroup", name: album.artistName },
+      datePublished: album.releaseDate,
+      genre: album.primaryGenreName,
+      image: artwork,
+      numTracks: tracks.length,
+      track: tracks.map((track) => ({
+        "@type": "MusicRecording",
+        name: track.trackName,
+        position: track.trackNumber,
+        duration: `PT${Math.round(track.trackTimeMillis / 1000)}S`,
+      })),
+    },
+  });
+}
+
+export function AlbumPage({ data }: { data: AlbumData }) {
   return (
     <Layout
       header={{
@@ -137,7 +108,7 @@ function RouteComponent() {
 
           <Chip
             vt={{ title: `artist-${data.album.artistId}` }}
-            to="/artist/$itunesId"
+            to="/$itunesId"
             params={{ itunesId: encodeItunesId(data.album.artistId) }}
           >
             {data.album.artistName}
@@ -222,7 +193,7 @@ function Track({
       <div className="flex items-center justify-end">{track.trackNumber}</div>
 
       <Chip
-        to={"/track/$itunesId"}
+        to={"/$itunesId"}
         params={{ itunesId: encodeItunesId(track.trackId) }}
         trailing={
           <Await promise={soundcloud} fallback={playButton(track.previewUrl)}>

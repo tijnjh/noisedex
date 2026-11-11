@@ -42,69 +42,40 @@ export const searchArtists = createServerFn()
     return searchCatalogArtists(data.trim(), country);
   });
 
-export const getArtistById = createServerFn()
+export const getMusic = createServerFn()
   .validator(v.number())
-  .handler(async ({ data: artistId }) => {
+  .handler(async ({ data: id }) => {
     const country = storeCountryFromLanguages(
       getRequestHeader("accept-language"),
     );
-    return getArtistCatalog(artistId, country);
+    const results = await lookupCatalogSongs(id, country);
+    const result = results[0];
+
+    if (result?.wrapperType === "artist" && result.artistId === id) {
+      const catalog = await getArtistCatalog(id, country);
+      if (!catalog) return;
+
+      return { type: "artist" as const, ...catalog };
+    }
+
+    if (
+      result?.wrapperType === "collection" &&
+      result.collectionType === "Album" &&
+      result.collectionId === id
+    ) {
+      const tracks = results.filter(
+        (item): item is serverIsa.ResultMusicTrack =>
+          item.wrapperType === "track" && item.kind === "song",
+      );
+
+      return { type: "album" as const, album: result, tracks };
+    }
+
+    if (
+      result?.wrapperType === "track" &&
+      result.kind === "song" &&
+      result.trackId === id
+    ) {
+      return { type: "track" as const, track: result };
+    }
   });
-
-export const getAlbumsByArtistName = createServerFn()
-  .validator(v.string())
-  .handler(async ({ data: artistName }) => {
-    const country = storeCountryFromLanguages(
-      getRequestHeader("accept-language"),
-    );
-    const artists = await searchCatalogArtists(artistName.trim(), country);
-    const artistId = artists.find(
-      (artist) => artist.artistName.toLowerCase() === artistName.toLowerCase(),
-    )?.artistId;
-
-    if (!artistId)
-      return {
-        artistId,
-        albums: [],
-      };
-
-    const catalog = await getArtistCatalog(artistId, country);
-
-    return {
-      artistId,
-      albums: catalog?.albums ?? [],
-    };
-  });
-
-const lookupSongsOnServer = createServerFn()
-  .validator(v.number())
-  .handler(({ data }) =>
-    lookupCatalogSongs(
-      data,
-      storeCountryFromLanguages(getRequestHeader("accept-language")),
-    ),
-  );
-
-export async function getAlbum(id: number) {
-  const results = await lookupSongsOnServer({ data: id });
-  const album = results[0];
-  if (album?.wrapperType !== "collection" || album.collectionType !== "Album")
-    return null;
-  const tracks = results.filter(
-    (result): result is serverIsa.ResultMusicTrack =>
-      result.wrapperType === "track",
-  );
-  return { album, tracks };
-}
-
-export async function getTrack(id: number) {
-  const results = await lookupSongsOnServer({ data: id });
-  return (
-    results.find(
-      (result): result is serverIsa.ResultMusicTrack =>
-        result.wrapperType === "track" &&
-        result.kind === "song" &&
-        result.trackId === id,
-    ) ?? null
-  );
-}
