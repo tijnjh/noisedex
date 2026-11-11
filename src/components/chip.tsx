@@ -20,7 +20,7 @@ export function Chip({
   vt?: { img?: string; title?: string };
 }) {
   return (
-    <div className="flex h-control items-center">
+    <div className="flex h-control items-center truncate">
       {typeof leading === "string" ? (
         <img
           {...vtName`${vt?.img}`}

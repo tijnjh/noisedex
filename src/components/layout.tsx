@@ -98,8 +98,8 @@ function Title({ title, titleVt }: { title?: string; titleVt?: string }) {
     : "w-auto";
 
   return (
-    <div className="flex items-center gap-3 font-bold">
-      <Link to="/" className="font-display text-2xl hover:underline">
+    <div className="flex items-center gap-3 truncate font-bold">
+      <Link to="/" className="font-display text-2xl hover:opacity-75">
         <div className="group flex *:block *:overflow-hidden *:transition-[width]">
           <span {...vtName`header-title-n`}>n</span>
           <span {...vtName`header-title-oise`} className={coolSegmentClassName}>

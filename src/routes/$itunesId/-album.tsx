@@ -147,18 +147,15 @@ export function AlbumPage({ data }: { data: AlbumData }) {
                     <p className="inline whitespace-pre-line">
                       “{review.excerpt.trim()}”
                     </p>
-                  </blockquote>{" "}
-                  <figcaption className="ml-2 inline">
-                    <span aria-hidden="true" className="mr-2 opacity-50">
-                      -
-                    </span>
+                  </blockquote>
+                  <figcaption>
                     <a
                       href={review.url}
                       target="_blank"
                       rel="noreferrer"
                       className="underline opacity-50 hover:opacity-100"
                     >
-                      the needle drop
+                      theneedledrop.com
                     </a>
                   </figcaption>
                 </figure>
