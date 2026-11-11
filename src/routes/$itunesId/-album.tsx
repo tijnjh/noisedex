@@ -1,10 +1,11 @@
+import { AsyncContent } from "#components/async-content";
 import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { usePopover } from "#hooks/use-popover";
-import { $soundcloud, $wikipedia } from "#lib/api/index";
+import { $fantano, $soundcloud, $wikipedia } from "#lib/api/index";
 import { encodeItunesId } from "#lib/api/platforms/itunes-data";
 import {
   getBigItunesArtwork,
@@ -47,6 +48,13 @@ export function loadAlbum({
     () => undefined,
   );
 
+  const fantanoReview = $fantano.getReview({
+    data: {
+      album: album.collectionName,
+      artist: album.artistName,
+    },
+  });
+
   return {
     album,
     tracks,
@@ -54,6 +62,7 @@ export function loadAlbum({
     accentColor,
     wikipediaAlbum,
     wikipediaAlbumGenres,
+    fantanoReview,
   };
 }
 
@@ -127,6 +136,42 @@ export function AlbumPage({ data }: { data: AlbumData }) {
           </p>
 
           <PlatformLinks links={albumLinks(data.album)} />
+
+          <AsyncContent<{ excerpt: string; url: string } | undefined>
+            promise={data.fantanoReview}
+            sample={{
+              excerpt:
+                "An album full of distinctive sounds and memorable moments, with plenty to discover across its tracks. Each listen reveals another detail in the music.",
+              url: "https://theneedledrop.com/",
+            }}
+            label="Loading The Needle Drop review"
+          >
+            {(review) =>
+              review?.excerpt ? (
+                <figure className="mt-3 border-l-2 border-current/25 pl-4">
+                  <blockquote cite={review.url} className="inline italic">
+                    <p className="inline whitespace-pre-line">
+                      “{review.excerpt.trim()}”
+                    </p>
+                  </blockquote>{" "}
+                  <figcaption className="ml-2 inline">
+                    <span aria-hidden="true" className="mr-2 opacity-50">
+                      -
+                    </span>
+                    <a
+                      href={review.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline opacity-50 hover:opacity-100"
+                    >
+                      the needle drop
+                    </a>
+                  </figcaption>
+                </figure>
+              ) : null
+            }
+          </AsyncContent>
+
           <WikipediaDescription
             summary={data.wikipediaAlbum}
             genres={data.wikipediaAlbumGenres}
