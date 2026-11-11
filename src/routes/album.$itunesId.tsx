@@ -20,7 +20,12 @@ import { musicMetadata } from "#lib/music-metadata";
 import { albumLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
 import { formatDate, formatMillis, vtName } from "#lib/utils";
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import {
+  Await,
+  createFileRoute,
+  notFound,
+  redirect,
+} from "@tanstack/react-router";
 import { ResultMusicTrack } from "itunes-store-api";
 
 export const Route = createFileRoute("/album/$itunesId")({
@@ -55,15 +60,17 @@ export const Route = createFileRoute("/album/$itunesId")({
         }),
       );
 
-    const [soundcloud, accentColor] = await Promise.all([
-      $soundcloud.matchAlbum({
+    const soundcloud = $soundcloud
+      .matchAlbum({
         data: {
           artist: album.artistName,
           album: trimItunesCollectionPostfix(album.collectionName),
         },
-      }),
-      getArtworkColor({ data: album.artworkUrl100 }),
-    ]);
+      })
+      .catch(() => []);
+    const accentColor = getArtworkColor({ data: album.artworkUrl100 }).catch(
+      () => undefined,
+    );
 
     return {
       album,
@@ -130,8 +137,8 @@ function RouteComponent() {
 
           <Chip
             vt={{ title: `artist-${data.album.artistId}` }}
-            to="/search"
-            search={{ lucky: true, q: data.album.artistName }}
+            to="/artist/$itunesId"
+            params={{ itunesId: encodeItunesId(data.album.artistId) }}
           >
             {data.album.artistName}
           </Chip>
@@ -166,14 +173,9 @@ function RouteComponent() {
           <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
             {data.tracks.map((track) => (
               <Track
+                key={track.trackId}
                 track={track}
-                playUrl={
-                  $soundcloud.trackUrl(
-                    data.soundcloud,
-                    track.trackName,
-                    track.artistName,
-                  ) ?? track.previewUrl
-                }
+                soundcloud={data.soundcloud}
               />
             ))}
           </div>
@@ -185,10 +187,10 @@ function RouteComponent() {
 
 function Track({
   track,
-  playUrl,
+  soundcloud,
 }: {
   track: ResultMusicTrack;
-  playUrl: string;
+  soundcloud: ReturnType<typeof $soundcloud.matchAlbum>;
 }) {
   const triggerProps = usePopover(
     <div className="flex w-72 flex-col gap-3 p-3">
@@ -197,6 +199,18 @@ function Track({
         <dd>{formatMillis(track.trackTimeMillis)}</dd>
       </dl>
     </div>,
+  );
+
+  const playButton = (url: string) => (
+    <PlayButton
+      className="btn-inverse size-9 shrink-0 justify-center"
+      track={{
+        title: track.trackName,
+        artist: track.artistName,
+        artworkSrc: track.artworkUrl100,
+        url,
+      }}
+    />
   );
 
   return (
@@ -211,15 +225,17 @@ function Track({
         to={"/track/$itunesId"}
         params={{ itunesId: encodeItunesId(track.trackId) }}
         trailing={
-          <PlayButton
-            className="btn-inverse size-9 shrink-0 justify-center"
-            track={{
-              title: track.trackName,
-              artist: track.artistName,
-              artworkSrc: track.artworkUrl100,
-              url: playUrl,
-            }}
-          />
+          <Await promise={soundcloud} fallback={playButton(track.previewUrl)}>
+            {(matches) =>
+              playButton(
+                $soundcloud.trackUrl(
+                  matches,
+                  track.trackName,
+                  track.artistName,
+                ) ?? track.previewUrl,
+              )
+            }
+          </Await>
         }
       >
         {track.trackName}

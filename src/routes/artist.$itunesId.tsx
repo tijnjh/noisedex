@@ -14,7 +14,12 @@ import { siteName, siteUrl } from "#lib/constants";
 import { artistLinks } from "#lib/platform-links";
 import { buildReleaseTimeline } from "#lib/release-timeline";
 import { scrollRegions } from "#lib/scroll-regions";
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import {
+  Await,
+  createFileRoute,
+  notFound,
+  redirect,
+} from "@tanstack/react-router";
 import { cn } from "cn";
 import type { ResultAlbum } from "itunes-store-api";
 import { Fragment } from "react";
@@ -47,9 +52,9 @@ export const Route = createFileRoute("/artist/$itunesId")({
         $wikipedia.getArtistByName({ data: artist.artistName }),
       );
 
-    const everynoiseArtist = await $everynoise.getArtistByName(
-      artist.artistName,
-    );
+    const everynoiseArtist = $everynoise
+      .getArtistByName(artist.artistName)
+      .catch(() => undefined);
 
     return {
       artist,
@@ -57,6 +62,7 @@ export const Route = createFileRoute("/artist/$itunesId")({
       wikipediaArtist,
       wikipediaArtistGenres,
       everynoiseArtist,
+      accentColor: everynoiseArtist.then((artist) => artist?.style.color),
     };
   },
   head: ({ loaderData, params }) => ({
@@ -81,6 +87,7 @@ function RouteComponent() {
     wikipediaArtist,
     wikipediaArtistGenres,
     everynoiseArtist,
+    accentColor,
   } = Route.useLoaderData();
   const genre = artist.primaryGenreName;
 
@@ -90,7 +97,7 @@ function RouteComponent() {
         title: artist.artistName,
         titleVt: `artist-${artist.artistId}`,
       }}
-      accentColor={everynoiseArtist?.style.color}
+      accentColor={accentColor}
       leading={
         <>
           <PlatformLinks
@@ -102,23 +109,30 @@ function RouteComponent() {
             genres={wikipediaArtistGenres}
           />
 
-          {everynoiseArtist && everynoiseArtist.genres.length > 0 && (
-            <>
-              <span className="section-divider">genres this artist is in</span>
+          <Await promise={everynoiseArtist} fallback={null}>
+            {(everynoiseArtist) =>
+              everynoiseArtist &&
+              everynoiseArtist.genres.length > 0 && (
+                <>
+                  <span className="section-divider">
+                    genres this artist is in
+                  </span>
 
-              <div className="cool-grid">
-                {everynoiseArtist.genres.map((genre) => (
-                  <Chip
-                    key={genre}
-                    to="/genre/$slug"
-                    params={{ slug: genreNameToSlug(genre) }}
-                  >
-                    {genre}
-                  </Chip>
-                ))}
-              </div>
-            </>
-          )}
+                  <div className="cool-grid">
+                    {everynoiseArtist.genres.map((genre) => (
+                      <Chip
+                        key={genre}
+                        to="/genre/$slug"
+                        params={{ slug: genreNameToSlug(genre) }}
+                      >
+                        {genre}
+                      </Chip>
+                    ))}
+                  </div>
+                </>
+              )
+            }
+          </Await>
           {genre && (
             <>
               <span className="section-divider">itunes genre</span>

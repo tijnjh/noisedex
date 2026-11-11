@@ -11,6 +11,7 @@ import {
 import { cn } from "cn";
 import {
   useState,
+  useEffect,
   type ComponentProps,
   type CSSProperties,
   type ReactNode,
@@ -26,13 +27,39 @@ export function Layout({
 }: { header: ComponentProps<typeof Header> } & MergeExclusive<
   { children?: ReactNode },
   { leading: ReactNode; trailing: ReactNode }
-> & { accentColor?: string }) {
+> & { accentColor?: string | Promise<string | undefined> }) {
+  const [resolvedColor, setResolvedColor] = useState<{
+    source: typeof accentColor;
+    color: string | undefined;
+  }>();
+
+  useEffect(() => {
+    let active = true;
+    if (accentColor instanceof Promise) {
+      void accentColor.then(
+        (color) => {
+          if (active) setResolvedColor({ source: accentColor, color });
+        },
+        () => {},
+      );
+    }
+    return () => {
+      active = false;
+    };
+  }, [accentColor]);
+
+  const color =
+    typeof accentColor === "string"
+      ? accentColor
+      : resolvedColor?.source === accentColor
+        ? resolvedColor?.color
+        : undefined;
   return (
     <div
       className="relative isolate grid grid-rows-[min-content_auto] overflow-hidden"
-      style={{ "--page-accent": accentColor } as CSSProperties}
+      style={{ "--page-accent": color } as CSSProperties}
     >
-      {accentColor && <div data-page-backdrop aria-hidden="true" />}
+      {color && <div data-page-backdrop aria-hidden="true" />}
       <Header {...header} />
 
       <div

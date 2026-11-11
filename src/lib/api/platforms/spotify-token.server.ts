@@ -14,6 +14,7 @@ export async function swipeSpotifyToken() {
   const { access_token, expires_in } = await upfetch(
     "https://everynoise.com/spotify_auth.cgi",
     {
+      timeout: 4000,
       params: {
         action: "accesstoken",
         secret: "fetch",

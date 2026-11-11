@@ -15,7 +15,12 @@ import { musicMetadata } from "#lib/music-metadata";
 import { trackLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
 import { formatDate, vtName } from "#lib/utils";
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import {
+  Await,
+  createFileRoute,
+  notFound,
+  redirect,
+} from "@tanstack/react-router";
 
 export const Route = createFileRoute("/track/$itunesId")({
   loader: async ({ params }) => {
@@ -31,16 +36,18 @@ export const Route = createFileRoute("/track/$itunesId")({
     const track = await $itunes.getTrack(id);
     if (!track) throw notFound();
 
-    const [soundcloud, accentColor] = await Promise.all([
-      $soundcloud.matchAlbum({
+    const soundcloud = $soundcloud
+      .matchAlbum({
         data: { artist: track.artistName, album: track.collectionName },
-      }),
-      getArtworkColor({ data: track.artworkUrl100 }),
-    ]);
+      })
+      .catch(() => []);
+    const accentColor = getArtworkColor({ data: track.artworkUrl100 }).catch(
+      () => undefined,
+    );
 
     return { track, soundcloud, accentColor };
   },
-  head: ({ loaderData, params }) => {
+  head: ({ loaderData }) => {
     if (!loaderData) return {};
     const { track } = loaderData;
     const title = `${track.trackName} by ${track.artistName} | ${siteName}`;
@@ -81,14 +88,28 @@ function RouteComponent() {
 
   const seconds = Math.floor(track.trackTimeMillis / 1000);
   const duration = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-  const fullUrl = $soundcloud.trackUrl(
-    soundcloud,
-    track.trackName,
-    track.artistName,
-  );
-  const playbackUrl = fullUrl ?? track.previewUrl;
 
   const isSingle = isSingleRelease(track.collectionName, track.trackCount);
+
+  const playback = (fullUrl?: string) => {
+    const playbackUrl = fullUrl ?? track.previewUrl;
+    return playbackUrl ? (
+      <div className="flex items-center gap-3">
+        <PlayButton
+          className="btn-inverse size-9 shrink-0 justify-center"
+          track={{
+            title: track.trackName,
+            artist: track.artistName,
+            artworkSrc: track.artworkUrl100,
+            url: playbackUrl,
+          }}
+        />
+        <span>{fullUrl ? "Listen on SoundCloud" : "Listen to a preview"}</span>
+      </div>
+    ) : (
+      <p className="opacity-60">No preview available for this track.</p>
+    );
+  };
 
   return (
     <Layout
@@ -108,28 +129,24 @@ function RouteComponent() {
             height={600}
           />
 
-          <Chip to="/search" search={{ lucky: true, q: track.artistName }}>
+          <Chip
+            to="/artist/$itunesId"
+            params={{ itunesId: encodeItunesId(track.artistId) }}
+          >
             {track.artistName}
           </Chip>
 
-          {playbackUrl ? (
-            <div className="flex items-center gap-3">
-              <PlayButton
-                className="btn-inverse size-9 shrink-0 justify-center"
-                track={{
-                  title: track.trackName,
-                  artist: track.artistName,
-                  artworkSrc: track.artworkUrl100,
-                  url: playbackUrl,
-                }}
-              />
-              <span>
-                {fullUrl ? "Listen on SoundCloud" : "Listen to a preview"}
-              </span>
-            </div>
-          ) : (
-            <p className="opacity-60">No preview available for this track.</p>
-          )}
+          <Await promise={soundcloud} fallback={playback()}>
+            {(matches) =>
+              playback(
+                $soundcloud.trackUrl(
+                  matches,
+                  track.trackName,
+                  track.artistName,
+                ),
+              )
+            }
+          </Await>
 
           <PlatformLinks links={trackLinks(track)} />
         </div>

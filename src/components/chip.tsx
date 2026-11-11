@@ -26,6 +26,8 @@ export function Chip({
           {...vtName`${vt?.img}`}
           className="aspect-square size-control"
           src={leading}
+          loading="lazy"
+          decoding="async"
           alt=""
         />
       ) : (

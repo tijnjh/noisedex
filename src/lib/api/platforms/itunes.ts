@@ -1,6 +1,7 @@
 import {
   getArtistCatalog,
   lookupCatalogSongs,
+  searchCatalogArtists,
 } from "#lib/api/platforms/itunes-catalog";
 import { storeCountryFromLanguages } from "#lib/store-country";
 import { createServerFn } from "@tanstack/react-start";
@@ -38,17 +39,7 @@ export const searchArtists = createServerFn()
     const country = storeCountryFromLanguages(
       getRequestHeader("accept-language"),
     );
-    const response = await serverIsa.search(data, {
-      media: "music",
-      entity: "musicArtist",
-      limit: 25,
-      country,
-    });
-
-    return response.results.filter(
-      (result): result is serverIsa.ResultMusicArtist =>
-        result.wrapperType === "artist",
-    );
+    return searchCatalogArtists(data.trim(), country);
   });
 
 export const getArtistById = createServerFn()
@@ -57,22 +48,7 @@ export const getArtistById = createServerFn()
     const country = storeCountryFromLanguages(
       getRequestHeader("accept-language"),
     );
-    const response = await serverIsa.lookup("id", artistId, {
-      media: "music",
-      entity: "musicArtist",
-      country,
-    });
-    const artist = response.results.find(
-      (result): result is serverIsa.ResultMusicArtist =>
-        result.wrapperType === "artist",
-    );
-
-    if (!artist) return null;
-
-    return {
-      artist,
-      albums: await getArtistCatalog(artistId, country),
-    };
+    return getArtistCatalog(artistId, country);
   });
 
 export const getAlbumsByArtistName = createServerFn()
@@ -81,13 +57,7 @@ export const getAlbumsByArtistName = createServerFn()
     const country = storeCountryFromLanguages(
       getRequestHeader("accept-language"),
     );
-    const artists = await serverIsa
-      .search(artistName, {
-        media: "music",
-        entity: "musicArtist",
-        country,
-      })
-      .then((response) => response.results);
+    const artists = await searchCatalogArtists(artistName.trim(), country);
     const artistId = artists.find(
       (artist) => artist.artistName.toLowerCase() === artistName.toLowerCase(),
     )?.artistId;
@@ -98,9 +68,12 @@ export const getAlbumsByArtistName = createServerFn()
         albums: [],
       };
 
-    const albums = await getArtistCatalog(artistId, country);
+    const catalog = await getArtistCatalog(artistId, country);
 
-    return { artistId, albums };
+    return {
+      artistId,
+      albums: catalog?.albums ?? [],
+    };
   });
 
 const lookupSongsOnServer = createServerFn()

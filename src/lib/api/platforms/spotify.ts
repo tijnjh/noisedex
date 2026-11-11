@@ -4,6 +4,7 @@ import { up } from "up-fetch";
 import * as v from "valibot";
 
 const spotifyFetch = up(fetch, async () => ({
+  timeout: 4000,
   baseUrl: "https://api.spotify.com/v1",
   headers: {
     Authorization: `Bearer ${await swipeSpotifyToken()}`,
