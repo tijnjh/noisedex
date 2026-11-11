@@ -2,6 +2,7 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { $itunes } from "#lib/api/index";
+import { encodeItunesId } from "#lib/api/platforms/itunes-data";
 import { siteName } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute, redirect } from "@tanstack/react-router";
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/search")({
 
       throw redirect({
         to: "/artist/$itunesId",
-        params: { itunesId: String(topResultId) },
+        params: { itunesId: encodeItunesId(topResultId) },
         replace: true,
       });
     }
@@ -70,7 +71,7 @@ function RouteComponent() {
                     key={artist.artistId}
                     vt={{ title: `artist-${artist.artistId}` }}
                     to="/artist/$itunesId"
-                    params={{ itunesId: String(artist.artistId) }}
+                    params={{ itunesId: encodeItunesId(artist.artistId) }}
                   >
                     {artist.artistName}
                   </Chip>

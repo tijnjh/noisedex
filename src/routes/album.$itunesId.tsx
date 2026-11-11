@@ -5,7 +5,11 @@ import { PlayButton } from "#components/play-button";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { usePopover } from "#hooks/use-popover";
 import { $itunes, $soundcloud, $wikipedia } from "#lib/api/index";
-import { isSingleRelease, parseItunesId } from "#lib/api/platforms/itunes-data";
+import {
+  encodeItunesId,
+  isSingleRelease,
+  parseItunesId,
+} from "#lib/api/platforms/itunes-data";
 import {
   getBigItunesArtwork,
   trimItunesCollectionPostfix,
@@ -23,6 +27,13 @@ export const Route = createFileRoute("/album/$itunesId")({
   loader: async ({ params }) => {
     const id = parseItunesId(params.itunesId);
     if (id === undefined) throw notFound();
+    if (params.itunesId !== encodeItunesId(id)) {
+      throw redirect({
+        to: "/album/$itunesId",
+        params: { itunesId: encodeItunesId(id) },
+        replace: true,
+      });
+    }
     const result = await $itunes.getAlbum(id);
     if (!result) throw notFound();
     const { album, tracks } = result;
@@ -32,7 +43,7 @@ export const Route = createFileRoute("/album/$itunesId")({
       throw redirect({
         throw: true,
         to: "/track/$itunesId",
-        params: { itunesId: String(tracks[0].trackId) },
+        params: { itunesId: encodeItunesId(tracks[0].trackId) },
         replace: true,
       });
     }
@@ -69,7 +80,7 @@ export const Route = createFileRoute("/album/$itunesId")({
 
     const title = `${album.collectionName} by ${album.artistName} | ${siteName}`;
     const description = `Explore ${album.collectionName} by ${album.artistName}: release date, genre, and ${tracks.length} tracks with previews on ${siteName}.`;
-    const url = `${siteUrl}/album/${params.itunesId}`;
+    const url = `${siteUrl}/album/${encodeItunesId(album.collectionId)}`;
     const artwork = getBigItunesArtwork(album);
 
     return musicMetadata({
@@ -198,7 +209,7 @@ function Track({
 
       <Chip
         to={"/track/$itunesId"}
-        params={{ itunesId: String(track.trackId) }}
+        params={{ itunesId: encodeItunesId(track.trackId) }}
         trailing={
           <PlayButton
             className="btn-inverse size-9 shrink-0 justify-center"

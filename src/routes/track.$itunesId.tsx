@@ -4,6 +4,7 @@ import { PlatformLinks } from "#components/platform-links";
 import { PlayButton } from "#components/play-button";
 import { $itunes, $soundcloud } from "#lib/api/index";
 import {
+  encodeItunesId,
   getBigItunesArtwork,
   isSingleRelease,
   parseItunesId,
@@ -14,12 +15,19 @@ import { musicMetadata } from "#lib/music-metadata";
 import { trackLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
 import { formatDate, vtName } from "#lib/utils";
-import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/track/$itunesId")({
   loader: async ({ params }) => {
     const id = parseItunesId(params.itunesId);
     if (id === undefined) throw notFound();
+    if (params.itunesId !== encodeItunesId(id)) {
+      throw redirect({
+        to: "/track/$itunesId",
+        params: { itunesId: encodeItunesId(id) },
+        replace: true,
+      });
+    }
     const track = await $itunes.getTrack(id);
     if (!track) throw notFound();
 
@@ -37,7 +45,7 @@ export const Route = createFileRoute("/track/$itunesId")({
     const { track } = loaderData;
     const title = `${track.trackName} by ${track.artistName} | ${siteName}`;
     const description = `Explore ${track.trackName} by ${track.artistName} from ${track.collectionName}: release date, genre, and listening links on ${siteName}.`;
-    const url = `${siteUrl}/track/${params.itunesId}`;
+    const url = `${siteUrl}/track/${encodeItunesId(track.trackId)}`;
     const artwork = getBigItunesArtwork(track);
 
     return musicMetadata({
@@ -53,7 +61,7 @@ export const Route = createFileRoute("/track/$itunesId")({
         inAlbum: {
           "@type": "MusicAlbum",
           name: track.collectionName,
-          url: `${siteUrl}/album/${track.collectionId}`,
+          url: `${siteUrl}/album/${encodeItunesId(track.collectionId)}`,
         },
         datePublished: track.releaseDate,
         genre: track.primaryGenreName,
@@ -137,7 +145,7 @@ function RouteComponent() {
               <h2 className="section-divider">from the album</h2>
               <Chip
                 to="/album/$itunesId"
-                params={{ itunesId: String(track.collectionId) }}
+                params={{ itunesId: encodeItunesId(track.collectionId) }}
                 leading={track.artworkUrl60}
                 vt={{
                   title: `album-${track.collectionId}`,

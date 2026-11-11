@@ -5,12 +5,16 @@ import { PlatformLinks } from "#components/platform-links";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { $everynoise, $itunes, $wikipedia } from "#lib/api/index";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
-import { getReleaseType, parseItunesId } from "#lib/api/platforms/itunes-data";
+import {
+  encodeItunesId,
+  getReleaseType,
+  parseItunesId,
+} from "#lib/api/platforms/itunes-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { artistLinks } from "#lib/platform-links";
 import { buildReleaseTimeline } from "#lib/release-timeline";
 import { scrollRegions } from "#lib/scroll-regions";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import { cn } from "cn";
 import type { ResultAlbum } from "itunes-store-api";
 import { Fragment } from "react";
@@ -25,6 +29,14 @@ export const Route = createFileRoute("/artist/$itunesId")({
   loader: async ({ params }) => {
     const itunesId = parseItunesId(params.itunesId);
     if (itunesId === undefined) throw notFound();
+    if (params.itunesId !== encodeItunesId(itunesId)) {
+      throw redirect({
+        to: "/artist/$itunesId",
+        params: { itunesId: encodeItunesId(itunesId) },
+        search: true,
+        replace: true,
+      });
+    }
 
     const artistData = await $itunes.getArtistById({ data: itunesId });
     if (!artistData) throw notFound();

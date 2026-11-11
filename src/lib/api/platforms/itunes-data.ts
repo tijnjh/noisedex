@@ -16,9 +16,37 @@ export function isSingleRelease(collectionName: string, trackCount: number) {
   return collectionName.endsWith("- Single") && trackCount === 1;
 }
 
+const availableChars =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+export function encodeItunesId(id: number) {
+  let encoded = "";
+
+  do {
+    encoded = availableChars[id % 64] + encoded;
+    id = Math.floor(id / 64);
+  } while (id > 0);
+
+  return encoded;
+}
+
 export function parseItunesId(value: string) {
-  const id = Number(value);
-  return /^\d+$/.test(value) && Number.isSafeInteger(id) && id > 0
+  if (/^\d{9,}$/.test(value)) {
+    const id = Number(value);
+    return Number.isSafeInteger(id) ? id : undefined;
+  }
+
+  if (!/^[\w-]{1,9}$/.test(value)) {
+    return;
+  }
+
+  let id = 0;
+
+  for (const char of value) {
+    id = id * 64 + availableChars.indexOf(char);
+  }
+
+  return Number.isSafeInteger(id) && id > 0 && encodeItunesId(id) === value
     ? id
     : undefined;
 }

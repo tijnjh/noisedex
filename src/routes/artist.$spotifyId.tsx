@@ -1,4 +1,5 @@
 import { $itunes, $spotify } from "#lib/api/index";
+import { encodeItunesId } from "#lib/api/platforms/itunes-data";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 // BACKWARDS COMPATIBILITY: remove this eventually
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/artist/$spotifyId")({
 
     throw redirect({
       to: "/artist/$itunesId",
-      params: { itunesId: String(artistId) },
+      params: { itunesId: encodeItunesId(artistId) },
       replace: true,
     });
   },

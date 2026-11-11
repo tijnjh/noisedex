@@ -1,6 +1,9 @@
 import { Chip } from "#components/chip";
 import { usePopover } from "#hooks/use-popover";
-import { trimItunesCollectionPostfix } from "#lib/api/platforms/itunes-data";
+import {
+  encodeItunesId,
+  trimItunesCollectionPostfix,
+} from "#lib/api/platforms/itunes-data";
 import { formatDate, formatMillis } from "#lib/utils";
 import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
@@ -77,7 +80,7 @@ export function MusicChip({
             }
       }
       to={track ? "/track/$itunesId" : "/album/$itunesId"}
-      params={{ itunesId: String(track?.trackId ?? music.collectionId) }}
+      params={{ itunesId: encodeItunesId(track?.trackId ?? music.collectionId) }}
     >
       {showArtist ? `${label} — ${music.artistName}` : label}
     </Chip>
