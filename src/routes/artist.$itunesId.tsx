@@ -109,7 +109,7 @@ function RouteComponent() {
             genres={wikipediaArtistGenres}
           />
 
-          <Await promise={everynoiseArtist} fallback={null}>
+          <Await promise={everynoiseArtist} fallback={<></>}>
             {(everynoiseArtist) =>
               everynoiseArtist &&
               everynoiseArtist.genres.length > 0 && (
