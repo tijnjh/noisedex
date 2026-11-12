@@ -63,7 +63,7 @@ export function Layout({
       className="relative isolate grid grid-rows-[min-content_auto] overflow-hidden"
       style={{ "--page-accent": color } as CSSProperties}
     >
-      {color && <div data-page-backdrop aria-hidden="true" />}
+      <div data-page-backdrop aria-hidden="true" />
 
       <Header
         collapsed={header.collapsed ?? !atTop}

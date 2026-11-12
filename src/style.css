@@ -176,7 +176,14 @@ button,
   }
 }
 
+@property --backdrop-accent {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
 [data-page-backdrop] {
+  --backdrop-accent: var(--page-accent, transparent);
   position: fixed;
   z-index: -1;
   inset: -14rem;
@@ -184,18 +191,25 @@ button,
   background:
     radial-gradient(
       circle at 20% 18%,
-      color-mix(in srgb, var(--page-accent, transparent) 38%, transparent),
+      color-mix(in srgb, var(--backdrop-accent) 38%, transparent),
       transparent 48%
     ),
     radial-gradient(
       circle at 82% 78%,
-      color-mix(in srgb, var(--page-accent, transparent) 24%, transparent),
+      color-mix(in srgb, var(--backdrop-accent) 24%, transparent),
       transparent 42%
     );
   /* The gradients already soften their edges. A viewport-sized blur filter
      makes scrolling over this backdrop expensive in Chromium. */
   opacity: 0.72;
+  transition: --backdrop-accent 350ms ease;
   transform: translateZ(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-page-backdrop] {
+    transition: none;
+  }
 }
 
 [data-wikipedia-description] {
