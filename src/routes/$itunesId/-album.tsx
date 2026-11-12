@@ -17,8 +17,10 @@ import { musicMetadata } from "#lib/music-metadata";
 import { albumLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
 import { formatDate, formatMillis, vtName } from "#lib/utils";
-import { Await } from "@tanstack/react-router";
+import { Await, getRouteApi } from "@tanstack/react-router";
 import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
+
+const musicRoute = getRouteApi("/$itunesId/");
 
 type AlbumData = ReturnType<typeof loadAlbum>;
 
@@ -98,7 +100,11 @@ export function albumHead(data: AlbumData) {
   });
 }
 
-export function AlbumPage({ data }: { data: AlbumData }) {
+export function AlbumPage() {
+  const music = musicRoute.useLoaderData();
+  if (music.type !== "album") return;
+  const data = music.data;
+
   return (
     <Layout
       header={{
@@ -179,11 +185,7 @@ export function AlbumPage({ data }: { data: AlbumData }) {
 
           <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
             {data.tracks.map((track) => (
-              <Track
-                key={track.trackId}
-                track={track}
-                soundcloud={data.soundcloud}
-              />
+              <Track key={track.trackId} track={track} />
             ))}
           </div>
         </section>
@@ -192,13 +194,11 @@ export function AlbumPage({ data }: { data: AlbumData }) {
   );
 }
 
-function Track({
-  track,
-  soundcloud,
-}: {
-  track: ResultMusicTrack;
-  soundcloud: ReturnType<typeof $soundcloud.matchAlbum>;
-}) {
+function Track({ track }: { track: ResultMusicTrack }) {
+  const soundcloud = musicRoute.useLoaderData({
+    select: (music) =>
+      music.type === "album" ? music.data.soundcloud : undefined,
+  });
   const triggerProps = usePopover(
     <div className="flex w-72 flex-col gap-3 p-3">
       <dl>
@@ -207,6 +207,8 @@ function Track({
       </dl>
     </div>,
   );
+
+  if (!soundcloud) return null;
 
   const playButton = (url: string) => (
     <PlayButton

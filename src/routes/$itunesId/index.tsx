@@ -26,7 +26,10 @@ export const Route = createFileRoute("/$itunesId/")({
 
     switch (music.type) {
       case "artist":
-        return { type: "artist" as const, data: loadArtist(music) };
+        return {
+          type: "artist" as const,
+          data: loadArtist(music),
+        };
 
       case "album":
         if (isSingleRelease(music.album.collectionName, music.tracks.length)) {
@@ -37,10 +40,16 @@ export const Route = createFileRoute("/$itunesId/")({
           });
         }
 
-        return { type: "album" as const, data: loadAlbum(music) };
+        return {
+          type: "album" as const,
+          data: loadAlbum(music),
+        };
 
       case "track":
-        return { type: "track" as const, data: loadTrack(music) };
+        return {
+          type: "track" as const,
+          data: loadTrack(music),
+        };
     }
   },
 
@@ -61,14 +70,14 @@ export const Route = createFileRoute("/$itunesId/")({
 });
 
 function MusicPage() {
-  const music = Route.useLoaderData();
+  const type = Route.useLoaderData({ select: (music) => music.type });
 
-  switch (music.type) {
+  switch (type) {
     case "artist":
-      return <ArtistPage data={music.data} />;
+      return <ArtistPage />;
     case "album":
-      return <AlbumPage data={music.data} />;
+      return <AlbumPage />;
     case "track":
-      return <TrackPage data={music.data} />;
+      return <TrackPage />;
   }
 }

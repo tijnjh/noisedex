@@ -67,10 +67,13 @@ export function artistHead(data: ArtistData) {
   };
 }
 
-export function ArtistPage({ data }: { data: ArtistData }) {
+export function ArtistPage() {
+  const music = musicRoute.useLoaderData();
+  if (music.type !== "artist") return;
+  const data = music.data;
+
   const {
     artist,
-    albums,
     wikipediaArtist,
     wikipediaArtistGenres,
     everynoiseArtist,
@@ -108,6 +111,7 @@ export function ArtistPage({ data }: { data: ArtistData }) {
               />
             )}
           </AsyncContent>
+
           {genre && (
             <>
               <span className="section-divider">itunes genre</span>
@@ -123,12 +127,15 @@ export function ArtistPage({ data }: { data: ArtistData }) {
           )}
         </>
       }
-      trailing={<ArtistReleasesList releases={albums} />}
+      trailing={<ArtistReleasesList />}
     />
   );
 }
 
-function ArtistReleasesList({ releases }: { releases: ResultAlbum[] }) {
+function ArtistReleasesList() {
+  const releases = musicRoute.useLoaderData({
+    select: (music) => (music.type === "artist" ? music.data.albums : []),
+  });
   const { filter = "All" } = musicRoute.useSearch();
   const navigate = musicRoute.useNavigate();
   const timeline = buildReleaseTimeline(

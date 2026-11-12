@@ -14,8 +14,10 @@ import { musicMetadata } from "#lib/music-metadata";
 import { trackLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
 import { formatDate, vtName } from "#lib/utils";
-import { Await } from "@tanstack/react-router";
+import { Await, getRouteApi } from "@tanstack/react-router";
 import type { ResultMusicTrack } from "itunes-store-api";
+
+const musicRoute = getRouteApi("/$itunesId/");
 
 type TrackData = ReturnType<typeof loadTrack>;
 
@@ -64,7 +66,11 @@ export function trackHead(data: TrackData) {
   });
 }
 
-export function TrackPage({ data }: { data: TrackData }) {
+export function TrackPage() {
+  const music = musicRoute.useLoaderData();
+  if (music.type !== "track") return;
+  const data = music.data;
+
   const { track, soundcloud, accentColor } = data;
 
   const seconds = Math.floor(track.trackTimeMillis / 1000);
