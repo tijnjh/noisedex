@@ -3,7 +3,7 @@ import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 export default createServerEntry({
   fetch(request, options) {
     if (!import.meta.env.DEV) {
-      const canonical = new URL(`https://${process.env.CANONICAL_HOST || "nd.tijn.dev"}`);
+      const canonical = new URL(`https://${process.env.CANONICAL_HOST || "noisedex.com"}`);
       const url = new URL(request.url);
 
       if (url.host !== canonical.host) {
