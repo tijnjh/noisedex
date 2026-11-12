@@ -157,7 +157,9 @@ function Title({
               </motion.span>
             )}
           </AnimatePresence>
+
           <span {...vtName`header-title-d`}>d</span>
+
           <AnimatePresence initial={false}>
             {(!collapsed || isHovering) && (
               <motion.span

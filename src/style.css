@@ -1,9 +1,6 @@
+@import url("https://fonts.cdnfonts.com/css/satoshi");
 @import "tailwindcss";
 @import "tailwind-color-pairings";
-@import "@fontsource/inter";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
-@import "@fontsource/inter/800.css";
 @import "@fontsource/zen-dots";
 
 @theme {
@@ -11,7 +8,7 @@
   --spacing-grid-gap: 0.75rem;
   --spacing-grid-min: 12rem;
 
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: "Satoshi", system-ui, sans-serif;
   --font-logo: "Zen Dots";
 }
 
