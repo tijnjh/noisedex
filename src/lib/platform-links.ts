@@ -14,7 +14,7 @@ export const platforms = {
     domain: "music.apple.com",
     icon: "/music-apple-com.png",
   },
-  aoty: { name: "AOTY" },
+  aoty: { name: "AOTY", domain: "albumoftheyear.org" },
   rym: { name: "RYM", domain: "rateyourmusic.com" },
   bandcamp: {
     name: "bandcamp",
@@ -35,21 +35,19 @@ export function artistLinks(artistName: string, appleArtistId?: number): Platfor
       ...platforms.spotify,
       href: `https://open.spotify.com/search/${encodedArtistName}`,
     },
-    ...(appleArtistId
-      ? [
-          {
-            ...platforms.apple,
-            href: `https://music.apple.com/artist/${appleArtistId}`,
-          },
-        ]
-      : []),
+    {
+      ...platforms.apple,
+      href: appleArtistId
+        ? `https://music.apple.com/artist/${appleArtistId}`
+        : `https://music.apple.com/search?term=${encodedArtistName}`,
+    },
     {
       ...platforms.aoty,
       href: `https://www.albumoftheyear.org/search/artists/?q=${encodedArtistName}`,
     },
     {
       ...platforms.rym,
-      href: `https://rateyourmusic.com/artist/${encodedArtistName}-1`,
+      href: `https://rateyourmusic.com/search?searchtype=a&searchterm=${encodedArtistName}`,
     },
     {
       ...platforms.bandcamp,
@@ -82,7 +80,8 @@ export function albumLinks(album: {
     },
     {
       ...platforms.apple,
-      href: album.collectionViewUrl,
+      href:
+        album.collectionViewUrl || `https://music.apple.com/search?term=${constructedSearchQuery}`,
     },
     {
       ...platforms.aoty,
@@ -90,7 +89,7 @@ export function albumLinks(album: {
     },
     {
       ...platforms.rym,
-      href: `https://rateyourmusic.com/release/album/${encodeURIComponent(album.artistName)}/${encodeURIComponent(streamlinedCollectionName)}/`,
+      href: `https://rateyourmusic.com/search?searchtype=l&searchterm=${constructedSearchQuery}`,
     },
     {
       ...platforms.bandcamp,
@@ -120,7 +119,7 @@ export function trackLinks(track: {
     },
     {
       ...platforms.apple,
-      href: track.trackViewUrl,
+      href: track.trackViewUrl || `https://music.apple.com/search?term=${constructedSearchQuery}`,
     },
     {
       ...platforms.bandcamp,
