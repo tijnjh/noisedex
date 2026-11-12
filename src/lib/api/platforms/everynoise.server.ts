@@ -40,9 +40,7 @@ export const getArtistByName = cached(
 
     const artists = await lookupArtists({ data: artistName });
 
-    const artist = artists.find(
-      (a) => a.name.trim().toLowerCase() === artistName.toLowerCase(),
-    );
+    const artist = artists.find((a) => a.name.trim().toLowerCase() === artistName.toLowerCase());
 
     if (!artist) return;
 

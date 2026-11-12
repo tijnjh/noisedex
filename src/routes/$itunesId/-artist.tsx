@@ -28,14 +28,11 @@ export function loadArtist({
   artist: ResultMusicArtist;
   albums: ResultAlbum[];
 }) {
-  const { summary: wikipediaArtist, genres: wikipediaArtistGenres } =
-    $wikipedia.enrichWithGenres(
-      $wikipedia.getArtistByName({ data: artist.artistName }),
-    );
+  const { summary: wikipediaArtist, genres: wikipediaArtistGenres } = $wikipedia.enrichWithGenres(
+    $wikipedia.getArtistByName({ data: artist.artistName }),
+  );
 
-  const everynoiseArtist = $everynoise
-    .getArtistByName(artist.artistName)
-    .catch(() => undefined);
+  const everynoiseArtist = $everynoise.getArtistByName(artist.artistName).catch(() => undefined);
 
   return {
     artist,
@@ -72,13 +69,7 @@ export function ArtistPage() {
   if (music.type !== "artist") return;
   const data = music.data;
 
-  const {
-    artist,
-    wikipediaArtist,
-    wikipediaArtistGenres,
-    everynoiseArtist,
-    accentColor,
-  } = data;
+  const { artist, wikipediaArtist, wikipediaArtistGenres, everynoiseArtist, accentColor } = data;
   const genre = artist.primaryGenreName;
 
   return (
@@ -90,14 +81,9 @@ export function ArtistPage() {
       accentColor={accentColor}
       leading={
         <>
-          <PlatformLinks
-            links={artistLinks(artist.artistName, artist.artistId)}
-          />
+          <PlatformLinks links={artistLinks(artist.artistName, artist.artistId)} />
 
-          <WikipediaDescription
-            summary={wikipediaArtist}
-            genres={wikipediaArtistGenres}
-          />
+          <WikipediaDescription summary={wikipediaArtist} genres={wikipediaArtistGenres} />
 
           <AsyncContent<{ genres: string[] } | undefined>
             promise={everynoiseArtist}
@@ -105,10 +91,7 @@ export function ArtistPage() {
             label="Loading artist genres"
           >
             {(result) => (
-              <GenreList
-                title="genres this artist is in"
-                names={result?.genres ?? []}
-              />
+              <GenreList title="genres this artist is in" names={result?.genres ?? []} />
             )}
           </AsyncContent>
 
@@ -141,9 +124,7 @@ function ArtistReleasesList() {
   const navigate = musicRoute.useNavigate();
   const timeline = buildReleaseTimeline(
     releases.filter(
-      (release) =>
-        filter === "All" ||
-        getReleaseType(release.collectionName) + "s" === filter,
+      (release) => filter === "All" || getReleaseType(release.collectionName) + "s" === filter,
     ),
   );
 
@@ -168,10 +149,7 @@ function ArtistReleasesList() {
                 resetScroll: false,
               })
             }
-            className={cn(
-              "cursor-pointer",
-              filter === type ? "btn-inverse h-9" : "btn h-9",
-            )}
+            className={cn("cursor-pointer", filter === type ? "btn-inverse h-9" : "btn h-9")}
           >
             {type}
           </button>

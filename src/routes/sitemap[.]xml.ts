@@ -10,9 +10,7 @@ export const Route = createFileRoute("/sitemap.xml")({
         const genreSlugs = [
           ...new Set(
             await getAllGenres().then((r) =>
-              r
-                .map((genre) => genreNameToSlug(genre.genreName))
-                .filter(Boolean),
+              r.map((genre) => genreNameToSlug(genre.genreName)).filter(Boolean),
             ),
           ),
         ];

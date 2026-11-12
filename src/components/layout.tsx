@@ -1,18 +1,9 @@
 import { useGenreFilters } from "#hooks/use-genre-filters";
 import { scrollRegions } from "#lib/scroll-regions";
 import { vtName } from "#lib/utils";
-import {
-  Link,
-  useLocation,
-  useNavigate,
-  useSearch,
-} from "@tanstack/react-router";
+import { Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
 import { cn } from "cn";
-import {
-  AnimatePresence,
-  motion,
-  type MotionNodeAnimationOptions,
-} from "motion/react";
+import { AnimatePresence, motion, type MotionNodeAnimationOptions } from "motion/react";
 import {
   useState,
   useEffect,
@@ -102,10 +93,7 @@ export function Layout({
                   animate={{
                     opacity: atTop ? 1 : 0,
                   }}
-                  className={cn(
-                    "mb-8 text-4xl text-balance md:text-5xl",
-                    header.titleClassName,
-                  )}
+                  className={cn("mb-8 text-4xl text-balance md:text-5xl", header.titleClassName)}
                 >
                   {header.title}
                 </motion.h1>
@@ -151,11 +139,7 @@ function Title({
           <span {...vtName`header-title-n`}>n</span>
           <AnimatePresence initial={false}>
             {(!collapsed || isHovering) && (
-              <motion.span
-                key="123"
-                {...segAnimConfig}
-                {...vtName`header-title-oise`}
-              >
+              <motion.span key="123" {...segAnimConfig} {...vtName`header-title-oise`}>
                 oise
               </motion.span>
             )}
@@ -165,11 +149,7 @@ function Title({
 
           <AnimatePresence initial={false}>
             {(!collapsed || isHovering) && (
-              <motion.span
-                key="1234"
-                {...segAnimConfig}
-                {...vtName`header-title-ex`}
-              >
+              <motion.span key="1234" {...segAnimConfig} {...vtName`header-title-ex`}>
                 ex
               </motion.span>
             )}
@@ -188,10 +168,7 @@ function Title({
             exit={{ opacity: 0 }}
           >
             &bull;
-            <h1
-              {...vtName`${titleVt}`}
-              className={cn("truncate text-2xl", titleClassName)}
-            >
+            <h1 {...vtName`${titleVt}`} className={cn("truncate text-2xl", titleClassName)}>
               {title}
             </h1>
           </motion.div>
@@ -237,7 +214,7 @@ function SearchBar() {
         e.preventDefault();
         const query = value.trim();
         if (!query) return;
-        navigate({
+        void navigate({
           to: "/search",
           search: {
             q: query,
@@ -264,17 +241,11 @@ function SearchBar() {
         autoCapitalize="none"
         autoCorrect="off"
         placeholder={
-          isHomepage
-            ? "filter genres, enter to search"
-            : "look up an artist, album, or track"
+          isHomepage ? "filter genres, enter to search" : "look up an artist, album, or track"
         }
       />
 
-      <button
-        type="submit"
-        aria-label="Search"
-        className="btn-inverse size-9 justify-center"
-      >
+      <button type="submit" aria-label="Search" className="btn-inverse size-9 justify-center">
         →
       </button>
     </form>

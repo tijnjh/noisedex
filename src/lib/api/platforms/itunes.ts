@@ -12,9 +12,7 @@ import * as v from "valibot";
 export const searchMusic = createServerFn()
   .validator(v.string())
   .handler(async ({ data }) => {
-    const country = storeCountryFromLanguages(
-      getRequestHeader("accept-language"),
-    );
+    const country = storeCountryFromLanguages(getRequestHeader("accept-language"));
     const [albums, tracks] = await Promise.all([
       serverIsa.search(data, {
         media: "music",
@@ -36,18 +34,14 @@ export const searchMusic = createServerFn()
 export const searchArtists = createServerFn()
   .validator(v.string())
   .handler(async ({ data }) => {
-    const country = storeCountryFromLanguages(
-      getRequestHeader("accept-language"),
-    );
+    const country = storeCountryFromLanguages(getRequestHeader("accept-language"));
     return searchCatalogArtists(data.trim(), country);
   });
 
 export const getMusic = createServerFn()
   .validator(v.number())
   .handler(async ({ data: id }) => {
-    const country = storeCountryFromLanguages(
-      getRequestHeader("accept-language"),
-    );
+    const country = storeCountryFromLanguages(getRequestHeader("accept-language"));
     const results = await lookupCatalogSongs(id, country);
     const result = results[0];
 
@@ -71,11 +65,7 @@ export const getMusic = createServerFn()
       return { type: "album" as const, album: result, tracks };
     }
 
-    if (
-      result?.wrapperType === "track" &&
-      result.kind === "song" &&
-      result.trackId === id
-    ) {
+    if (result?.wrapperType === "track" && result.kind === "song" && result.trackId === id) {
       return { type: "track" as const, track: result };
     }
   });

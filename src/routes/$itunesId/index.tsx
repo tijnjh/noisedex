@@ -1,9 +1,5 @@
 import { $itunes } from "#lib/api/index";
-import {
-  encodeItunesId,
-  isSingleRelease,
-  parseItunesId,
-} from "#lib/api/platforms/itunes-data";
+import { encodeItunesId, isSingleRelease, parseItunesId } from "#lib/api/platforms/itunes-data";
 import { AlbumPage, albumHead, loadAlbum } from "./-album";
 import { ArtistPage, artistHead, loadArtist } from "./-artist";
 import { TrackPage, trackHead, loadTrack } from "./-track";
@@ -12,9 +8,7 @@ import * as v from "valibot";
 
 export const Route = createFileRoute("/$itunesId/")({
   validateSearch: v.object({
-    filter: v.optional(
-      v.fallback(v.picklist(["All", "LPs", "EPs", "Singles"]), "All"),
-    ),
+    filter: v.optional(v.fallback(v.picklist(["All", "LPs", "EPs", "Singles"]), "All")),
   }),
 
   loader: async ({ params }) => {

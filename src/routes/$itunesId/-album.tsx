@@ -7,10 +7,7 @@ import { WikipediaDescription } from "#components/wikipedia-description";
 import { usePopover } from "#hooks/use-popover";
 import { $fantano, $soundcloud, $wikipedia } from "#lib/api/index";
 import { encodeItunesId } from "#lib/api/platforms/itunes-data";
-import {
-  getBigItunesArtwork,
-  trimItunesCollectionPostfix,
-} from "#lib/api/platforms/itunes-data";
+import { getBigItunesArtwork, trimItunesCollectionPostfix } from "#lib/api/platforms/itunes-data";
 import { getArtworkColor } from "#lib/artwork-color";
 import { siteName, siteUrl } from "#lib/constants";
 import { musicMetadata } from "#lib/music-metadata";
@@ -24,19 +21,12 @@ const musicRoute = getRouteApi("/$itunesId/");
 
 type AlbumData = ReturnType<typeof loadAlbum>;
 
-export function loadAlbum({
-  album,
-  tracks,
-}: {
-  album: ResultAlbum;
-  tracks: ResultMusicTrack[];
-}) {
-  const { summary: wikipediaAlbum, genres: wikipediaAlbumGenres } =
-    $wikipedia.enrichWithGenres(
-      $wikipedia.getAlbumByName({
-        data: { album: album.collectionName, artist: album.artistName },
-      }),
-    );
+export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: ResultMusicTrack[] }) {
+  const { summary: wikipediaAlbum, genres: wikipediaAlbumGenres } = $wikipedia.enrichWithGenres(
+    $wikipedia.getAlbumByName({
+      data: { album: album.collectionName, artist: album.artistName },
+    }),
+  );
 
   const soundcloud = $soundcloud
     .matchAlbum({
@@ -46,9 +36,7 @@ export function loadAlbum({
       },
     })
     .catch(() => []);
-  const accentColor = getArtworkColor({ data: album.artworkUrl100 }).catch(
-    () => undefined,
-  );
+  const accentColor = getArtworkColor({ data: album.artworkUrl100 }).catch(() => undefined);
 
   const fantanoReview = $fantano.getReview({
     data: {
@@ -150,9 +138,7 @@ export function AlbumPage() {
               review?.excerpt ? (
                 <figure className="mt-3 border-l-2 border-current/25 pl-4">
                   <blockquote cite={review.url} className="inline italic">
-                    <p className="inline whitespace-pre-line">
-                      “{review.excerpt.trim()}”
-                    </p>
+                    <p className="inline whitespace-pre-line">“{review.excerpt.trim()}”</p>
                   </blockquote>
                   <figcaption>
                     <a
@@ -169,10 +155,7 @@ export function AlbumPage() {
             }
           </AsyncContent>
 
-          <WikipediaDescription
-            summary={data.wikipediaAlbum}
-            genres={data.wikipediaAlbumGenres}
-          />
+          <WikipediaDescription summary={data.wikipediaAlbum} genres={data.wikipediaAlbumGenres} />
         </div>
       }
       trailing={
@@ -196,8 +179,7 @@ export function AlbumPage() {
 
 function Track({ track }: { track: ResultMusicTrack }) {
   const soundcloud = musicRoute.useLoaderData({
-    select: (music) =>
-      music.type === "album" ? music.data.soundcloud : undefined,
+    select: (music) => (music.type === "album" ? music.data.soundcloud : undefined),
   });
   const triggerProps = usePopover(
     <div className="flex w-72 flex-col gap-3 p-3">
@@ -237,11 +219,8 @@ function Track({ track }: { track: ResultMusicTrack }) {
           <Await promise={soundcloud} fallback={playButton(track.previewUrl)}>
             {(matches) =>
               playButton(
-                $soundcloud.trackUrl(
-                  matches,
-                  track.trackName,
-                  track.artistName,
-                ) ?? track.previewUrl,
+                $soundcloud.trackUrl(matches, track.trackName, track.artistName) ??
+                  track.previewUrl,
               )
             }
           </Await>

@@ -1,8 +1,4 @@
-import {
-  nowPlayingAtom,
-  stoppedPlayback,
-  type PlaybackTrack,
-} from "#lib/playback";
+import { nowPlayingAtom, stoppedPlayback, type PlaybackTrack } from "#lib/playback";
 import { useAtom } from "jotai";
 import type { ComponentProps } from "react";
 

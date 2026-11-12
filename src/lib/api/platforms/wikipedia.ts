@@ -13,9 +13,7 @@ export const getGenreByName = createServerFn()
 
 export const getAlbumByName = createServerFn()
   .validator(v.object({ album: v.string(), artist: v.string() }))
-  .handler(({ data }) =>
-    getSummary({ kind: "album", name: data.album, artist: data.artist }),
-  );
+  .handler(({ data }) => getSummary({ kind: "album", name: data.album, artist: data.artist }));
 
 export const getGenresByTitle = createServerFn()
   .validator(v.string())
@@ -24,9 +22,7 @@ export const getGenresByTitle = createServerFn()
 export function enrichWithGenres(pending: Promise<WikipediaSummary | null>) {
   const summary = pending.catch(() => null);
   const genres = summary
-    .then((article) =>
-      article ? getGenresByTitle({ data: article.title }) : [],
-    )
+    .then((article) => (article ? getGenresByTitle({ data: article.title }) : []))
     .catch(() => []);
   return { summary, genres };
 }

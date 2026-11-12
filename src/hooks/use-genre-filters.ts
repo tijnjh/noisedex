@@ -38,8 +38,7 @@ export function useGenreFilters() {
   }) as Record<string, unknown>;
   const navigate = useNavigate();
   const query = typeof search.q === "string" ? search.q : "";
-  const filter =
-    filters.find((option) => option.value === search.type) ?? filters[0];
+  const filter = filters.find((option) => option.value === search.type) ?? filters[0];
   const sort = sorts.find((option) => option.value === search.sort) ?? sorts[0];
 
   function update(key: string, value: string, defaultValue: string) {
@@ -66,10 +65,6 @@ export function useGenreFilters() {
         filters[0].value,
       ),
     cycleSort: () =>
-      update(
-        "sort",
-        sorts[(sorts.indexOf(sort) + 1) % sorts.length].value,
-        sorts[0].value,
-      ),
+      update("sort", sorts[(sorts.indexOf(sort) + 1) % sorts.length].value, sorts[0].value),
   };
 }

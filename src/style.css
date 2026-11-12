@@ -64,11 +64,7 @@ dd {
 
 @utility surface {
   color: var(--surface-text);
-  background: color-mix(
-    in srgb,
-    var(--surface-base) 94%,
-    var(--page-accent, var(--surface-base))
-  );
+  background: color-mix(in srgb, var(--surface-base) 94%, var(--page-accent, var(--surface-base)));
   box-shadow: inset 0 0 0 1px var(--surface-edge);
 }
 
@@ -130,10 +126,7 @@ input,
 }
 
 @utility grid-cols-responsive {
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(var(--spacing-grid-min), 1fr)
-  );
+  grid-template-columns: repeat(auto-fill, minmax(var(--spacing-grid-min), 1fr));
 }
 
 @utility section-divider {

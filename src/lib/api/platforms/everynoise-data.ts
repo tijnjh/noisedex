@@ -3,9 +3,7 @@ export function genreNameToSlug(genre: string | undefined | null) {
   return genre.toLowerCase().replace(/[^a-z0-9]/gi, "");
 }
 
-export function findSoundOfPlaylistId(
-  links: Array<{ text: string; href: string }>,
-) {
+export function findSoundOfPlaylistId(links: Array<{ text: string; href: string }>) {
   const fullUrl = links.find((l) => l.text === "playlist")?.href;
   if (!fullUrl) return;
   return fullUrl.replace("https://open.spotify.com/playlist/", "");

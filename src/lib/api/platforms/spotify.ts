@@ -37,9 +37,7 @@ export const lookupArtists = createServerFn()
       }),
     });
 
-    const filteredArtists = spotifyRes.artists.items.filter(
-      (i) => !!i.images.length,
-    );
+    const filteredArtists = spotifyRes.artists.items.filter((i) => !!i.images.length);
 
     return filteredArtists;
   });

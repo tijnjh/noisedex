@@ -36,9 +36,7 @@ function Genres(props: {
   const sortedGenres = useMemo(() => {
     const term = query.toLowerCase();
     const filtered = term
-      ? props.genres.filter((genre) =>
-          filter.text(genre).toLowerCase().includes(term),
-        )
+      ? props.genres.filter((genre) => filter.text(genre).toLowerCase().includes(term))
       : props.genres;
     return sort.apply(filtered);
   }, [props.genres, query, filter, sort]);

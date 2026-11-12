@@ -3,6 +3,7 @@ import { up } from "up-fetch";
 export const upfetch = up(fetch);
 
 export function vtName(strs: TemplateStringsArray, ...args: unknown[]) {
+  // oxlint-disable-next-line typescript/no-base-to-string
   const selector = strs.map((s, i) => s + (args[i] ?? "")).join("");
 
   if (!selector) {
@@ -53,13 +54,12 @@ function colorCoordinates(hex: string) {
   let value = hex.replace(/^#/, "");
 
   if (value.length === 3)
+    // oxlint-disable-next-line typescript/no-misused-spread
     value = [...value].map((digit) => digit + digit).join("");
 
   const channels = [0, 2, 4].map((offset) => {
     const channel = parseInt(value.slice(offset, offset + 2), 16) / 255;
-    return channel <= 0.04045
-      ? channel / 12.92
-      : ((channel + 0.055) / 1.055) ** 2.4;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
   });
 
   const [r, g, b] = channels;
@@ -75,10 +75,7 @@ function colorCoordinates(hex: string) {
   return { hue, lightness, chroma };
 }
 
-export function sortHexColorsToGradient<T>(
-  items: T[],
-  getColor: (item: T) => string,
-): T[] {
+export function sortHexColorsToGradient<T>(items: T[], getColor: (item: T) => string): T[] {
   return items
     .map((item) => ({ item, ...colorCoordinates(getColor(item)) }))
     .sort((a, b) => {

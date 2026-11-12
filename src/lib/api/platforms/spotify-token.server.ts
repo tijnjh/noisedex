@@ -11,20 +11,17 @@ export async function swipeSpotifyToken() {
     return cachedToken.accessToken;
   }
 
-  const { access_token, expires_in } = await upfetch(
-    "https://everynoise.com/spotify_auth.cgi",
-    {
-      timeout: 4000,
-      params: {
-        action: "accesstoken",
-        secret: "fetch",
-      },
-      schema: v.object({
-        access_token: v.string(),
-        expires_in: v.number(),
-      }),
+  const { access_token, expires_in } = await upfetch("https://everynoise.com/spotify_auth.cgi", {
+    timeout: 4000,
+    params: {
+      action: "accesstoken",
+      secret: "fetch",
     },
-  );
+    schema: v.object({
+      access_token: v.string(),
+      expires_in: v.number(),
+    }),
+  });
 
   cachedToken = {
     accessToken: access_token,

@@ -4,11 +4,7 @@ export function trimItunesCollectionPostfix(collectionName: string) {
   return collectionName.replace(" - Single", "").replace(" - EP", "");
 }
 
-export function getBigItunesArtwork({
-  artworkUrl100,
-}: {
-  artworkUrl100: string;
-}) {
+export function getBigItunesArtwork({ artworkUrl100 }: { artworkUrl100: string }) {
   return artworkUrl100.replace("100x100bb", "600x600bb");
 }
 
@@ -16,8 +12,7 @@ export function isSingleRelease(collectionName: string, trackCount: number) {
   return collectionName.endsWith("- Single") && trackCount === 1;
 }
 
-const availableChars =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const availableChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 export function encodeItunesId(id: number) {
   let encoded = "";
@@ -41,9 +36,7 @@ export function parseItunesId(value: string) {
     id = id * 64 + availableChars.indexOf(char);
   }
 
-  return Number.isSafeInteger(id) && id > 0 && encodeItunesId(id) === value
-    ? id
-    : undefined;
+  return Number.isSafeInteger(id) && id > 0 && encodeItunesId(id) === value ? id : undefined;
 }
 
 export function organizeArtistReleases(releases: ResultAlbum[]) {

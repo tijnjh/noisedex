@@ -1,9 +1,6 @@
 import { Chip } from "#components/chip";
 import { usePopover } from "#hooks/use-popover";
-import {
-  encodeItunesId,
-  trimItunesCollectionPostfix,
-} from "#lib/api/platforms/itunes-data";
+import { encodeItunesId, trimItunesCollectionPostfix } from "#lib/api/platforms/itunes-data";
 import { formatDate, formatMillis } from "#lib/utils";
 import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
@@ -19,9 +16,7 @@ export function MusicChip({
   const date = new Date(music.releaseDate);
   const triggerProps = usePopover(
     <div className="flex w-72 flex-col gap-3 p-3 wrap-break-word">
-      {music.artworkUrl100 && (
-        <img className="size-36" src={music.artworkUrl100} alt="" />
-      )}
+      {music.artworkUrl100 && <img className="size-36" src={music.artworkUrl100} alt="" />}
       {title}
 
       <dl>

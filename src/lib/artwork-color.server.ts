@@ -17,11 +17,7 @@ export function extractArtworkColor(url: string) {
 async function extract(url: string) {
   try {
     const source = new URL(url);
-    if (
-      source.protocol !== "https:" ||
-      !source.hostname.endsWith(".mzstatic.com")
-    )
-      return;
+    if (source.protocol !== "https:" || !source.hostname.endsWith(".mzstatic.com")) return;
 
     const response = await fetch(source, {
       signal: AbortSignal.timeout(3000),

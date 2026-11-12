@@ -4,23 +4,17 @@ import * as itunes from "itunes-store-api";
 
 const catalogLimit = 200;
 
-export const getArtistCatalog = cached(async function (
-  artistId: number,
-  country: StoreCountry,
-) {
+export const getArtistCatalog = cached(async function (artistId: number, country: StoreCountry) {
   const response = await itunes.lookup("id", artistId, {
     media: "music",
     entity: "album",
     country,
     limit: catalogLimit,
   });
-  const results = response.results as Array<
-    itunes.ResultMusicArtist | itunes.ResultAlbum
-  >;
+  const results = response.results as Array<itunes.ResultMusicArtist | itunes.ResultAlbum>;
 
   const artist = results.find(
-    (result): result is itunes.ResultMusicArtist =>
-      result.wrapperType === "artist",
+    (result): result is itunes.ResultMusicArtist => result.wrapperType === "artist",
   );
 
   if (!artist) return;
@@ -28,10 +22,7 @@ export const getArtistCatalog = cached(async function (
   return {
     artist,
     albums: mergeCatalogEditions(
-      results.filter(
-        (result): result is itunes.ResultAlbum =>
-          result.wrapperType === "collection",
-      ),
+      results.filter((result): result is itunes.ResultAlbum => result.wrapperType === "collection"),
     ),
   };
 });
@@ -58,10 +49,7 @@ export function mergeCatalogEditions(albums: itunes.ResultAlbum[]) {
   return [...editions.values()];
 }
 
-export const lookupCatalogSongs = cached(async function (
-  id: number,
-  country: StoreCountry,
-) {
+export const lookupCatalogSongs = cached(async function (id: number, country: StoreCountry) {
   const response = await itunes.lookup("id", id, {
     media: "music",
     entity: "song",
@@ -73,17 +61,14 @@ export const lookupCatalogSongs = cached(async function (
   >;
 });
 
-export const searchCatalogArtists = cached(
-  async (name: string, country: StoreCountry) => {
-    const response = await itunes.search(name, {
-      media: "music",
-      entity: "musicArtist",
-      limit: 25,
-      country,
-    });
-    return response.results.filter(
-      (result): result is itunes.ResultMusicArtist =>
-        result.wrapperType === "artist",
-    );
-  },
-);
+export const searchCatalogArtists = cached(async (name: string, country: StoreCountry) => {
+  const response = await itunes.search(name, {
+    media: "music",
+    entity: "musicArtist",
+    limit: 25,
+    country,
+  });
+  return response.results.filter(
+    (result): result is itunes.ResultMusicArtist => result.wrapperType === "artist",
+  );
+});

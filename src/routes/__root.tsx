@@ -72,9 +72,7 @@ function RootComponent() {
 
             <CatchBoundary
               getResetKey={() => "reset"}
-              errorComponent={({ error }) => (
-                <ErrorAlert message={getErrorMessage(error)} />
-              )}
+              errorComponent={({ error }) => <ErrorAlert message={getErrorMessage(error)} />}
             >
               <SkulletProvider mode="system">
                 <Outlet />

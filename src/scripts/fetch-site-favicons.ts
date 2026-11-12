@@ -18,11 +18,7 @@ for (const site of sites) {
 
     const fileExt = response.url.split(".").at(-1);
 
-    const destination = path.join(
-      cwd(),
-      "./public",
-      site.replaceAll(".", "-") + "." + fileExt,
-    );
+    const destination = path.join(cwd(), "./public", site.replaceAll(".", "-") + "." + fileExt);
 
     await pipeline(
       Readable.fromWeb(response.body as ReadableStream),

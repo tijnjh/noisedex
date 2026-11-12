@@ -20,14 +20,8 @@ export function WikipediaDescription({
 }) {
   return (
     <>
-      <AsyncContent
-        promise={summary}
-        sample={sampleArticle}
-        label="Loading Wikipedia description"
-      >
-        {(article) =>
-          article && <Article key={article.url} article={article} />
-        }
+      <AsyncContent promise={summary} sample={sampleArticle} label="Loading Wikipedia description">
+        {(article) => article && <Article key={article.url} article={article} />}
       </AsyncContent>
 
       {genres && (
@@ -61,11 +55,7 @@ function Article({ article }: { article: WikipediaSummary }) {
   }, [article.extract]);
 
   return (
-    <Collapsible.Root
-      open={open}
-      onOpenChange={setOpen}
-      data-wikipedia-description
-    >
+    <Collapsible.Root open={open} onOpenChange={setOpen} data-wikipedia-description>
       <p
         ref={previewRef}
         aria-hidden={open || undefined}

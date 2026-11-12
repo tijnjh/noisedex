@@ -20,7 +20,5 @@ export const getReview = createServerFn()
     }),
   )
   .handler(async ({ data: { artist, album } }) => {
-    return (fantanoReviews as Review[]).find(
-      (r) => r.title === `${artist} - ${album}`,
-    );
+    return (fantanoReviews as Review[]).find((r) => r.title === `${artist} - ${album}`);
   });

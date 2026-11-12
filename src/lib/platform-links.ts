@@ -24,10 +24,7 @@ export const platforms = {
   soundcloak: { name: "soundcloak", domain: "sc.maid.zone" },
 } as const;
 
-export function artistLinks(
-  artistName: string,
-  appleArtistId?: number,
-): PlatformLink[] {
+export function artistLinks(artistName: string, appleArtistId?: number): PlatformLink[] {
   const encodedArtistName = encodeURIComponent(artistName);
   return [
     {
@@ -70,9 +67,7 @@ export function albumLinks(album: {
   collectionName: string;
   collectionViewUrl: string;
 }): PlatformLink[] {
-  const streamlinedCollectionName = trimItunesCollectionPostfix(
-    album.collectionName,
-  );
+  const streamlinedCollectionName = trimItunesCollectionPostfix(album.collectionName);
   const constructedSearchQuery = encodeURIComponent(
     `${album.artistName} ${streamlinedCollectionName}`,
   );
@@ -113,9 +108,7 @@ export function trackLinks(track: {
   trackName: string;
   trackViewUrl: string;
 }): PlatformLink[] {
-  const constructedSearchQuery = encodeURIComponent(
-    `${track.artistName} ${track.trackName}`,
-  );
+  const constructedSearchQuery = encodeURIComponent(`${track.artistName} ${track.trackName}`);
   return [
     {
       ...platforms.lastfm,

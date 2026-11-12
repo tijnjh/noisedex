@@ -21,10 +21,7 @@ export function MiniPlayer() {
       audio.play().catch(() => {});
     };
 
-    if (
-      url.includes(".m3u8") &&
-      !audio.canPlayType("application/vnd.apple.mpegurl")
-    ) {
+    if (url.includes(".m3u8") && !audio.canPlayType("application/vnd.apple.mpegurl")) {
       // @ts-expect-error The light entry point does not expose types.
       import("hls.js/light")
         .then((module) => {

@@ -27,9 +27,7 @@ export function loadTrack({ track }: { track: ResultMusicTrack }) {
       data: { artist: track.artistName, album: track.collectionName },
     })
     .catch(() => []);
-  const accentColor = getArtworkColor({ data: track.artworkUrl100 }).catch(
-    () => undefined,
-  );
+  const accentColor = getArtworkColor({ data: track.artworkUrl100 }).catch(() => undefined);
 
   return { track, soundcloud, accentColor };
 }
@@ -116,22 +114,13 @@ export function TrackPage() {
             height={600}
           />
 
-          <Chip
-            to="/$itunesId"
-            params={{ itunesId: encodeItunesId(track.artistId) }}
-          >
+          <Chip to="/$itunesId" params={{ itunesId: encodeItunesId(track.artistId) }}>
             {track.artistName}
           </Chip>
 
           <Await promise={soundcloud} fallback={playback()}>
             {(matches) =>
-              playback(
-                $soundcloud.trackUrl(
-                  matches,
-                  track.trackName,
-                  track.artistName,
-                ),
-              )
+              playback($soundcloud.trackUrl(matches, track.trackName, track.artistName))
             }
           </Await>
 
@@ -181,9 +170,7 @@ export function TrackPage() {
             >
               genre
             </dt>
-            <dd className="wrap-anywhere capitalize">
-              {track.primaryGenreName}
-            </dd>
+            <dd className="wrap-anywhere capitalize">{track.primaryGenreName}</dd>
             {!isSingle && (
               <>
                 <dt>track</dt>

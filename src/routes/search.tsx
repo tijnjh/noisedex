@@ -84,11 +84,7 @@ function RouteComponent() {
               <h2 className="section-divider">albums</h2>
               <div className="cool-grid">
                 {data.albums.map((album) => (
-                  <MusicChip
-                    key={album.collectionId}
-                    music={album}
-                    showArtist
-                  />
+                  <MusicChip key={album.collectionId} music={album} showArtist />
                 ))}
               </div>
             </section>
@@ -103,11 +99,9 @@ function RouteComponent() {
               </div>
             </section>
           )}
-          {!data?.artists.length &&
-            !data?.albums.length &&
-            !data?.tracks.length && (
-              <p role="status">No artists, albums, or tracks found.</p>
-            )}
+          {!data?.artists.length && !data?.albums.length && !data?.tracks.length && (
+            <p role="status">No artists, albums, or tracks found.</p>
+          )}
         </div>
       )}
     </Layout>

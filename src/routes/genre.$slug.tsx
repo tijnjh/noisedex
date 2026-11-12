@@ -6,10 +6,7 @@ import { SpotifyWidget } from "#components/spotify-widget";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { usePopover } from "#hooks/use-popover";
 import { $everynoise, $wikipedia } from "#lib/api/index";
-import {
-  findSoundOfPlaylistId,
-  splitPreviewTitle,
-} from "#lib/api/platforms/everynoise-data";
+import { findSoundOfPlaylistId, splitPreviewTitle } from "#lib/api/platforms/everynoise-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
 import { createFileRoute, notFound } from "@tanstack/react-router";
@@ -61,7 +58,7 @@ function RouteComponent() {
 
           <div className="cool-grid">
             {genre.relatedGenres?.map((genre) => (
-              <GenreChip genre={genre} />
+              <GenreChip key={genre.genreName} genre={genre} />
             ))}
           </div>
         </>
@@ -75,7 +72,7 @@ function RouteComponent() {
 
           <div className="grid grid-cols-responsive gap-3">
             {genre.artists?.map((artist) => (
-              <ArtistChip artist={artist} />
+              <ArtistChip key={artist.id} artist={artist} />
             ))}
           </div>
         </div>

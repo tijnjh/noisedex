@@ -21,18 +21,15 @@ export function buildReleaseTimeline(releases: ResultAlbum[]) {
     const previous = sorted[index - 1]?.date;
     const year = date?.getUTCFullYear() ?? null;
 
-    const showYear =
-      index === 0 || year !== (previous?.getUTCFullYear() ?? null);
+    const showYear = index === 0 || year !== (previous?.getUTCFullYear() ?? null);
 
-    const showMonth =
-      showYear || date?.getUTCMonth() !== previous?.getUTCMonth();
+    const showMonth = showYear || date?.getUTCMonth() !== previous?.getUTCMonth();
 
     return {
       release,
       year,
       showYear,
-      month:
-        date && showMonth ? monthFormatter.format(date).toLowerCase() : null,
+      month: date && showMonth ? monthFormatter.format(date).toLowerCase() : null,
       dateTime: date?.toISOString().slice(0, 7),
     };
   });

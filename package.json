@@ -7,26 +7,23 @@
     "#hooks/*": "./src/hooks/*.ts"
   },
   "scripts": {
-    "build": "vite build",
-    "dev": "vite dev",
-    "lint": "eslint .",
-    "preview": "vite preview",
+    "build": "vp build",
+    "check": "vp check",
+    "dev": "vp dev",
+    "fmt": "vp fmt",
+    "lint": "vp lint .",
+    "preview": "vp preview",
     "typecheck": "tsc --noEmit"
-  },
-  "prettier": {
-    "plugins": [
-      "@trivago/prettier-plugin-sort-imports"
-    ]
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
     "@fontsource/zen-dots": "^5.3.0",
     "@tanstack/react-virtual": "^3.14.26",
     "cheerio": "^1.2.0",
-    "cn": "^0.5.0",
+    "cn": "^0.5.2",
     "hls.js": "^1.7.4",
     "itunes-store-api": "^2.1.0",
-    "jotai": "^3.0.1",
+    "jotai": "^3.0.2",
     "motion": "^14.12.0",
     "node-vibrant": "^4.0.4",
     "react": "^19.3.1",
@@ -37,32 +34,21 @@
     "valibot": "^1.5.0"
   },
   "devDependencies": {
-    "@eslint-react/eslint-plugin": "^5.28.8",
-    "@tailwindcss/vite": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.5",
     "@tanstack/nitro-v2-vite-plugin": "1.155.2",
     "@tanstack/react-router": "1.170.46",
     "@tanstack/react-start": "1.169.4",
     "@tanstack/redact": "^0.3.1",
-    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
-    "@types/node": "^26.6.5",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "@typescript-eslint/parser": "^8.72.1",
-    "@vitejs/plugin-react": "^6.2.1",
-    "eslint": "^10.14.0",
-    "eslint-plugin-better-tailwindcss": "^4.10.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.7",
-    "prettier": "^3.9.10",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "eslint-plugin-better-tailwindcss": "^4.11.0",
     "tailwind-color-pairings": "^0.1.2",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.0",
-    "vite": "8.3.5"
+    "tailwindcss": "^4.3.5",
+    "typescript": "^6.0.3",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
   },
-  "packageManager": "pnpm@9.15.9",
-  "pnpm": {
-    "patchedDependencies": {
-      "itunes-store-api@2.1.0": "patches/itunes-store-api@2.1.0.patch"
-    }
-  }
+  "packageManager": "pnpm@12.18.0"
 }

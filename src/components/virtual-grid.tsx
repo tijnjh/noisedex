@@ -24,14 +24,8 @@ export function VirtualGrid<T>({
     paddingTop: 12,
   });
   const { minWidth, itemHeight, gap } = viewport;
-  const columns = Math.max(
-    1,
-    Math.floor((viewport.width + gap) / (minWidth + gap)),
-  );
-  const itemWidth = Math.max(
-    0,
-    (viewport.width - gap * (columns - 1)) / columns,
-  );
+  const columns = Math.max(1, Math.floor((viewport.width + gap) / (minWidth + gap)));
+  const itemWidth = Math.max(0, (viewport.width - gap * (columns - 1)) / columns);
   const rowCount = Math.ceil(entries.length / columns);
 
   useEffect(() => {
@@ -46,9 +40,7 @@ export function VirtualGrid<T>({
       const next = {
         width: Math.max(
           0,
-          content.clientWidth -
-            parseFloat(style.paddingLeft) -
-            parseFloat(style.paddingRight),
+          content.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
         ),
         minWidth: parseFloat(metricStyle.width),
         itemHeight: parseFloat(metricStyle.height),
@@ -75,7 +67,7 @@ export function VirtualGrid<T>({
     return () => observer.disconnect();
   }, []);
 
-  // eslint-disable-next-line react-hooks/incompatible-library
+  // oxlint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => parentRef.current,

@@ -55,9 +55,7 @@ const noMatch = Symbol("no matching Wikipedia article");
 
 function matchesGenreTitle(title: string, name: string) {
   const key = (value: string) =>
-    normalize(
-      value.replace(/ \([^()]*\)$/, "").replace(/ music$/i, ""),
-    ).replaceAll(" ", "");
+    normalize(value.replace(/ \([^()]*\)$/, "").replace(/ music$/i, "")).replaceAll(" ", "");
   return key(title) === key(name);
 }
 
@@ -72,8 +70,7 @@ function matchesSubject(summary: SummaryResponse, subject: Subject) {
       /\b(band|musician|singer|rapper|songwriter|composer|record producer|DJ|orchestra)\b/i.test(
         description,
       ) ||
-      (music.test(description) &&
-        /\b(group|duo|trio|quartet|collective)\b/i.test(description))
+      (music.test(description) && /\b(group|duo|trio|quartet|collective)\b/i.test(description))
     );
   }
   if (subject.kind === "genre") {
@@ -91,9 +88,7 @@ function matchesSubject(summary: SummaryResponse, subject: Subject) {
 }
 
 function hasGenreAlias(summary: SummaryResponse, name: string) {
-  const lead = summary.extract
-    .split(". ")[0]
-    .split(/\b(is|are|was|were)\b/i)[0];
+  const lead = summary.extract.split(". ")[0].split(/\b(is|are|was|were)\b/i)[0];
   const alias = normalize(name);
   return (
     alias.length > 1 &&
@@ -111,9 +106,7 @@ async function lookup(subject: Subject) {
     let pending = requests.get(key);
     if (!pending) {
       pending = request<SummaryResponse>(
-        new URL(
-          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(key)}`,
-        ),
+        new URL(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(key)}`),
         signal,
       ).then((summary) => {
         if (!matchesSubject(summary, subject)) throw noMatch;
@@ -138,25 +131,20 @@ async function lookup(subject: Subject) {
   }).toString();
 
   type SearchResult = { title: string; redirecttitle?: string };
-  const search = request<{ query: { search: SearchResult[] } }>(
-    searchUrl,
-    signal,
-  ).then((result) => result.query.search);
+  const search = request<{ query: { search: SearchResult[] } }>(searchUrl, signal).then(
+    (result) => result.query.search,
+  );
   const searchMatches = search.then((results) => {
     const candidates = results.filter(({ title, redirecttitle }) =>
       subject.kind === "genre"
-        ? [title, redirecttitle].some(
-            (value) => value && matchesGenreTitle(value, subject.name),
-          )
+        ? [title, redirecttitle].some((value) => value && matchesGenreTitle(value, subject.name))
         : matchesTitle(title, subject.name),
     );
     return Promise.any(candidates.map(({ title }) => getCandidate(title)));
   });
 
   const attempts =
-    subject.kind === "genre"
-      ? [getCandidate(subject.name), searchMatches]
-      : [searchMatches];
+    subject.kind === "genre" ? [getCandidate(subject.name), searchMatches] : [searchMatches];
 
   let summary: SummaryResponse;
 
@@ -206,8 +194,7 @@ export function getSummary(input: Subject) {
   return cacheSummary(key, () =>
     lookup(subject).catch((error) => {
       const isMissing = (reason: unknown): boolean =>
-        reason === noMatch ||
-        (reason instanceof AggregateError && reason.errors.every(isMissing));
+        reason === noMatch || (reason instanceof AggregateError && reason.errors.every(isMissing));
 
       if (isMissing(error)) return null;
 
@@ -236,15 +223,12 @@ export function extractGenres(html: string) {
 
     const items = Array.from(cell.find("li"));
 
-    const texts = items.length
-      ? items.map((item) => $(item).text() ?? "")
-      : [cell.text() ?? ""];
+    const texts = items.length ? items.map((item) => $(item).text() ?? "") : [cell.text() ?? ""];
 
     for (const text of texts) {
       for (const part of text.split(/[\n,;•·]+/)) {
         const name = part.replace(/\s+/g, " ").trim();
-        if (name && !genres.has(name.toLowerCase()))
-          genres.set(name.toLowerCase(), name);
+        if (name && !genres.has(name.toLowerCase())) genres.set(name.toLowerCase(), name);
       }
     }
   }
@@ -268,10 +252,7 @@ export function getGenres(title: string) {
       formatversion: "2",
     }).toString();
 
-    const result = await request<{ parse: { text: string } }>(
-      url,
-      AbortSignal.timeout(10_000),
-    );
+    const result = await request<{ parse: { text: string } }>(url, AbortSignal.timeout(10_000));
 
     const genres = extractGenres(result.parse.text);
     return genres.length ? genres : null;
@@ -333,8 +314,6 @@ function createCache<T>() {
         });
       pending.set(key, refresh);
     }
-    return cached && cached.staleUntil > now
-      ? Promise.resolve(cached.value)
-      : refresh;
+    return cached && cached.staleUntil > now ? Promise.resolve(cached.value) : refresh;
   };
 }

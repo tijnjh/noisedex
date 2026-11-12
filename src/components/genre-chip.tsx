@@ -1,9 +1,6 @@
 import { usePopover } from "#hooks/use-popover";
 import { $everynoise } from "#lib/api/index";
-import {
-  genreNameToSlug,
-  splitPreviewTitle,
-} from "#lib/api/platforms/everynoise-data";
+import { genreNameToSlug, splitPreviewTitle } from "#lib/api/platforms/everynoise-data";
 import { Chip } from "./chip";
 import { PlayButton } from "./play-button";
 

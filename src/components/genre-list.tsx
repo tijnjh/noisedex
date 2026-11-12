@@ -1,13 +1,7 @@
 import { Chip } from "#components/chip";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
 
-export function GenreList({
-  title,
-  names,
-}: {
-  title: string;
-  names: string[];
-}) {
+export function GenreList({ title, names }: { title: string; names: string[] }) {
   if (!names.length) return;
 
   return (
