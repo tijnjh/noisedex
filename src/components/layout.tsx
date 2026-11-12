@@ -8,7 +8,11 @@ import {
   useSearch,
 } from "@tanstack/react-router";
 import { cn } from "cn";
-import { AnimatePresence, motion } from "motion/react";
+import {
+  AnimatePresence,
+  motion,
+  type MotionNodeAnimationOptions,
+} from "motion/react";
 import {
   useState,
   useEffect,
@@ -115,22 +119,46 @@ function Title({
   titleVt?: string;
   collapsed?: boolean;
 }) {
-  const coolSegmentClassName = collapsed
-    ? "w-0 transition-[width] group-hover:w-auto"
-    : "w-auto";
+  const segAnimConfig: MotionNodeAnimationOptions = {
+    initial: { width: 0 },
+    animate: { width: "auto" },
+    exit: { width: 0 },
+  };
+
+  const [isHovering, setIsHovering] = useState(false);
 
   return (
     <div className="flex items-center gap-3 truncate font-bold">
       <Link to="/" className="font-display text-2xl hover:opacity-75">
-        <div className="group flex *:block *:overflow-hidden *:transition-[width] *:duration-300">
+        <div
+          className="group flex *:overflow-hidden"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
           <span {...vtName`header-title-n`}>n</span>
-          <span {...vtName`header-title-oise`} className={coolSegmentClassName}>
-            oise
-          </span>
+          <AnimatePresence initial={false}>
+            {(!collapsed || isHovering) && (
+              <motion.span
+                key="123"
+                {...segAnimConfig}
+                {...vtName`header-title-oise`}
+              >
+                oise
+              </motion.span>
+            )}
+          </AnimatePresence>
           <span {...vtName`header-title-d`}>d</span>
-          <span {...vtName`header-title-ex`} className={coolSegmentClassName}>
-            ex
-          </span>
+          <AnimatePresence initial={false}>
+            {(!collapsed || isHovering) && (
+              <motion.span
+                key="1234"
+                {...segAnimConfig}
+                {...vtName`header-title-ex`}
+              >
+                ex
+              </motion.span>
+            )}
+          </AnimatePresence>
         </div>
 
         <span className="sr-only">noisedex</span>
