@@ -155,7 +155,7 @@ export function TrackPage({ data }: { data: TrackData }) {
             </>
           )}
 
-          <h2>Track details</h2>
+          <h2>track details</h2>
           <dl>
             <dt>released</dt>
             <dd>
