@@ -17,10 +17,11 @@ export function GenreList({
         {names.map((name) => (
           <Chip
             key={name}
+            className="capitalize"
             to="/genre/$slug"
-            params={{ slug: genreNameToSlug(name.toLowerCase()) }}
+            params={{ slug: genreNameToSlug(name) }}
           >
-            {name.toLowerCase()}
+            {name}
           </Chip>
         ))}
       </div>

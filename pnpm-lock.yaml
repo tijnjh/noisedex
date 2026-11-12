@@ -16,7 +16,7 @@ importers:
       '@base-ui/react':
         specifier: ^1.9.0
         version: 1.9.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@fontsource/atkinson-hyperlegible':
+      '@fontsource/inter':
         specifier: ^5.3.0
         version: 5.3.0
       '@fontsource/zen-dots':
@@ -516,8 +516,8 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@fontsource/atkinson-hyperlegible@5.3.0':
-    resolution: {integrity: sha512-Sp8Ve8+rQmENY2Lv02VH7sLpntzTTvnncnJMTbRE7DX6TLxGraN4ykZfzaUWIoCFmaomwkvNiqmlPkrKBuDoSA==}
+  '@fontsource/inter@5.3.0':
+    resolution: {integrity: sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g==}
 
   '@fontsource/zen-dots@5.3.0':
     resolution: {integrity: sha512-GxTze2BvFdUrTbWW1cjDDq4/1pHTzwvULGi/0gbgRBEs5P8e6CbAje330MutxySGr7yxm5JHdADtJTe/c+aPXA==}
@@ -3801,7 +3801,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@fontsource/atkinson-hyperlegible@5.3.0': {}
+  '@fontsource/inter@5.3.0': {}
 
   '@fontsource/zen-dots@5.3.0': {}
 

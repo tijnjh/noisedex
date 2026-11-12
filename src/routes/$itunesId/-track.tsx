@@ -181,7 +181,9 @@ export function TrackPage() {
             >
               genre
             </dt>
-            <dd className="wrap-anywhere">{track.primaryGenreName}</dd>
+            <dd className="wrap-anywhere capitalize">
+              {track.primaryGenreName}
+            </dd>
             {!isSingle && (
               <>
                 <dt>track</dt>

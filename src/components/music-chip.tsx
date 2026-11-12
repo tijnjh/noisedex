@@ -46,7 +46,7 @@ export function MusicChip({
         {music.primaryGenreName && (
           <>
             <dt>itunes genre</dt>
-            <dd>{music.primaryGenreName}</dd>
+            <dd className="capitalize">{music.primaryGenreName}</dd>
           </>
         )}
         {track && track.trackTimeMillis > 0 && (

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tailwind-color-pairings";
-@import "@fontsource/atkinson-hyperlegible";
+@import "@fontsource/inter";
 @import "@fontsource/zen-dots";
 
 @theme {
@@ -8,17 +8,8 @@
   --spacing-grid-gap: 0.75rem;
   --spacing-grid-min: 12rem;
 
-  --font-sans: "Atkinson Hyperlegible", system-ui;
-  --font-display: "Zen Dots";
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  @apply font-display;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-logo: "Zen Dots";
 }
 
 @utility grid-metrics {
@@ -136,7 +127,7 @@ input,
 }
 
 @utility section-divider {
-  @apply flex h-9 font-display items-center border-b border-zinc-950-50/20;
+  @apply flex h-9 items-center border-b border-zinc-950-50/20;
 }
 
 html {

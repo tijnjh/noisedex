@@ -77,6 +77,7 @@ export function Layout({
       <Header
         collapsed={header.collapsed ?? !atTop}
         title={atTop ? "" : header.title}
+        titleClassName={header.titleClassName}
         titleVt={header.titleVt}
       />
 
@@ -97,7 +98,14 @@ export function Layout({
                 onScroll={handleContainerScroll}
                 className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto xl:w-172"
               >
-                <h1 className="mb-8 text-4xl md:text-5xl">{header.title}</h1>
+                <h1
+                  className={cn(
+                    "mb-8 text-4xl font-bold md:text-5xl",
+                    header.titleClassName,
+                  )}
+                >
+                  {header.title}
+                </h1>
 
                 {leading}
               </div>
@@ -112,10 +120,12 @@ export function Layout({
 
 function Title({
   title,
+  titleClassName,
   titleVt,
   collapsed = false,
 }: {
   title?: string;
+  titleClassName?: string;
   titleVt?: string;
   collapsed?: boolean;
 }) {
@@ -129,7 +139,7 @@ function Title({
 
   return (
     <div className="flex items-center gap-3 truncate font-bold">
-      <Link to="/" className="font-display text-2xl hover:opacity-75">
+      <Link to="/" className="font-logo text-2xl hover:opacity-75">
         <div
           className="group flex *:overflow-hidden"
           onMouseEnter={() => setIsHovering(true)}
@@ -173,7 +183,10 @@ function Title({
             exit={{ opacity: 0 }}
           >
             &bull;
-            <h1 {...vtName`${titleVt}`} className="truncate text-2xl font-bold">
+            <h1
+              {...vtName`${titleVt}`}
+              className={cn("truncate text-2xl font-bold", titleClassName)}
+            >
               {title}
             </h1>
           </motion.div>

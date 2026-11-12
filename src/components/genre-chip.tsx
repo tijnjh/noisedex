@@ -22,6 +22,7 @@ export function GenreChip({ genre }: { genre: $everynoise.Genre }) {
   return (
     <Chip
       {...triggerProps}
+      className="capitalize"
       to="/genre/$slug"
       params={{ slug: genreNameToSlug(genre.genreName) }}
       trailing={

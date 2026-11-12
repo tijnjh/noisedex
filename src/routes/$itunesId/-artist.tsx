@@ -117,6 +117,7 @@ export function ArtistPage() {
               <span className="section-divider">itunes genre</span>
               <div className="cool-grid">
                 <Chip
+                  className="capitalize"
                   to="/genre/$slug"
                   params={{ slug: genreNameToSlug(genre) }}
                 >

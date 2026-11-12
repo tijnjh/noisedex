@@ -12,11 +12,12 @@ import {
 } from "#lib/api/platforms/everynoise-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/genre/$slug")({
   loader: async ({ params }) => {
     const genre = await $everynoise.getGenreBySlug(params.slug);
+    if (!genre.genreName) throw notFound();
 
     const wikipediaGenre = genre.genreName
       ? $wikipedia.getGenreByName({ data: genre.genreName }).catch(() => null)
@@ -30,11 +31,11 @@ export const Route = createFileRoute("/genre/$slug")({
   head: ({ loaderData, params }) => ({
     meta: [
       {
-        title: `${loaderData?.genreName ?? params.slug} artists | ${siteName}`,
+        title: `${loaderData?.genreName ?? "Genre"} artists | ${siteName}`,
       },
       {
         name: "description",
-        content: `Explore ${loaderData?.genreName ?? params.slug} artists and related music genres on ${siteName}.`,
+        content: `Explore ${loaderData?.genreName ?? "this genre"} artists and related music genres on ${siteName}.`,
       },
     ],
     links: [{ rel: "canonical", href: `${siteUrl}/genre/${params.slug}` }],
@@ -43,13 +44,12 @@ export const Route = createFileRoute("/genre/$slug")({
 });
 
 function RouteComponent() {
-  const params = Route.useParams();
   const genre = Route.useLoaderData();
   const playlistId = findSoundOfPlaylistId(genre.links ?? []);
 
   return (
     <Layout
-      header={{ title: genre.genreName ?? params.slug }}
+      header={{ title: genre.genreName, titleClassName: "capitalize" }}
       accentColor={genre.style?.color}
       leading={
         <>
