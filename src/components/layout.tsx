@@ -1,5 +1,4 @@
 import { useGenreFilters } from "#hooks/use-genre-filters";
-import { siteName } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
 import { vtName } from "#lib/utils";
 import {
@@ -9,12 +8,14 @@ import {
   useSearch,
 } from "@tanstack/react-router";
 import { cn } from "cn";
+import { AnimatePresence, motion } from "motion/react";
 import {
   useState,
   useEffect,
   type ComponentProps,
   type CSSProperties,
   type ReactNode,
+  UIEvent,
 } from "react";
 import type { MergeExclusive } from "type-fest";
 
@@ -54,16 +55,30 @@ export function Layout({
       : resolvedColor?.source === accentColor
         ? resolvedColor?.color
         : undefined;
+
+  const [atTop, setAtTop] = useState(true);
+
+  function handleContainerScroll(e: UIEvent) {
+    // lil bit of margin before setting it so it doesnt show both the title in the header and the page
+    setAtTop(e.currentTarget.scrollTop < 48);
+  }
+
   return (
     <div
       className="relative isolate grid grid-rows-[min-content_auto] overflow-hidden"
       style={{ "--page-accent": color } as CSSProperties}
     >
       {color && <div data-page-backdrop aria-hidden="true" />}
-      <Header {...header} />
+
+      <Header
+        collapsed={header.collapsed ?? !atTop}
+        title={atTop ? "" : header.title}
+        titleVt={header.titleVt}
+      />
 
       <div
         data-scroll-restoration-id={scrollRegions.page}
+        onScroll={handleContainerScroll}
         className={cn("grid overflow-y-auto", !children && "p-3")}
       >
         {children ? (
@@ -75,8 +90,11 @@ export function Layout({
             <main className="grid h-full grid-cols-1 gap-6 max-lg:content-start lg:grid-cols-[auto_1fr] lg:overflow-hidden">
               <div
                 data-scroll-restoration-id={scrollRegions.sidebar}
+                onScroll={handleContainerScroll}
                 className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto xl:w-172"
               >
+                <h1 className="mb-8 text-4xl md:text-5xl">{header.title}</h1>
+
                 {leading}
               </div>
               {trailing}
@@ -88,19 +106,23 @@ export function Layout({
   );
 }
 
-function Title({ title, titleVt }: { title?: string; titleVt?: string }) {
-  const pathname = useLocation({ select: (l) => l.pathname });
-
-  const isOnHomepage = pathname === "/";
-
-  const coolSegmentClassName = !isOnHomepage
+function Title({
+  title,
+  titleVt,
+  collapsed = false,
+}: {
+  title?: string;
+  titleVt?: string;
+  collapsed?: boolean;
+}) {
+  const coolSegmentClassName = collapsed
     ? "w-0 transition-[width] group-hover:w-auto"
     : "w-auto";
 
   return (
     <div className="flex items-center gap-3 truncate font-bold">
       <Link to="/" className="font-display text-2xl hover:opacity-75">
-        <div className="group flex *:block *:overflow-hidden *:transition-[width]">
+        <div className="group flex *:block *:overflow-hidden *:transition-[width] *:duration-300">
           <span {...vtName`header-title-n`}>n</span>
           <span {...vtName`header-title-oise`} className={coolSegmentClassName}>
             oise
@@ -114,26 +136,33 @@ function Title({ title, titleVt }: { title?: string; titleVt?: string }) {
         <span className="sr-only">noisedex</span>
       </Link>
 
-      {title && (
-        <>
-          &bull;
-          <h1 {...vtName`${titleVt}`} className="truncate text-2xl font-bold">
-            {title}
-          </h1>
-        </>
-      )}
+      <AnimatePresence>
+        {title && (
+          <motion.div
+            className="flex items-center gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            &bull;
+            <h1 {...vtName`${titleVt}`} className="truncate text-2xl font-bold">
+              {title}
+            </h1>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function Header({ title, titleVt }: { title: string; titleVt?: string }) {
+function Header(title: ComponentProps<typeof Title>) {
   return (
     <header
       className={cn(
         "flex gap-3 overflow-hidden p-3 max-md:flex-col md:items-center md:justify-between",
       )}
     >
-      <Title title={title} titleVt={titleVt} />
+      <Title {...title} />
 
       <SearchBar />
     </header>
