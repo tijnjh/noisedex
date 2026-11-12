@@ -100,7 +100,7 @@ export function Layout({
               >
                 <h1
                   className={cn(
-                    "mb-8 text-4xl font-bold md:text-5xl",
+                    "mb-8 text-4xl leading-[1.05] font-extrabold tracking-[-0.04em] text-balance md:text-5xl",
                     header.titleClassName,
                   )}
                 >
@@ -185,7 +185,10 @@ function Title({
             &bull;
             <h1
               {...vtName`${titleVt}`}
-              className={cn("truncate text-2xl font-bold", titleClassName)}
+              className={cn(
+                "truncate text-2xl font-bold tracking-tight",
+                titleClassName,
+              )}
             >
               {title}
             </h1>

@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tailwind-color-pairings";
 @import "@fontsource/inter";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/inter/800.css";
 @import "@fontsource/zen-dots";
 
 @theme {
@@ -10,6 +13,17 @@
 
   --font-sans: "Inter", system-ui, sans-serif;
   --font-logo: "Zen Dots";
+}
+
+@layer base {
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
 }
 
 @utility grid-metrics {
