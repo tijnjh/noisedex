@@ -59,7 +59,7 @@ export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: Resul
 export function albumHead(data: AlbumData) {
   const { album, tracks } = data;
 
-  const title = `${album.collectionName} by ${album.artistName} | ${siteName}`;
+  const title = `${album.collectionName} by ${album.artistName} • ${siteName}`;
   const description = `Explore ${album.collectionName} by ${album.artistName}: release date, genre, and ${tracks.length} tracks with previews on ${siteName}.`;
   const url = `${siteUrl}/${encodeItunesId(album.collectionId)}`;
   const artwork = getBigItunesArtwork(album);

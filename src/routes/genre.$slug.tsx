@@ -9,6 +9,7 @@ import { $everynoise, $wikipedia } from "#lib/api/index";
 import { findSoundOfPlaylistId, splitPreviewTitle } from "#lib/api/platforms/everynoise-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
+import { capitalizeWords } from "#lib/utils";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/genre/$slug")({
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/genre/$slug")({
   head: ({ loaderData, params }) => ({
     meta: [
       {
-        title: `${loaderData?.genreName ?? "Genre"} artists | ${siteName}`,
+        title: `${capitalizeWords(loaderData?.genreName ?? "Genre")} artists • ${siteName}`,
       },
       {
         name: "description",

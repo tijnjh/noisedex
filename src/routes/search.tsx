@@ -11,7 +11,7 @@ import * as v from "valibot";
 export const Route = createFileRoute("/search")({
   head: () => ({
     meta: [
-      { title: `Search artists, albums, and tracks | ${siteName}` },
+      { title: `Search artists, albums, and tracks • ${siteName}` },
       { name: "robots", content: "noindex,follow" },
     ],
   }),

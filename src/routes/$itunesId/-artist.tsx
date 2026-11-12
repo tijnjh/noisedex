@@ -48,7 +48,7 @@ export function artistHead(data: ArtistData) {
   return {
     meta: [
       {
-        title: `${data.artist.artistName} albums | ${siteName}`,
+        title: `${data.artist.artistName} albums • ${siteName}`,
       },
       {
         name: "description",

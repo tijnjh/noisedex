@@ -34,7 +34,7 @@ export function loadTrack({ track }: { track: ResultMusicTrack }) {
 
 export function trackHead(data: TrackData) {
   const { track } = data;
-  const title = `${track.trackName} by ${track.artistName} | ${siteName}`;
+  const title = `${track.trackName} by ${track.artistName} • ${siteName}`;
   const description = `Explore ${track.trackName} by ${track.artistName} from ${track.collectionName}: release date, genre, and listening links on ${siteName}.`;
   const url = `${siteUrl}/${encodeItunesId(track.trackId)}`;
   const artwork = getBigItunesArtwork(track);

@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import { ErrorAlert } from "#components/error-alert";
+import { Favicon } from "#components/favicon";
 import { MiniPlayer } from "#components/mini-player";
 import { NavigationSpinner } from "#components/navigation-spinner";
 import { siteName } from "#lib/constants";
@@ -36,7 +37,7 @@ export const Route = createRootRoute({
         media: "(prefers-color-scheme: dark)",
         content: "#27272a",
       },
-      { title: `${siteName} | Explore music genres and albums` },
+      { title: `${siteName} • Explore music genres and albums` },
       {
         name: "description",
         content: `Explore music genres, discover artists, and browse their albums and tracks on ${siteName}.`,
@@ -61,6 +62,7 @@ function RootComponent() {
       <html lang="en" className="antialiased pointer-coarse:overscroll-none">
         <head>
           <HeadContent />
+          <Favicon />
         </head>
 
         <body className="relative isolate touch-manipulation bg-zinc-100 text-black scheme-light-dark dark:bg-black dark:text-white">

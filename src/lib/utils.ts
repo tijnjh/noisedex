@@ -2,6 +2,14 @@ import { up } from "up-fetch";
 
 export const upfetch = up(fetch);
 
+const wordSegmenter = new Intl.Segmenter("en", { granularity: "word" });
+
+export function capitalizeWords(text: string): string {
+  return Array.from(wordSegmenter.segment(text), ({ segment, isWordLike }) =>
+    isWordLike ? segment.replace(/^\p{L}/u, (letter) => letter.toLocaleUpperCase("en")) : segment,
+  ).join("");
+}
+
 export function vtName(strs: TemplateStringsArray, ...args: unknown[]) {
   // oxlint-disable-next-line typescript/no-base-to-string
   const selector = strs.map((s, i) => s + (args[i] ?? "")).join("");
