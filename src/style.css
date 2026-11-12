@@ -18,8 +18,7 @@
   h4,
   h5,
   h6 {
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    @apply font-semibold tracking-tight;
   }
 }
 

@@ -98,14 +98,17 @@ export function Layout({
                 onScroll={handleContainerScroll}
                 className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto xl:w-172"
               >
-                <h1
+                <motion.h1
+                  animate={{
+                    opacity: atTop ? 1 : 0,
+                  }}
                   className={cn(
-                    "mb-8 text-4xl leading-[1.05] font-extrabold tracking-[-0.04em] text-balance md:text-5xl",
+                    "mb-8 text-4xl text-balance md:text-5xl",
                     header.titleClassName,
                   )}
                 >
                   {header.title}
-                </h1>
+                </motion.h1>
 
                 {leading}
               </div>
@@ -138,7 +141,7 @@ function Title({
   const [isHovering, setIsHovering] = useState(false);
 
   return (
-    <div className="flex items-center gap-3 truncate font-bold">
+    <div className="flex items-center gap-3 truncate">
       <Link to="/" className="font-logo text-2xl hover:opacity-75">
         <div
           className="group flex *:overflow-hidden"
@@ -187,10 +190,7 @@ function Title({
             &bull;
             <h1
               {...vtName`${titleVt}`}
-              className={cn(
-                "truncate text-2xl font-bold tracking-tight",
-                titleClassName,
-              )}
+              className={cn("truncate text-2xl", titleClassName)}
             >
               {title}
             </h1>
