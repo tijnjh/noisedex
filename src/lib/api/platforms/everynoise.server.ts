@@ -18,7 +18,12 @@ export const getAllGenres = cached(
 
 export const getGenreBySlug = cached(
   async (genreSlug: string) => {
-    return await everynoiseFetch<GenreMeta>(`/genres/${genreSlug}.json`);
+    try {
+      return await everynoiseFetch<GenreMeta>(`/genres/${genreSlug}.json`);
+    } catch (error) {
+      if (isResponseError(error) && error.status === 404) return;
+      throw error;
+    }
   },
   24 * 60 * 60_000,
   7 * 24 * 60 * 60_000,

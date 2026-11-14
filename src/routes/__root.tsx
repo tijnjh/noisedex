@@ -1,10 +1,9 @@
 /// <reference types="vite/client" />
-import { ErrorAlert } from "#components/error-alert";
 import { Favicon } from "#components/favicon";
 import { MiniPlayer } from "#components/mini-player";
 import { NavigationSpinner } from "#components/navigation-spinner";
+import { ErrorPage } from "#components/status-page";
 import { siteName } from "#lib/constants";
-import { getErrorMessage } from "#lib/utils";
 import styleCss from "../style.css?url";
 import {
   CatchBoundary,
@@ -72,10 +71,7 @@ function RootComponent() {
           >
             <NavigationSpinner />
 
-            <CatchBoundary
-              getResetKey={() => "reset"}
-              errorComponent={({ error }) => <ErrorAlert message={getErrorMessage(error)} />}
-            >
+            <CatchBoundary getResetKey={() => "reset"} errorComponent={ErrorPage}>
               <SkulletProvider mode="system">
                 <Outlet />
               </SkulletProvider>
