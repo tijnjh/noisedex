@@ -41,7 +41,7 @@ export function getErrorMessage(error: unknown) {
 
     case "object":
       if (error === null) return genericMsg;
-      if ("message" in error) return error.message as string;
+      if ("message" in error) return (error.message as string) || genericMsg;
       return JSON.stringify(error);
 
     default:

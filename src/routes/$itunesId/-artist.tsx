@@ -146,6 +146,7 @@ function ArtistReleasesList() {
                   ...previous,
                   filter: type === "All" ? undefined : type,
                 }),
+                replace: true,
                 resetScroll: false,
               })
             }

@@ -1,2 +1,2 @@
-export const siteUrl = "https://noisedex.tijn.dev";
+export const siteUrl = "https://noisedex.com";
 export const siteName = "noisedex";

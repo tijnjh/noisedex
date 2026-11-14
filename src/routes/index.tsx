@@ -1,5 +1,6 @@
 import { GenreChip } from "#components/genre-chip";
 import { Layout } from "#components/layout";
+import { Spinner } from "#components/spinner";
 import { VirtualGrid } from "#components/virtual-grid";
 import { useGenreFilters } from "#hooks/use-genre-filters";
 import { $everynoise } from "#lib/api/index";
@@ -8,12 +9,21 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 export const Route = createFileRoute("/")({
+  // the full genre list is 2.4mb, so we load it on the browser hehe
+  ssr: false,
   loader: async () => {
     const genres = await $everynoise.getAllGenres();
     return { genres };
   },
   head: () => ({ links: [{ rel: "canonical", href: siteUrl }] }),
   component: RouteComponent,
+  pendingComponent: () => (
+    <Layout header={{ collapsed: false }}>
+      <div role="status" aria-label="Loading genres" className="grid h-full place-items-center">
+        <Spinner />
+      </div>
+    </Layout>
+  ),
 });
 
 function RouteComponent() {

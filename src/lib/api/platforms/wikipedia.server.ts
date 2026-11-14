@@ -44,7 +44,7 @@ function albumTitle(name: string) {
 async function request<T>(url: URL, signal: AbortSignal): Promise<T> {
   const response = await fetch(url, {
     signal,
-    headers: { "User-Agent": "Noisedex/1.0 (https://noisedex.tijn.dev)" },
+    headers: { "User-Agent": "Noisedex/1.0 (https://noisedex.com)" },
   });
   if (response.status === 404) throw noMatch;
   if (!response.ok) throw new Error(`Wikipedia: ${response.status}`);

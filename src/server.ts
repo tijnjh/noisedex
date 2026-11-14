@@ -1,6 +1,6 @@
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 
-export default createServerEntry({
+const entry = createServerEntry({
   fetch(request, options) {
     if (!import.meta.env.DEV) {
       const canonical = new URL(`https://${process.env.CANONICAL_HOST || "noisedex.com"}`);
@@ -20,3 +20,18 @@ export default createServerEntry({
     return handler.fetch(request, options);
   },
 });
+
+export default {
+  fetch(request: Request, options?: Parameters<typeof entry.fetch>[1]) {
+    const url = new URL(request.url);
+
+    try {
+      decodeURI(url.pathname);
+    } catch {
+      url.pathname = url.pathname.replaceAll("%", "%25");
+      return entry.fetch(new Request(url, request), options);
+    }
+
+    return entry.fetch(request, options);
+  },
+};

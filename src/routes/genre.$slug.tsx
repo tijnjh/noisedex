@@ -14,6 +14,8 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/genre/$slug")({
   loader: async ({ params }) => {
+    if (!/^[a-z0-9]+$/.test(params.slug)) throw notFound();
+
     const genre = await $everynoise.getGenreBySlug(params.slug);
     if (!genre?.genreName) throw notFound();
 

@@ -60,7 +60,7 @@ export function MiniPlayer() {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: nowPlaying.title,
           artist: nowPlaying.artist,
-          album: "noisedex.tijn.dev",
+          album: "noisedex.com",
           artwork: nowPlaying.artworkSrc
             ? [
                 {

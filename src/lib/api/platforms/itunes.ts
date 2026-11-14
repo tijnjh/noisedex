@@ -2,33 +2,19 @@ import {
   getArtistCatalog,
   lookupCatalogSongs,
   searchCatalogArtists,
+  searchCatalogMusic,
 } from "#lib/api/platforms/itunes-catalog";
 import { storeCountryFromLanguages } from "#lib/store-country";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
-import * as serverIsa from "itunes-store-api";
+import type * as serverIsa from "itunes-store-api";
 import * as v from "valibot";
 
 export const searchMusic = createServerFn()
   .validator(v.string())
   .handler(async ({ data }) => {
     const country = storeCountryFromLanguages(getRequestHeader("accept-language"));
-    const [albums, tracks] = await Promise.all([
-      serverIsa.search(data, {
-        media: "music",
-        entity: "album",
-        limit: 25,
-        country,
-      }),
-      serverIsa.search(data, {
-        media: "music",
-        entity: "song",
-        limit: 25,
-        country,
-      }),
-    ]);
-
-    return { albums: albums.results, tracks: tracks.results };
+    return searchCatalogMusic(data.trim(), country);
   });
 
 export const searchArtists = createServerFn()

@@ -3,9 +3,12 @@ import { ArtistMeta, Genre, GenreMeta } from "./everynoise-types";
 import { lookupArtists } from "./spotify";
 import { isResponseError, up } from "up-fetch";
 
+// pinned so jsdelivr caches it
+const everynoiseDataCommit = "1b1adbca29e767a44fd80dd20cfdcb1a40b39aaa";
+
 export const everynoiseFetch = up(fetch, () => ({
   timeout: 4000,
-  baseUrl: "https://cdn.jsdelivr.net/gh/tijnjh/everynoise-json/data-min",
+  baseUrl: `https://cdn.jsdelivr.net/gh/tijnjh/everynoise-json@${everynoiseDataCommit}/data-min`,
 }));
 
 export const getAllGenres = cached(
