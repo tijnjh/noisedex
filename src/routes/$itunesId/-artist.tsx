@@ -134,6 +134,8 @@ function ArtistReleasesList() {
       data-scroll-restoration-id={scrollRegions.content}
       className="flex min-w-0 flex-col gap-3 lg:overflow-y-auto"
     >
+      <h2 className="section-divider">discography</h2>
+
       <div role="group" aria-label="Release type" className="flex gap-3">
         {(["All", "LPs", "EPs", "Singles"] as const).map((type) => (
           <button
