@@ -6,18 +6,16 @@ import type { ReactNode } from "react";
 function StatusPage({
   code,
   title,
-  accentColor,
   children,
   actions,
 }: {
   code: string;
   title: string;
-  accentColor?: string;
   children: ReactNode;
   actions?: ReactNode;
 }) {
   return (
-    <Layout header={{}} accentColor={accentColor}>
+    <Layout header={{}}>
       <div className="grid h-full place-items-center overflow-y-auto p-3">
         <div className="flex w-full max-w-md flex-col items-start gap-3">
           <span aria-hidden="true" className="font-logo text-7xl opacity-20 md:text-8xl">
@@ -59,7 +57,6 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
     <StatusPage
       code="err"
       title="that hit a wrong note"
-      accentColor="#ef4444"
       actions={
         <button
           type="button"
