@@ -1,4 +1,5 @@
 import { useGenreFilters } from "#hooks/use-genre-filters";
+import { getBigItunesArtwork } from "#lib/api/platforms/itunes-data";
 import { scrollRegions } from "#lib/scroll-regions";
 import { vtName } from "#lib/utils";
 import { Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
@@ -17,13 +18,20 @@ import type { MergeExclusive } from "type-fest";
 export function Layout({
   header,
   children,
+  artwork,
   leading,
   trailing,
   accentColor,
-}: { header: ComponentProps<typeof Header> } & MergeExclusive<
-  { children?: ReactNode },
-  { leading: ReactNode; trailing: ReactNode }
-> & { accentColor?: string | Promise<string | undefined> }) {
+}: {
+  header: ComponentProps<typeof Header>;
+  artwork?: {
+    vt?: string;
+    src: string;
+    alt: string;
+  };
+} & MergeExclusive<{ children?: ReactNode }, { leading: ReactNode; trailing: ReactNode }> & {
+    accentColor?: string | Promise<string | undefined>;
+  }) {
   const [resolvedColor, setResolvedColor] = useState<{
     source: typeof accentColor;
     color: string | undefined;
@@ -53,9 +61,10 @@ export function Layout({
 
   const [atTop, setAtTop] = useState(true);
 
+  const scrollPadding = artwork ? 360 : 60;
+
   function handleContainerScroll(e: UIEvent) {
-    // lil bit of margin before setting it so it doesnt show both the title in the header and the page
-    setAtTop(e.currentTarget.scrollTop < 48);
+    setAtTop(e.currentTarget.scrollTop < scrollPadding);
   }
 
   return (
@@ -72,39 +81,53 @@ export function Layout({
         titleVt={header.titleVt}
       />
 
-      <div
+      <main
         data-scroll-restoration-id={scrollRegions.page}
         onScroll={handleContainerScroll}
-        className={cn("grid overflow-y-auto", !children && "p-3")}
+        className={cn(
+          "grid overflow-y-auto",
+          children
+            ? "flex min-h-0 flex-col overflow-hidden"
+            : "grid h-full grid-cols-1 gap-6 px-3 max-lg:content-start lg:grid-cols-[auto_1fr] lg:overflow-hidden",
+        )}
       >
         {children ? (
-          <main className="flex min-h-0 flex-col overflow-hidden">
-            <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
-          </main>
+          <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
         ) : (
           <>
-            <main className="grid h-full grid-cols-1 gap-6 max-lg:content-start lg:grid-cols-[auto_1fr] lg:overflow-hidden">
-              <div
-                data-scroll-restoration-id={scrollRegions.sidebar}
-                onScroll={handleContainerScroll}
-                className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto xl:w-172"
-              >
-                <motion.h1
-                  animate={{
-                    opacity: atTop ? 1 : 0,
-                  }}
-                  className={cn("mb-8 text-4xl text-balance md:text-5xl", header.titleClassName)}
-                >
-                  {header.title}
-                </motion.h1>
+            <div
+              data-scroll-restoration-id={scrollRegions.sidebar}
+              onScroll={handleContainerScroll}
+              className="flex w-full flex-col gap-3 lg:min-h-0 lg:w-115 lg:overflow-y-auto xl:w-172"
+            >
+              {artwork && (
+                <img
+                  {...vtName`${artwork.vt}`}
+                  src={getBigItunesArtwork({ artworkUrl100: artwork.src })}
+                  alt={artwork.alt}
+                  className="mx-auto mt-6 aspect-square w-full max-w-72"
+                  style={{ "--shadow-clr": color ?? "currentColor" } as CSSProperties}
+                  width={600}
+                  height={600}
+                />
+              )}
 
-                {leading}
-              </div>
-              {trailing}
-            </main>
+              <motion.h1
+                animate={{
+                  opacity: atTop ? 1 : 0,
+                }}
+                className={cn("my-6 text-4xl text-balance md:text-5xl", header.titleClassName)}
+              >
+                {header.title}
+              </motion.h1>
+
+              {leading}
+            </div>
+
+            {trailing}
           </>
         )}
-      </div>
+      </main>
     </div>
   );
 }

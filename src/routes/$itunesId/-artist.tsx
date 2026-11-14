@@ -98,7 +98,7 @@ export function ArtistPage() {
           {genre && (
             <>
               <span className="section-divider">itunes genre</span>
-              <div className="cool-grid">
+              <div className="cool-grid lg:mb-32">
                 <Chip
                   className="capitalize"
                   to="/genre/$slug"
@@ -162,7 +162,7 @@ function ArtistReleasesList() {
       {timeline.map(({ release, year, showYear, month, dateTime }) => (
         <Fragment key={release.collectionId}>
           {showYear && (
-            <h2 className="flex h-9 items-center gap-3 font-semibold tabular-nums not-first:mt-6">
+            <h2 className="flex h-9 items-center gap-3 font-semibold tabular-nums">
               {year ?? "Unknown date"}
               <span className="grow border-t border-zinc-300-700" />
             </h2>
@@ -176,6 +176,7 @@ function ArtistReleasesList() {
           </div>
         </Fragment>
       ))}
+      <div className="h-29 shrink-0" />
     </div>
   );
 }

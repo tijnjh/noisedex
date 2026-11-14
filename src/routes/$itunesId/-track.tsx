@@ -103,17 +103,13 @@ export function TrackPage() {
         titleVt: isSingle ? `album-${track.collectionId}` : undefined,
       }}
       accentColor={accentColor}
+      artwork={{
+        src: getBigItunesArtwork(track),
+        alt: `${track.collectionName} album cover`,
+        vt: isSingle ? `album-artwork-${track.collectionId}` : undefined,
+      }}
       leading={
-        <div className="flex min-w-0 flex-col gap-3">
-          <img
-            {...vtName`${isSingle ? `album-artwork-${track.collectionId}` : undefined}`}
-            src={getBigItunesArtwork(track)}
-            alt={`${track.collectionName} album cover`}
-            className="mx-auto aspect-square w-full max-w-72"
-            width={600}
-            height={600}
-          />
-
+        <div className="flex min-w-0 flex-col gap-3 lg:mb-32">
           <Chip to="/$itunesId" params={{ itunesId: encodeItunesId(track.artistId) }}>
             {track.artistName}
           </Chip>

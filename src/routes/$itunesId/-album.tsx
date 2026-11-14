@@ -13,7 +13,7 @@ import { siteName, siteUrl } from "#lib/constants";
 import { musicMetadata } from "#lib/music-metadata";
 import { albumLinks } from "#lib/platform-links";
 import { scrollRegions } from "#lib/scroll-regions";
-import { formatDate, formatMillis, vtName } from "#lib/utils";
+import { formatDate, formatMillis } from "#lib/utils";
 import { Await, getRouteApi } from "@tanstack/react-router";
 import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
@@ -100,15 +100,13 @@ export function AlbumPage() {
         titleVt: `album-${data.album.collectionId}`,
       }}
       accentColor={data.accentColor}
+      artwork={{
+        src: getBigItunesArtwork(data.album),
+        alt: `${data.album.collectionName} album cover`,
+        vt: `album-artwork-${data.album.collectionId}`,
+      }}
       leading={
-        <div className="flex flex-col gap-3">
-          <img
-            {...vtName`album-artwork-${data.album.collectionId}`}
-            src={getBigItunesArtwork(data.album)}
-            alt={`${data.album.collectionName} album cover`}
-            className="mx-auto aspect-square w-full max-w-72"
-          />
-
+        <div className="flex flex-col gap-3 lg:mb-32">
           <Chip
             vt={{ title: `artist-${data.album.artistId}` }}
             to="/$itunesId"
@@ -162,9 +160,9 @@ export function AlbumPage() {
         <section
           aria-label="Track list"
           data-scroll-restoration-id={scrollRegions.content}
-          className="flex h-full flex-col gap-3 overflow-x-hidden overflow-y-auto pb-32"
+          className="flex flex-col gap-3 overflow-x-clip pb-32 lg:h-full lg:overflow-y-auto"
         >
-          <h2 className="text-xl font-semibold">tracks</h2>
+          <h2 className="section-divider shrink-0">tracks</h2>
 
           <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
             {data.tracks.map((track) => (

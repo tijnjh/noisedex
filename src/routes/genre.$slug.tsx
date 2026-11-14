@@ -59,7 +59,7 @@ function RouteComponent() {
 
           <span className="section-divider">related genres</span>
 
-          <div className="cool-grid">
+          <div className="cool-grid lg:mb-32">
             {genre.relatedGenres?.map((genre) => (
               <GenreChip key={genre.genreName} genre={genre} />
             ))}
@@ -71,9 +71,9 @@ function RouteComponent() {
           data-scroll-restoration-id={scrollRegions.content}
           className="flex flex-col gap-3 lg:overflow-y-auto"
         >
-          <span className="section-divider">artists in this genre</span>
+          <h2 className="section-divider">artists in this genre</h2>
 
-          <div className="grid grid-cols-responsive gap-3">
+          <div className="mb-32 grid grid-cols-responsive gap-3">
             {genre.artists?.map((artist) => (
               <ArtistChip key={artist.id} artist={artist} />
             ))}
