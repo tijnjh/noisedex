@@ -16,7 +16,6 @@ NOT VIBECODED -- 100% human slop
 - [itunes](https://www.apple.com/itunes/) — search, artist discographies, albums, tracks, artwork and audio previews
 - [spotify](https://open.spotify.com) - artist lookup and metadata, plus embedded playback
 - [wikipedia](https://en.wikipedia.org) - artist and album descriptions, genre context
-- [soundcloud](https://soundcloud.com) - matched album tracks for playback when available
 - [the needle drop](https://theneedledrop.com) - review links from a locally stored index
 
 last.fm, bandcamp, AOTY and RYM are linked, not data sources

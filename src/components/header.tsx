@@ -4,6 +4,9 @@ import { Link, useLocation, useNavigate, useSearch } from "@tanstack/react-route
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
+import { Switch } from "./switch";
+import { useAtom } from "jotai";
+import { playOnHoverAtom } from "#lib/atoms";
 
 export interface HeaderProps {
   title?: string;
@@ -13,6 +16,8 @@ export interface HeaderProps {
 }
 
 export function Header(props: HeaderProps) {
+  const [playOnHover, setPlayOnHover] = useAtom(playOnHoverAtom);
+
   return (
     <header className="flex gap-3 overflow-hidden p-3 max-md:flex-col md:items-center md:justify-between">
       <div className="flex items-center gap-3 truncate">
@@ -20,7 +25,14 @@ export function Header(props: HeaderProps) {
         <PageTitle {...props} />
       </div>
 
-      <SearchBar />
+      <div className="flex max-w-xl grow items-center gap-3">
+        <label className="flex cursor-pointer items-center gap-3 select-none pointer-coarse:hidden">
+          play on hover
+          <Switch checked={playOnHover} onCheckedChange={setPlayOnHover} />
+        </label>
+
+        <SearchBar />
+      </div>
     </header>
   );
 }
@@ -116,7 +128,7 @@ function SearchBar() {
   return (
     <form
       {...viewTransition("search")}
-      className="flex grow gap-3 md:max-w-md"
+      className="flex grow gap-3"
       onSubmit={(e) => {
         e.preventDefault();
         const query = value.trim();

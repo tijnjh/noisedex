@@ -1,6 +1,6 @@
 import { AsyncContent } from "#components/async-content";
 import { GenreList } from "#components/genre-list";
-import { ContentPane, Layout } from "#components/layout";
+import { ContentPane, Layout, type TitlePlayback } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
 import { WikipediaDescription } from "#components/wikipedia-description";
@@ -13,6 +13,7 @@ import {
 import { siteName } from "#lib/constants";
 import { pageHead } from "#lib/head";
 import { artistLinks } from "#lib/platform-links";
+import { previewPlayback } from "#lib/playback";
 import { buildReleaseTimeline } from "#lib/release-timeline";
 import { getRouteApi } from "@tanstack/react-router";
 import type { ResultAlbum, ResultMusicArtist } from "itunes-store-api";
@@ -38,6 +39,10 @@ export function loadArtist({
     wikipedia: $wikipedia.enrichWithGenres($wikipedia.getArtistByName({ data: artist.artistName })),
     everynoiseArtist,
     accentColor: everynoiseArtist.then((artist) => artist?.style.color),
+    playback: everynoiseArtist.then(
+      (artist): TitlePlayback | undefined =>
+        artist?.preview && { track: previewPlayback(artist.preview), note: "example track" },
+    ),
   };
 }
 
@@ -55,6 +60,7 @@ export function ArtistPage({
   wikipedia,
   everynoiseArtist,
   accentColor,
+  playback,
 }: ArtistData) {
   return (
     <Layout
@@ -63,6 +69,7 @@ export function ArtistPage({
         titleVt: `artist-${artist.artistId}`,
       }}
       accentColor={accentColor}
+      playback={playback}
       leading={
         <>
           <PlatformLinks links={artistLinks(artist.artistName, artist.artistId)} />

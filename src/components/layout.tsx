@@ -1,17 +1,25 @@
 import { Header, type HeaderProps } from "#components/header";
-import { useResolved } from "#hooks/use-resolved";
+import { useResolved, useResolvedState } from "#hooks/use-resolved";
+import type { PlaybackTrack } from "#lib/playback";
 import { scrollRegions } from "#lib/scroll-regions";
 import { viewTransition } from "#lib/utils";
 import { cn } from "cn";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState, type CSSProperties, type ReactNode, type UIEvent } from "react";
+import { Skeleton } from "skullet/react";
 import type { MergeExclusive } from "type-fest";
+import { NamedPlayButton } from "./play-button";
 
 interface Artwork {
   src: string;
   alt: string;
   /** view transition name */
   vt?: string;
+}
+
+export interface TitlePlayback {
+  track: PlaybackTrack;
+  note?: string;
 }
 
 type LayoutProps = {
@@ -22,11 +30,25 @@ type LayoutProps = {
   // one full-size pane
   { children?: ReactNode },
   // a sidebar (artwork, title, `leading`) next to a `trailing` content pane
-  { leading: ReactNode; trailing: ReactNode; artwork?: Artwork }
+  {
+    leading: ReactNode;
+    trailing: ReactNode;
+    artwork?: Artwork;
+    playback?: TitlePlayback | Promise<TitlePlayback | undefined>;
+  }
 >;
 
-export function Layout({ header, children, artwork, leading, trailing, accentColor }: LayoutProps) {
+export function Layout({
+  header,
+  children,
+  artwork,
+  leading,
+  trailing,
+  accentColor,
+  playback,
+}: LayoutProps) {
   const color = useResolved(accentColor);
+  const resolvedPlayback = useResolvedState(playback);
 
   // once the big title scrolls out of view, it moves into the header
   const [atTop, setAtTop] = useState(true);
@@ -79,12 +101,34 @@ export function Layout({ header, children, artwork, leading, trailing, accentCol
               />
             )}
 
-            <motion.h1
-              animate={{ opacity: atTop ? 1 : 0 }}
-              className={cn("my-6 text-4xl text-balance md:text-5xl", header.titleClassName)}
-            >
-              {header.title}
-            </motion.h1>
+            <motion.div animate={{ opacity: atTop ? 1 : 0 }} className="my-6 flex items-start">
+              <AnimatePresence initial={false}>
+                {(resolvedPlayback.pending || resolvedPlayback.value) && (
+                  <motion.div
+                    className="shrink-0 overflow-hidden"
+                    initial={{ width: 0, marginRight: 0 }}
+                    animate={{ width: "auto", marginRight: 12 }}
+                    exit={{ width: 0, marginRight: 0, opacity: 0 }}
+                  >
+                    <Skeleton loading={resolvedPlayback.pending} label="Loading playback">
+                      <NamedPlayButton
+                        track={resolvedPlayback.value?.track ?? {}}
+                        note={resolvedPlayback.value?.note}
+                        color={color}
+                      />
+                    </Skeleton>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <h1
+                className={cn(
+                  "text-4xl text-balance [text-box-edge:cap_alphabetic] [text-box-trim:trim-both] md:text-5xl",
+                  header.titleClassName,
+                )}
+              >
+                {header.title}
+              </h1>
+            </motion.div>
 
             {leading}
           </div>

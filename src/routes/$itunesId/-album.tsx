@@ -1,27 +1,21 @@
 import { AsyncContent } from "#components/async-content";
 import { Chip } from "#components/chip";
-import { Detail } from "#components/detail";
 import { ContentPane, Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import { TrackPlayButton } from "#components/play-button";
 import { WikipediaDescription } from "#components/wikipedia-description";
-import { usePopover } from "#hooks/use-popover";
-import { $fantano, $soundcloud, $wikipedia } from "#lib/api/index";
-import {
-  encodeItunesId,
-  getBigItunesArtwork,
-  trimItunesCollectionPostfix,
-} from "#lib/api/platforms/itunes-data";
+import { $fantano, $wikipedia } from "#lib/api/index";
+import { encodeItunesId, getBigItunesArtwork } from "#lib/api/platforms/itunes-data";
 import { getArtworkColor } from "#lib/artwork-color";
 import { siteName } from "#lib/constants";
 import { musicHead } from "#lib/head";
+import { useHoverPlayAction } from "#lib/hover-play-action";
 import { albumLinks } from "#lib/platform-links";
-import { formatDate, formatMillis, isoDuration } from "#lib/utils";
-import { Await } from "@tanstack/react-router";
+import { itunesPlayback } from "#lib/playback";
+import { formatDate, isoDuration } from "#lib/utils";
 import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
 type AlbumData = ReturnType<typeof loadAlbum>;
-type SoundcloudTracks = AlbumData["soundcloud"];
 
 // everything beyond the itunes data is left as a promise, so it streams in after the page
 export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: ResultMusicTrack[] }) {
@@ -33,11 +27,6 @@ export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: Resul
     wikipedia: $wikipedia.enrichWithGenres(
       $wikipedia.getAlbumByName({ data: { album: collectionName, artist: artistName } }),
     ),
-    soundcloud: $soundcloud
-      .matchAlbum({
-        data: { artist: artistName, album: trimItunesCollectionPostfix(collectionName) },
-      })
-      .catch(() => []),
     accentColor: getArtworkColor({ data: album.artworkUrl100 }).catch(() => undefined),
     fantanoReview: $fantano.getReview({ data: { album: collectionName, artist: artistName } }),
   };
@@ -70,14 +59,7 @@ export function albumHead({ album, tracks }: AlbumData) {
   });
 }
 
-export function AlbumPage({
-  album,
-  tracks,
-  wikipedia,
-  soundcloud,
-  accentColor,
-  fantanoReview,
-}: AlbumData) {
+export function AlbumPage({ album, tracks, wikipedia, accentColor, fantanoReview }: AlbumData) {
   return (
     <Layout
       header={{
@@ -112,7 +94,7 @@ export function AlbumPage({
 
           <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
             {tracks.map((track) => (
-              <Track key={track.trackId} track={track} soundcloud={soundcloud} />
+              <Track key={track.trackId} track={track} />
             ))}
           </div>
         </ContentPane>
@@ -155,31 +137,17 @@ function FantanoReview({ review }: { review: AlbumData["fantanoReview"] }) {
   );
 }
 
-function Track({ track, soundcloud }: { track: ResultMusicTrack; soundcloud: SoundcloudTracks }) {
-  const triggerProps = usePopover(
-    <dl>
-      <Detail label="duration">{formatMillis(track.trackTimeMillis)}</Detail>
-    </dl>,
-  );
+function Track({ track }: { track: ResultMusicTrack }) {
+  const hoverProps = useHoverPlayAction(() => itunesPlayback(track));
 
   return (
-    <div {...triggerProps} className="col-span-full grid w-full grid-cols-subgrid">
+    <div {...hoverProps} className="col-span-full grid w-full grid-cols-subgrid">
       <div className="flex items-center justify-end">{track.trackNumber}</div>
 
       <Chip
         to="/$itunesId"
         params={{ itunesId: encodeItunesId(track.trackId) }}
-        trailing={
-          // plays the itunes preview until we know whether soundcloud has the full track
-          <Await promise={soundcloud} fallback={<TrackPlayButton track={track} />}>
-            {(matches) => (
-              <TrackPlayButton
-                track={track}
-                url={$soundcloud.trackUrl(matches, track.trackName, track.artistName)}
-              />
-            )}
-          </Await>
-        }
+        trailing={<TrackPlayButton track={track} />}
       >
         {track.trackName}
       </Chip>

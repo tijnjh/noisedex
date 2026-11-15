@@ -196,9 +196,6 @@ importers:
       cn:
         specifier: ^0.5.2
         version: 0.5.2
-      hls.js:
-        specifier: ^1.7.4
-        version: 1.7.4
       itunes-store-api:
         specifier: ^2.1.0
         version: 2.1.0(patch_hash=cf53f5161efff7187ef8aec88bcfcbd059ff16464fdafb4ce2a926ca26d363e4)
@@ -2426,9 +2423,6 @@ packages:
   hasown@2.0.4:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
     engines: {node: '>= 0.4'}
-
-  hls.js@1.7.4:
-    resolution: {integrity: sha512-3GlxGdPvT2YHvQYOt+yOzT/DEior/qJVNIylHA77kgeoBTdQQqi70GwefNEUmHQeNGyjC8U62+bruqW/Tpm+tg==}
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
@@ -5569,8 +5563,6 @@ snapshots:
   hasown@2.0.4:
     dependencies:
       function-bind: 1.1.2
-
-  hls.js@1.7.4: {}
 
   hookable@5.5.3: {}
 

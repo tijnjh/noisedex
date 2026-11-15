@@ -5,7 +5,14 @@ import { useEffect, useState } from "react";
  * yields undefined until the promise settles (and if it rejects)
  */
 export function useResolved<T>(value: T | Promise<T>): T | undefined {
-  const [resolved, setResolved] = useState<{ source: Promise<T>; value: T }>();
+  return useResolvedState(value).value;
+}
+
+export function useResolvedState<T>(value: T | Promise<T>): {
+  value: T | undefined;
+  pending: boolean;
+} {
+  const [resolved, setResolved] = useState<{ source: Promise<T>; value: T | undefined }>();
 
   useEffect(() => {
     if (!(value instanceof Promise)) return;
@@ -15,7 +22,9 @@ export function useResolved<T>(value: T | Promise<T>): T | undefined {
       (result) => {
         if (active) setResolved({ source: value, value: result });
       },
-      () => {},
+      () => {
+        if (active) setResolved({ source: value, value: undefined });
+      },
     );
 
     return () => {
@@ -23,6 +32,7 @@ export function useResolved<T>(value: T | Promise<T>): T | undefined {
     };
   }, [value]);
 
-  if (!(value instanceof Promise)) return value;
-  return resolved?.source === value ? resolved.value : undefined;
+  if (!(value instanceof Promise)) return { value, pending: false };
+  if (resolved?.source !== value) return { value: undefined, pending: true };
+  return { value: resolved.value, pending: false };
 }

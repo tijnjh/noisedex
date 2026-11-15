@@ -21,7 +21,6 @@
     "@tanstack/react-virtual": "^3.14.26",
     "cheerio": "^1.2.0",
     "cn": "^0.5.2",
-    "hls.js": "^1.7.4",
     "itunes-store-api": "^2.1.0",
     "jotai": "^3.0.2",
     "motion": "^14.12.0",

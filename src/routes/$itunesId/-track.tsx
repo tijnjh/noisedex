@@ -1,21 +1,18 @@
 import { Chip } from "#components/chip";
 import { Detail } from "#components/detail";
-import { ContentPane, Layout } from "#components/layout";
+import { ContentPane, Layout, type TitlePlayback } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
-import { TrackPlayButton } from "#components/play-button";
-import { $soundcloud } from "#lib/api/index";
 import {
   encodeItunesId,
   getBigItunesArtwork,
   isSingleRelease,
-  trimItunesCollectionPostfix,
 } from "#lib/api/platforms/itunes-data";
 import { getArtworkColor } from "#lib/artwork-color";
 import { siteName } from "#lib/constants";
 import { absoluteUrl, musicHead } from "#lib/head";
 import { trackLinks } from "#lib/platform-links";
+import { itunesPlayback } from "#lib/playback";
 import { formatDate, formatMillis, isoDuration } from "#lib/utils";
-import { Await } from "@tanstack/react-router";
 import type { ResultMusicTrack } from "itunes-store-api";
 
 type TrackData = ReturnType<typeof loadTrack>;
@@ -24,14 +21,9 @@ type TrackData = ReturnType<typeof loadTrack>;
 export function loadTrack({ track }: { track: ResultMusicTrack }) {
   return {
     track,
-    soundcloud: $soundcloud
-      .matchAlbum({
-        data: {
-          artist: track.artistName,
-          album: trimItunesCollectionPostfix(track.collectionName),
-        },
-      })
-      .catch(() => []),
+    playback: track.previewUrl
+      ? ({ track: itunesPlayback(track), note: "30 second preview" } satisfies TitlePlayback)
+      : undefined,
     accentColor: getArtworkColor({ data: track.artworkUrl100 }).catch(() => undefined),
   };
 }
@@ -62,7 +54,7 @@ export function trackHead({ track }: TrackData) {
   });
 }
 
-export function TrackPage({ track, soundcloud, accentColor }: TrackData) {
+export function TrackPage({ track, playback, accentColor }: TrackData) {
   // a single has no album page of its own, so its track page stands in for it
   const isSingle = isSingleRelease(track.collectionName, track.trackCount);
 
@@ -73,6 +65,7 @@ export function TrackPage({ track, soundcloud, accentColor }: TrackData) {
         titleVt: isSingle ? `album-${track.collectionId}` : undefined,
       }}
       accentColor={accentColor}
+      playback={playback}
       artwork={{
         src: getBigItunesArtwork(track),
         alt: `${track.collectionName} album cover`,
@@ -83,15 +76,6 @@ export function TrackPage({ track, soundcloud, accentColor }: TrackData) {
           <Chip to="/$itunesId" params={{ itunesId: encodeItunesId(track.artistId) }}>
             {track.artistName}
           </Chip>
-
-          <Await promise={soundcloud} fallback={<Playback track={track} />}>
-            {(matches) => (
-              <Playback
-                track={track}
-                fullUrl={$soundcloud.trackUrl(matches, track.trackName, track.artistName)}
-              />
-            )}
-          </Await>
 
           <PlatformLinks links={trackLinks(track)} />
         </div>
@@ -151,18 +135,5 @@ export function TrackPage({ track, soundcloud, accentColor }: TrackData) {
         </ContentPane>
       }
     />
-  );
-}
-
-function Playback({ track, fullUrl }: { track: ResultMusicTrack; fullUrl?: string }) {
-  if (!fullUrl && !track.previewUrl) {
-    return <p className="opacity-60">No preview available for this track.</p>;
-  }
-
-  return (
-    <div className="flex items-center gap-3">
-      <TrackPlayButton track={track} url={fullUrl} />
-      <span>{fullUrl ? "Listen on SoundCloud" : "Listen to a preview"}</span>
-    </div>
   );
 }

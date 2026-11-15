@@ -1,15 +1,25 @@
-import { createElement, HTMLAttributes, ReactNode, useEffect, useId, useState } from "react";
-import { createRoot } from "react-dom/client";
+import {
+  createElement,
+  HTMLAttributes,
+  ReactNode,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
+import { createRoot, type Root } from "react-dom/client";
 
 /** shows `content` in a card anchored to the element the returned props are spread on */
 export function usePopover(content: ReactNode) {
+  const hasContent = content != null;
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const anchor = `--popover-${id}`;
 
   const [isOpen, setIsOpen] = useState(false);
+  const rootRef = useRef<Root>(undefined);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !hasContent) return;
 
     const el = document.createElement("div");
     el.style.setProperty("position-anchor", anchor);
@@ -25,15 +35,20 @@ export function usePopover(content: ReactNode) {
     document.body.appendChild(el);
 
     const root = createRoot(el);
-    root.render(
-      createElement("div", { className: "flex w-72 flex-col gap-3 p-3 wrap-break-word" }, content),
-    );
+    rootRef.current = root;
 
     return () => {
+      rootRef.current = undefined;
       root.unmount();
       el.remove();
     };
-  }, [isOpen, anchor, content]);
+  }, [isOpen, hasContent, anchor]);
+
+  useEffect(() => {
+    rootRef.current?.render(
+      createElement("div", { className: "flex w-72 flex-col gap-3 p-3 wrap-break-word" }, content),
+    );
+  }, [isOpen, hasContent, content]);
 
   const open = (event: { currentTarget: HTMLElement }) => {
     setIsOpen(true);
