@@ -1,4 +1,4 @@
-import { vtName } from "#lib/utils";
+import { viewTransition } from "#lib/utils";
 import { Link, type LinkProps } from "@tanstack/react-router";
 import { cn } from "cn";
 import type { ReactNode } from "react";
@@ -7,7 +7,6 @@ export function Chip({
   children,
   leading,
   trailing,
-  inverse,
   className,
   vt,
   ...props
@@ -15,7 +14,6 @@ export function Chip({
   children?: string;
   leading?: ReactNode;
   trailing?: ReactNode;
-  inverse?: boolean;
   className?: string;
   vt?: { img?: string; title?: string };
 }) {
@@ -23,7 +21,7 @@ export function Chip({
     <div className="flex h-control items-center truncate">
       {typeof leading === "string" ? (
         <img
-          {...vtName`${vt?.img}`}
+          {...viewTransition(vt?.img)}
           className="aspect-square size-control"
           src={leading}
           loading="lazy"
@@ -37,13 +35,9 @@ export function Chip({
       <Link
         {...props}
         draggable={false}
-        className={cn(
-          "min-w-0 grow items-center px-0 [-webkit-touch-callout:none]",
-          inverse ? "btn-inverse" : "btn",
-          className,
-        )}
+        className={cn("btn min-w-0 grow items-center px-0 [-webkit-touch-callout:none]", className)}
       >
-        <span {...vtName`${vt?.title}`} className="truncate px-3" title={children}>
+        <span {...viewTransition(vt?.title)} className="truncate px-3" title={children}>
           {children}
         </span>
       </Link>

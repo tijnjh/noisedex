@@ -1,19 +1,20 @@
 import { AsyncContent } from "#components/async-content";
-import { Chip } from "#components/chip";
 import { GenreList } from "#components/genre-list";
-import { Layout } from "#components/layout";
+import { ContentPane, Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { $everynoise, $wikipedia } from "#lib/api/index";
-import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
-import { encodeItunesId, getReleaseType } from "#lib/api/platforms/itunes-data";
-import { siteName, siteUrl } from "#lib/constants";
+import {
+  encodeItunesId,
+  matchesReleaseFilter,
+  releaseFilters,
+} from "#lib/api/platforms/itunes-data";
+import { siteName } from "#lib/constants";
+import { pageHead } from "#lib/head";
 import { artistLinks } from "#lib/platform-links";
 import { buildReleaseTimeline } from "#lib/release-timeline";
-import { scrollRegions } from "#lib/scroll-regions";
 import { getRouteApi } from "@tanstack/react-router";
-import { cn } from "cn";
 import type { ResultAlbum, ResultMusicArtist } from "itunes-store-api";
 import { Fragment } from "react";
 
@@ -21,6 +22,7 @@ const musicRoute = getRouteApi("/$itunesId/");
 
 type ArtistData = ReturnType<typeof loadArtist>;
 
+// everything beyond the itunes data is left as a promise, so it streams in after the page
 export function loadArtist({
   artist,
   albums,
@@ -28,50 +30,32 @@ export function loadArtist({
   artist: ResultMusicArtist;
   albums: ResultAlbum[];
 }) {
-  const { summary: wikipediaArtist, genres: wikipediaArtistGenres } = $wikipedia.enrichWithGenres(
-    $wikipedia.getArtistByName({ data: artist.artistName }),
-  );
-
   const everynoiseArtist = $everynoise.getArtistByName(artist.artistName).catch(() => undefined);
 
   return {
     artist,
     albums,
-    wikipediaArtist,
-    wikipediaArtistGenres,
+    wikipedia: $wikipedia.enrichWithGenres($wikipedia.getArtistByName({ data: artist.artistName })),
     everynoiseArtist,
     accentColor: everynoiseArtist.then((artist) => artist?.style.color),
   };
 }
 
-export function artistHead(data: ArtistData) {
-  return {
-    meta: [
-      {
-        title: `${data.artist.artistName} albums • ${siteName}`,
-      },
-      {
-        name: "description",
-        content: `Browse albums and music genres for ${data.artist.artistName} on ${siteName}.`,
-      },
-    ],
-    links: [
-      {
-        rel: "canonical",
-        href: `${siteUrl}/${encodeItunesId(data.artist.artistId)}`,
-      },
-    ],
-  };
+export function artistHead({ artist }: ArtistData) {
+  return pageHead({
+    title: `${artist.artistName} albums`,
+    description: `Browse albums and music genres for ${artist.artistName} on ${siteName}.`,
+    path: `/${encodeItunesId(artist.artistId)}`,
+  });
 }
 
-export function ArtistPage() {
-  const music = musicRoute.useLoaderData();
-  if (music.type !== "artist") return;
-  const data = music.data;
-
-  const { artist, wikipediaArtist, wikipediaArtistGenres, everynoiseArtist, accentColor } = data;
-  const genre = artist.primaryGenreName;
-
+export function ArtistPage({
+  artist,
+  albums,
+  wikipedia,
+  everynoiseArtist,
+  accentColor,
+}: ArtistData) {
   return (
     <Layout
       header={{
@@ -83,7 +67,7 @@ export function ArtistPage() {
         <>
           <PlatformLinks links={artistLinks(artist.artistName, artist.artistId)} />
 
-          <WikipediaDescription summary={wikipediaArtist} genres={wikipediaArtistGenres} />
+          <WikipediaDescription {...wikipedia} />
 
           <AsyncContent<{ genres: string[] } | undefined>
             promise={everynoiseArtist}
@@ -95,49 +79,34 @@ export function ArtistPage() {
             )}
           </AsyncContent>
 
-          {genre && (
-            <>
-              <span className="section-divider">itunes genre</span>
-              <div className="cool-grid lg:mb-32">
-                <Chip
-                  className="capitalize"
-                  to="/genre/$slug"
-                  params={{ slug: genreNameToSlug(genre) }}
-                >
-                  {genre}
-                </Chip>
-              </div>
-            </>
+          {artist.primaryGenreName && (
+            <GenreList
+              title="itunes genre"
+              names={[artist.primaryGenreName]}
+              className="lg:mb-32"
+            />
           )}
         </>
       }
-      trailing={<ArtistReleasesList />}
+      trailing={<Discography releases={albums} />}
     />
   );
 }
 
-function ArtistReleasesList() {
-  const releases = musicRoute.useLoaderData({
-    select: (music) => (music.type === "artist" ? music.data.albums : []),
-  });
+function Discography({ releases }: { releases: ResultAlbum[] }) {
   const { filter = "All" } = musicRoute.useSearch();
   const navigate = musicRoute.useNavigate();
+
   const timeline = buildReleaseTimeline(
-    releases.filter(
-      (release) => filter === "All" || getReleaseType(release.collectionName) + "s" === filter,
-    ),
+    releases.filter((release) => matchesReleaseFilter(release.collectionName, filter)),
   );
 
   return (
-    <div
-      aria-label="Release timeline"
-      data-scroll-restoration-id={scrollRegions.content}
-      className="flex min-w-0 flex-col gap-3 lg:overflow-y-auto"
-    >
+    <ContentPane label="Release timeline">
       <h2 className="section-divider">discography</h2>
 
       <div role="group" aria-label="Release type" className="flex gap-3">
-        {(["All", "LPs", "EPs", "Singles"] as const).map((type) => (
+        {releaseFilters.map((type) => (
           <button
             key={type}
             type="button"
@@ -152,7 +121,7 @@ function ArtistReleasesList() {
                 resetScroll: false,
               })
             }
-            className={cn("cursor-pointer", filter === type ? "btn-inverse h-9" : "btn h-9")}
+            className={filter === type ? "btn-inverse" : "btn"}
           >
             {type}
           </button>
@@ -179,6 +148,6 @@ function ArtistReleasesList() {
         </Fragment>
       ))}
       <div className="h-29 shrink-0" />
-    </div>
+    </ContentPane>
   );
 }

@@ -1,3 +1,4 @@
+import { useResolved } from "#hooks/use-resolved";
 import logoSvg from "../assets/favicon.svg?raw";
 import logoUrl from "../assets/favicon.svg?url";
 import { useMatches } from "@tanstack/react-router";
@@ -28,27 +29,8 @@ export function Favicon() {
     }
   }
 
-  const [resolved, setResolved] = useState<{
-    source: Promise<string | undefined>;
-    color: string | undefined;
-  }>();
+  const resolvedColor = useResolved(color);
   const [failedArtwork, setFailedArtwork] = useState<string>();
-
-  useEffect(() => {
-    let active = true;
-    if (color instanceof Promise) {
-      const source = color;
-      void source.then(
-        (value) => {
-          if (active) setResolved({ source, color: value });
-        },
-        () => {},
-      );
-    }
-    return () => {
-      active = false;
-    };
-  }, [color]);
 
   useEffect(() => {
     if (!artwork) return;
@@ -60,8 +42,6 @@ export function Favicon() {
     };
   }, [artwork]);
 
-  const resolvedColor =
-    typeof color === "string" ? color : resolved?.source === color ? resolved?.color : undefined;
   const artworkUrl = artwork && artwork !== failedArtwork ? artwork : undefined;
 
   return (

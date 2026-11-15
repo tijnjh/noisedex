@@ -1,15 +1,32 @@
-import type { ResultAlbum } from "itunes-store-api";
+// itunes marks singles and EPs with a suffix on the collection name
+const releaseSuffix = / - (Single|EP)$/i;
+
+export type ReleaseType = "LP" | "EP" | "Single";
+
+export function getReleaseType(collectionName: string): ReleaseType {
+  const suffix = collectionName.match(releaseSuffix)?.[1].toLowerCase();
+  if (suffix === "single") return "Single";
+  if (suffix === "ep") return "EP";
+  return "LP";
+}
 
 export function trimItunesCollectionPostfix(collectionName: string) {
-  return collectionName.replace(" - Single", "").replace(" - EP", "");
+  return collectionName.replace(releaseSuffix, "");
+}
+
+export function isSingleRelease(collectionName: string, trackCount: number) {
+  return getReleaseType(collectionName) === "Single" && trackCount === 1;
+}
+
+export const releaseFilters = ["All", "LPs", "EPs", "Singles"] as const;
+export type ReleaseFilter = (typeof releaseFilters)[number];
+
+export function matchesReleaseFilter(collectionName: string, filter: ReleaseFilter) {
+  return filter === "All" || `${getReleaseType(collectionName)}s` === filter;
 }
 
 export function getBigItunesArtwork({ artworkUrl100 }: { artworkUrl100: string }) {
   return artworkUrl100.replace("100x100bb", "600x600bb");
-}
-
-export function isSingleRelease(collectionName: string, trackCount: number) {
-  return collectionName.endsWith("- Single") && trackCount === 1;
 }
 
 const availableChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -37,28 +54,4 @@ export function parseItunesId(value: string) {
   }
 
   return Number.isSafeInteger(id) && id > 0 && encodeItunesId(id) === value ? id : undefined;
-}
-
-export function organizeArtistReleases(releases: ResultAlbum[]) {
-  const sections: Record<"albums" | "eps" | "singles", ResultAlbum[]> = {
-    albums: [],
-    eps: [],
-    singles: [],
-  };
-  for (const release of releases) {
-    if (release.collectionExplicitness === "cleaned") continue;
-    const section = release.collectionName.endsWith(" - Single")
-      ? "singles"
-      : release.collectionName.endsWith(" - EP")
-        ? "eps"
-        : "albums";
-    sections[section].push(release);
-  }
-  return sections;
-}
-
-export function getReleaseType(collectionName: string) {
-  if (/ - Single$/i.test(collectionName)) return "Single";
-  if (/ - EP$/i.test(collectionName)) return "EP";
-  return "LP";
 }

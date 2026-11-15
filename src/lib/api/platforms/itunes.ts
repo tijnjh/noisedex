@@ -7,27 +7,24 @@ import {
 import { storeCountryFromLanguages } from "#lib/store-country";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
-import type * as serverIsa from "itunes-store-api";
+import type * as itunes from "itunes-store-api";
 import * as v from "valibot";
+
+// the store to query, picked from the visitor's preferred languages
+const requestCountry = () => storeCountryFromLanguages(getRequestHeader("accept-language"));
 
 export const searchMusic = createServerFn()
   .validator(v.string())
-  .handler(async ({ data }) => {
-    const country = storeCountryFromLanguages(getRequestHeader("accept-language"));
-    return searchCatalogMusic(data.trim(), country);
-  });
+  .handler(({ data }) => searchCatalogMusic(data.trim(), requestCountry()));
 
 export const searchArtists = createServerFn()
   .validator(v.string())
-  .handler(async ({ data }) => {
-    const country = storeCountryFromLanguages(getRequestHeader("accept-language"));
-    return searchCatalogArtists(data.trim(), country);
-  });
+  .handler(({ data }) => searchCatalogArtists(data.trim(), requestCountry()));
 
 export const getMusic = createServerFn()
   .validator(v.number())
   .handler(async ({ data: id }) => {
-    const country = storeCountryFromLanguages(getRequestHeader("accept-language"));
+    const country = requestCountry();
     const results = await lookupCatalogSongs(id, country);
     const result = results[0];
 
@@ -44,7 +41,7 @@ export const getMusic = createServerFn()
       result.collectionId === id
     ) {
       const tracks = results.filter(
-        (item): item is serverIsa.ResultMusicTrack =>
+        (item): item is itunes.ResultMusicTrack =>
           item.wrapperType === "track" && item.kind === "song",
       );
 

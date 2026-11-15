@@ -1,4 +1,10 @@
-import { nowPlayingAtom, stoppedPlayback, type PlaybackTrack } from "#lib/playback";
+import {
+  itunesPlayback,
+  nowPlayingAtom,
+  previewPlayback,
+  stoppedPlayback,
+  type PlaybackTrack,
+} from "#lib/playback";
 import { useAtom } from "jotai";
 import type { ComponentProps } from "react";
 
@@ -26,5 +32,37 @@ export function PlayButton({
     >
       {isThisTrackPlaying ? "☐" : "▶︎"}
     </button>
+  );
+}
+
+export function TrackPlayButton({
+  track,
+  url,
+}: {
+  track: Parameters<typeof itunesPlayback>[0];
+  url?: string;
+}) {
+  return (
+    <PlayButton
+      className="btn-inverse size-9 shrink-0 justify-center"
+      track={itunesPlayback(track, url)}
+    />
+  );
+}
+
+export function PreviewPlayButton({
+  preview,
+  color,
+}: {
+  preview: { title: string; url: string };
+  color: string;
+}) {
+  return (
+    <PlayButton
+      title={preview.title}
+      className="btn size-9 shrink-0 justify-center"
+      style={{ backgroundColor: color }}
+      track={previewPlayback(preview)}
+    />
   );
 }

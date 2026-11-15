@@ -9,10 +9,6 @@ export function findSoundOfPlaylistId(links: Array<{ text: string; href: string 
   return fullUrl.replace("https://open.spotify.com/playlist/", "");
 }
 
-export function trimLinkPostfix(str: string) {
-  return str.trim().endsWith("»") ? str.trim().replace("»", "") : str;
-}
-
 export function splitPreviewTitle(previewTitle: string | undefined | null) {
   if (previewTitle == null) return;
 

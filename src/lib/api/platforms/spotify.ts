@@ -37,23 +37,6 @@ export const lookupArtists = createServerFn()
       }),
     });
 
-    const filteredArtists = spotifyRes.artists.items.filter((i) => !!i.images.length);
-
-    return filteredArtists;
-  });
-
-export const getArtistById = createServerFn()
-  .validator(v.string())
-  .handler(async ({ data }) => {
-    const res = await spotifyFetch(`artists/${data}`, {
-      schema: v.object({
-        name: v.string(),
-        followers: v.object({
-          total: v.number(),
-        }),
-        id: v.string(),
-      }),
-    });
-
-    return res;
+    // artists without images are almost always empty placeholder profiles
+    return spotifyRes.artists.items.filter((artist) => artist.images.length > 0);
   });

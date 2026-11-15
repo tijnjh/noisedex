@@ -1,4 +1,5 @@
 import { Chip } from "#components/chip";
+import { Detail } from "#components/detail";
 import { usePopover } from "#hooks/use-popover";
 import { encodeItunesId, trimItunesCollectionPostfix } from "#lib/api/platforms/itunes-data";
 import { formatDate, formatMillis } from "#lib/utils";
@@ -14,50 +15,29 @@ export function MusicChip({
   const track = music.wrapperType === "track" ? music : undefined;
   const title = track?.trackName ?? music.collectionName;
   const date = new Date(music.releaseDate);
+
   const triggerProps = usePopover(
-    <div className="flex w-72 flex-col gap-3 p-3 wrap-break-word">
+    <>
       {music.artworkUrl100 && <img className="size-36" src={music.artworkUrl100} alt="" />}
       {title}
 
       <dl>
-        {music.artistName && (
-          <>
-            <dt>artist</dt>
-            <dd>{music.artistName}</dd>
-          </>
-        )}
-        {track && music.collectionName && (
-          <>
-            <dt>album</dt>
-            <dd>{music.collectionName}</dd>
-          </>
-        )}
+        {music.artistName && <Detail label="artist">{music.artistName}</Detail>}
+        {track && music.collectionName && <Detail label="album">{music.collectionName}</Detail>}
         {Number.isFinite(date.getTime()) && (
-          <>
-            <dt>release date</dt>
-            <dd>{formatDate(date)}</dd>
-          </>
+          <Detail label="release date">{formatDate(date)}</Detail>
         )}
         {music.primaryGenreName && (
-          <>
-            <dt>itunes genre</dt>
-            <dd className="capitalize">{music.primaryGenreName}</dd>
-          </>
+          <Detail label="itunes genre" className="capitalize">
+            {music.primaryGenreName}
+          </Detail>
         )}
         {track && track.trackTimeMillis > 0 && (
-          <>
-            <dt>duration</dt>
-            <dd>{formatMillis(track.trackTimeMillis)}</dd>
-          </>
+          <Detail label="duration">{formatMillis(track.trackTimeMillis)}</Detail>
         )}
-        {!track && music.trackCount > 0 && (
-          <>
-            <dt>tracks</dt>
-            <dd>{music.trackCount}</dd>
-          </>
-        )}
+        {!track && music.trackCount > 0 && <Detail label="tracks">{music.trackCount}</Detail>}
       </dl>
-    </div>,
+    </>,
   );
 
   const label = track ? title : trimItunesCollectionPostfix(title);

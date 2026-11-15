@@ -1,12 +1,20 @@
 import { Chip } from "#components/chip";
+import { Section } from "#components/section";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
 
-export function GenreList({ title, names }: { title: string; names: string[] }) {
+export function GenreList({
+  title,
+  names,
+  className,
+}: {
+  title: string;
+  names: string[];
+  className?: string;
+}) {
   if (!names.length) return;
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="section-divider">{title}</h2>
+    <Section title={title} className={className}>
       <div className="cool-grid">
         {names.map((name) => (
           <Chip
@@ -19,6 +27,6 @@ export function GenreList({ title, names }: { title: string; names: string[] }) 
           </Chip>
         ))}
       </div>
-    </section>
+    </Section>
   );
 }

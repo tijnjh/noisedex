@@ -1,16 +1,15 @@
-import { HTMLAttributes, ReactNode, useEffect, useId, useRef, useState } from "react";
+import { createElement, HTMLAttributes, ReactNode, useEffect, useId, useState } from "react";
 import { createRoot } from "react-dom/client";
 
+/** shows `content` in a card anchored to the element the returned props are spread on */
 export function usePopover(content: ReactNode) {
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const anchor = `--popover-${id}`;
 
-  const [isHovering, setIsHovering] = useState(false);
-
-  const rootRef = useRef<ReturnType<typeof createRoot> | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (!isHovering) return;
+    if (!isOpen) return;
 
     const el = document.createElement("div");
     el.style.setProperty("position-anchor", anchor);
@@ -26,33 +25,28 @@ export function usePopover(content: ReactNode) {
     document.body.appendChild(el);
 
     const root = createRoot(el);
-    rootRef.current = root;
-    root.render(content);
+    root.render(
+      createElement("div", { className: "flex w-72 flex-col gap-3 p-3 wrap-break-word" }, content),
+    );
 
     return () => {
       root.unmount();
-      rootRef.current = null;
       el.remove();
     };
-  }, [isHovering, anchor, content]);
+  }, [isOpen, anchor, content]);
 
   const open = (event: { currentTarget: HTMLElement }) => {
-    setIsHovering(true);
+    setIsOpen(true);
     event.currentTarget.style.setProperty("anchor-name", anchor);
   };
 
-  const close = () => setIsHovering(false);
+  const close = () => setIsOpen(false);
 
   const props: HTMLAttributes<HTMLElement> = {
     onMouseEnter: open,
     onMouseLeave: close,
     onFocus: open,
     onBlur: close,
-    // onPointerDown: (event) => {
-    //   if (event.pointerType === "touch") {
-    //     open(event);
-    //   }
-    // },
   };
 
   return props;

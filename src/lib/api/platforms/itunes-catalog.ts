@@ -53,7 +53,8 @@ export const getArtistCatalog = cached(async function (artistId: number, country
   };
 });
 
-export function mergeCatalogEditions(albums: itunes.ResultAlbum[]) {
+// keeps one edition per release: explicit over clean, then the earliest
+function mergeCatalogEditions(albums: itunes.ResultAlbum[]) {
   const editions = new Map<string, itunes.ResultAlbum>();
   for (const album of albums) {
     const key = JSON.stringify([

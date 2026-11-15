@@ -1,14 +1,15 @@
 import { Chip } from "#components/chip";
+import { Detail } from "#components/detail";
 import { GenreChip } from "#components/genre-chip";
-import { Layout } from "#components/layout";
-import { PlayButton } from "#components/play-button";
+import { ContentPane, Layout } from "#components/layout";
+import { PreviewPlayButton } from "#components/play-button";
 import { SpotifyWidget } from "#components/spotify-widget";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { usePopover } from "#hooks/use-popover";
 import { $everynoise, $wikipedia } from "#lib/api/index";
-import { findSoundOfPlaylistId, splitPreviewTitle } from "#lib/api/platforms/everynoise-data";
-import { siteName, siteUrl } from "#lib/constants";
-import { scrollRegions } from "#lib/scroll-regions";
+import { findSoundOfPlaylistId } from "#lib/api/platforms/everynoise-data";
+import { siteName } from "#lib/constants";
+import { pageHead } from "#lib/head";
 import { capitalizeWords } from "#lib/utils";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
@@ -19,27 +20,17 @@ export const Route = createFileRoute("/genre/$slug")({
     const genre = await $everynoise.getGenreBySlug(params.slug);
     if (!genre?.genreName) throw notFound();
 
-    const wikipediaGenre = genre.genreName
-      ? $wikipedia.getGenreByName({ data: genre.genreName }).catch(() => null)
-      : Promise.resolve(null);
-
     return {
       ...genre,
-      wikipediaGenre,
+      wikipediaGenre: $wikipedia.getGenreByName({ data: genre.genreName }).catch(() => null),
     };
   },
-  head: ({ loaderData, params }) => ({
-    meta: [
-      {
-        title: `${capitalizeWords(loaderData?.genreName ?? "Genre")} artists • ${siteName}`,
-      },
-      {
-        name: "description",
-        content: `Explore ${loaderData?.genreName ?? "this genre"} artists and related music genres on ${siteName}.`,
-      },
-    ],
-    links: [{ rel: "canonical", href: `${siteUrl}/genre/${params.slug}` }],
-  }),
+  head: ({ loaderData, params }) =>
+    pageHead({
+      title: `${capitalizeWords(loaderData?.genreName ?? "Genre")} artists`,
+      description: `Explore ${loaderData?.genreName ?? "this genre"} artists and related music genres on ${siteName}.`,
+      path: `/genre/${params.slug}`,
+    }),
   component: RouteComponent,
 });
 
@@ -67,10 +58,7 @@ function RouteComponent() {
         </>
       }
       trailing={
-        <div
-          data-scroll-restoration-id={scrollRegions.content}
-          className="flex flex-col gap-3 lg:overflow-y-auto"
-        >
+        <ContentPane label="Artists in this genre">
           <h2 className="section-divider">artists in this genre</h2>
 
           <div className="mb-32 grid grid-cols-responsive gap-3">
@@ -78,7 +66,7 @@ function RouteComponent() {
               <ArtistChip key={artist.id} artist={artist} />
             ))}
           </div>
-        </div>
+        </ContentPane>
       }
     />
   );
@@ -86,37 +74,20 @@ function RouteComponent() {
 
 function ArtistChip({ artist }: { artist: $everynoise.Artist }) {
   const triggerProps = usePopover(
-    <div className="flex w-72 flex-col gap-3 p-3">
-      <dl>
-        <dt>example track</dt>
-        <dd>{artist.preview.title}</dd>
-      </dl>
-    </div>,
+    <dl>
+      <Detail label="example track">{artist.preview.title}</Detail>
+    </dl>,
   );
-
-  const previewTrack = splitPreviewTitle(artist.preview.title);
 
   return (
     <Chip
       {...triggerProps}
-      key={artist.id}
+      // everynoise only knows spotify ids, so jump to the best itunes match for the name
       to="/search"
       search={{ q: artist.artistName, lucky: true }}
-      trailing={
-        <PlayButton
-          className="btn size-9 justify-center"
-          style={{ backgroundColor: artist.style.color }}
-          title={previewTrack?.title}
-          track={{
-            title: previewTrack?.title,
-            artist: previewTrack?.artist,
-            url: artist.preview.url,
-            artworkSrc: undefined,
-          }}
-        />
-      }
+      trailing={<PreviewPlayButton preview={artist.preview} color={artist.style.color} />}
     >
-      {artist.artistName!}
+      {artist.artistName}
     </Chip>
   );
 }

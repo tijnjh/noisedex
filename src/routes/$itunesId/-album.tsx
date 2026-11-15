@@ -1,76 +1,58 @@
 import { AsyncContent } from "#components/async-content";
 import { Chip } from "#components/chip";
-import { Layout } from "#components/layout";
+import { Detail } from "#components/detail";
+import { ContentPane, Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
-import { PlayButton } from "#components/play-button";
+import { TrackPlayButton } from "#components/play-button";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { usePopover } from "#hooks/use-popover";
 import { $fantano, $soundcloud, $wikipedia } from "#lib/api/index";
-import { encodeItunesId } from "#lib/api/platforms/itunes-data";
-import { getBigItunesArtwork, trimItunesCollectionPostfix } from "#lib/api/platforms/itunes-data";
+import {
+  encodeItunesId,
+  getBigItunesArtwork,
+  trimItunesCollectionPostfix,
+} from "#lib/api/platforms/itunes-data";
 import { getArtworkColor } from "#lib/artwork-color";
-import { siteName, siteUrl } from "#lib/constants";
-import { musicMetadata } from "#lib/music-metadata";
+import { siteName } from "#lib/constants";
+import { musicHead } from "#lib/head";
 import { albumLinks } from "#lib/platform-links";
-import { scrollRegions } from "#lib/scroll-regions";
-import { formatDate, formatMillis } from "#lib/utils";
-import { Await, getRouteApi } from "@tanstack/react-router";
+import { formatDate, formatMillis, isoDuration } from "#lib/utils";
+import { Await } from "@tanstack/react-router";
 import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
-const musicRoute = getRouteApi("/$itunesId/");
-
 type AlbumData = ReturnType<typeof loadAlbum>;
+type SoundcloudTracks = AlbumData["soundcloud"];
 
+// everything beyond the itunes data is left as a promise, so it streams in after the page
 export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: ResultMusicTrack[] }) {
-  const { summary: wikipediaAlbum, genres: wikipediaAlbumGenres } = $wikipedia.enrichWithGenres(
-    $wikipedia.getAlbumByName({
-      data: { album: album.collectionName, artist: album.artistName },
-    }),
-  );
-
-  const soundcloud = $soundcloud
-    .matchAlbum({
-      data: {
-        artist: album.artistName,
-        album: trimItunesCollectionPostfix(album.collectionName),
-      },
-    })
-    .catch(() => []);
-  const accentColor = getArtworkColor({ data: album.artworkUrl100 }).catch(() => undefined);
-
-  const fantanoReview = $fantano.getReview({
-    data: {
-      album: album.collectionName,
-      artist: album.artistName,
-    },
-  });
+  const { collectionName, artistName } = album;
 
   return {
     album,
     tracks,
-    soundcloud,
-    accentColor,
-    wikipediaAlbum,
-    wikipediaAlbumGenres,
-    fantanoReview,
+    wikipedia: $wikipedia.enrichWithGenres(
+      $wikipedia.getAlbumByName({ data: { album: collectionName, artist: artistName } }),
+    ),
+    soundcloud: $soundcloud
+      .matchAlbum({
+        data: { artist: artistName, album: trimItunesCollectionPostfix(collectionName) },
+      })
+      .catch(() => []),
+    accentColor: getArtworkColor({ data: album.artworkUrl100 }).catch(() => undefined),
+    fantanoReview: $fantano.getReview({ data: { album: collectionName, artist: artistName } }),
   };
 }
 
-export function albumHead(data: AlbumData) {
-  const { album, tracks } = data;
-
-  const title = `${album.collectionName} by ${album.artistName} • ${siteName}`;
-  const description = `Explore ${album.collectionName} by ${album.artistName}: release date, genre, and ${tracks.length} tracks with previews on ${siteName}.`;
-  const url = `${siteUrl}/${encodeItunesId(album.collectionId)}`;
+export function albumHead({ album, tracks }: AlbumData) {
   const artwork = getBigItunesArtwork(album);
 
-  return musicMetadata({
-    title,
-    description,
-    url,
+  return musicHead({
+    title: `${album.collectionName} by ${album.artistName}`,
+    description: `Explore ${album.collectionName} by ${album.artistName}: release date, genre, and ${tracks.length} tracks with previews on ${siteName}.`,
+    path: `/${encodeItunesId(album.collectionId)}`,
     artwork,
     type: "music.album",
-    recording: {
+    jsonLd: {
       "@type": "MusicAlbum",
       name: album.collectionName,
       byArtist: { "@type": "MusicGroup", name: album.artistName },
@@ -82,145 +64,120 @@ export function albumHead(data: AlbumData) {
         "@type": "MusicRecording",
         name: track.trackName,
         position: track.trackNumber,
-        duration: `PT${Math.round(track.trackTimeMillis / 1000)}S`,
+        duration: isoDuration(track.trackTimeMillis),
       })),
     },
   });
 }
 
-export function AlbumPage() {
-  const music = musicRoute.useLoaderData();
-  if (music.type !== "album") return;
-  const data = music.data;
-
+export function AlbumPage({
+  album,
+  tracks,
+  wikipedia,
+  soundcloud,
+  accentColor,
+  fantanoReview,
+}: AlbumData) {
   return (
     <Layout
       header={{
-        title: data.album.collectionName,
-        titleVt: `album-${data.album.collectionId}`,
+        title: album.collectionName,
+        titleVt: `album-${album.collectionId}`,
       }}
-      accentColor={data.accentColor}
+      accentColor={accentColor}
       artwork={{
-        src: getBigItunesArtwork(data.album),
-        alt: `${data.album.collectionName} album cover`,
-        vt: `album-artwork-${data.album.collectionId}`,
+        src: getBigItunesArtwork(album),
+        alt: `${album.collectionName} album cover`,
+        vt: `album-artwork-${album.collectionId}`,
       }}
       leading={
         <div className="flex flex-col gap-3 lg:mb-32">
           <Chip
-            vt={{ title: `artist-${data.album.artistId}` }}
+            vt={{ title: `artist-${album.artistId}` }}
             to="/$itunesId"
-            params={{ itunesId: encodeItunesId(data.album.artistId) }}
+            params={{ itunesId: encodeItunesId(album.artistId) }}
           >
-            {data.album.artistName}
+            {album.artistName}
           </Chip>
-          <p>
-            released{" "}
-            {formatDate(new Date(data.album.releaseDate), {
-              dateStyle: "long",
-            })}
-          </p>
+          <p>released {formatDate(new Date(album.releaseDate), { dateStyle: "long" })}</p>
 
-          <PlatformLinks links={albumLinks(data.album)} />
-
-          <AsyncContent<{ excerpt: string; url: string } | undefined>
-            promise={data.fantanoReview}
-            sample={{
-              excerpt:
-                "An album full of distinctive sounds and memorable moments, with plenty to discover across its tracks. Each listen reveals another detail in the music.",
-              url: "https://theneedledrop.com/",
-            }}
-            label="Loading The Needle Drop review"
-          >
-            {(review) =>
-              review?.excerpt ? (
-                <figure className="mt-3 border-l-2 border-current/25 pl-4">
-                  <blockquote cite={review.url} className="inline italic">
-                    <p className="inline whitespace-pre-line">“{review.excerpt.trim()}”</p>
-                  </blockquote>
-                  <figcaption>
-                    <a
-                      href={review.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline opacity-50 hover:opacity-100"
-                    >
-                      theneedledrop.com
-                    </a>
-                  </figcaption>
-                </figure>
-              ) : null
-            }
-          </AsyncContent>
-
-          <WikipediaDescription summary={data.wikipediaAlbum} genres={data.wikipediaAlbumGenres} />
+          <PlatformLinks links={albumLinks(album)} />
+          <FantanoReview review={fantanoReview} />
+          <WikipediaDescription {...wikipedia} />
         </div>
       }
       trailing={
-        <section
-          aria-label="Track list"
-          data-scroll-restoration-id={scrollRegions.content}
-          className="flex flex-col gap-3 overflow-x-clip pb-32 lg:h-full lg:overflow-y-auto"
-        >
+        <ContentPane label="Track list" className="overflow-x-clip pb-32 lg:h-full">
           <h2 className="section-divider">tracks</h2>
 
           <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
-            {data.tracks.map((track) => (
-              <Track key={track.trackId} track={track} />
+            {tracks.map((track) => (
+              <Track key={track.trackId} track={track} soundcloud={soundcloud} />
             ))}
           </div>
-        </section>
+        </ContentPane>
       }
     />
   );
 }
 
-function Track({ track }: { track: ResultMusicTrack }) {
-  const soundcloud = musicRoute.useLoaderData({
-    select: (music) => (music.type === "album" ? music.data.soundcloud : undefined),
-  });
-  const triggerProps = usePopover(
-    <div className="flex w-72 flex-col gap-3 p-3">
-      <dl>
-        <dt>duration</dt>
-        <dd>{formatMillis(track.trackTimeMillis)}</dd>
-      </dl>
-    </div>,
-  );
-
-  if (!soundcloud) return null;
-
-  const playButton = (url: string) => (
-    <PlayButton
-      className="btn-inverse size-9 shrink-0 justify-center"
-      track={{
-        title: track.trackName,
-        artist: track.artistName,
-        artworkSrc: track.artworkUrl100,
-        url,
+function FantanoReview({ review }: { review: AlbumData["fantanoReview"] }) {
+  return (
+    <AsyncContent<{ excerpt: string; url: string } | undefined>
+      promise={review}
+      sample={{
+        excerpt:
+          "An album full of distinctive sounds and memorable moments, with plenty to discover across its tracks. Each listen reveals another detail in the music.",
+        url: "https://theneedledrop.com/",
       }}
-    />
+      label="Loading The Needle Drop review"
+    >
+      {(found) =>
+        found?.excerpt ? (
+          <figure className="mt-3 border-l-2 border-current/25 pl-4">
+            <blockquote cite={found.url} className="inline italic">
+              <p className="inline whitespace-pre-line">“{found.excerpt.trim()}”</p>
+            </blockquote>
+            <figcaption>
+              <a
+                href={found.url}
+                target="_blank"
+                rel="noreferrer"
+                className="underline opacity-50 hover:opacity-100"
+              >
+                theneedledrop.com
+              </a>
+            </figcaption>
+          </figure>
+        ) : null
+      }
+    </AsyncContent>
+  );
+}
+
+function Track({ track, soundcloud }: { track: ResultMusicTrack; soundcloud: SoundcloudTracks }) {
+  const triggerProps = usePopover(
+    <dl>
+      <Detail label="duration">{formatMillis(track.trackTimeMillis)}</Detail>
+    </dl>,
   );
 
   return (
-    <div
-      {...triggerProps}
-      key={track.trackId}
-      className="col-span-full grid w-full grid-cols-subgrid"
-    >
+    <div {...triggerProps} className="col-span-full grid w-full grid-cols-subgrid">
       <div className="flex items-center justify-end">{track.trackNumber}</div>
 
       <Chip
-        to={"/$itunesId"}
+        to="/$itunesId"
         params={{ itunesId: encodeItunesId(track.trackId) }}
         trailing={
-          <Await promise={soundcloud} fallback={playButton(track.previewUrl)}>
-            {(matches) =>
-              playButton(
-                $soundcloud.trackUrl(matches, track.trackName, track.artistName) ??
-                  track.previewUrl,
-              )
-            }
+          // plays the itunes preview until we know whether soundcloud has the full track
+          <Await promise={soundcloud} fallback={<TrackPlayButton track={track} />}>
+            {(matches) => (
+              <TrackPlayButton
+                track={track}
+                url={$soundcloud.trackUrl(matches, track.trackName, track.artistName)}
+              />
+            )}
           </Await>
         }
       >

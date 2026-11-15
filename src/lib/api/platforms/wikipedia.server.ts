@@ -1,3 +1,6 @@
+import { createSwrCache } from "../../cache.server";
+import { DAY, HOUR, MINUTE } from "../../time";
+import { trimItunesCollectionPostfix } from "./itunes-data";
 import type { WikipediaSummary } from "./wikipedia-data";
 import * as cheerio from "cheerio";
 
@@ -13,8 +16,17 @@ interface SummaryResponse {
   extract: string;
 }
 
-const MINUTE = 60_000;
-const DAY = 24 * 60 * MINUTE;
+const noMatch = Symbol("no matching Wikipedia article");
+
+// misses are kept for an hour, and failures fall back to stale data and retry after a minute
+function createCache<T>() {
+  return createSwrCache<T | null>({
+    lifetime: (value) =>
+      value ? { freshMs: DAY, staleMs: 7 * DAY } : { freshMs: HOUR, staleMs: HOUR },
+    recover: { fallback: null, retryMs: MINUTE },
+  });
+}
+
 const cacheSummary = createCache<WikipediaSummary>();
 const cacheGenres = createCache<string[]>();
 
@@ -32,8 +44,7 @@ function matchesTitle(title: string, name: string) {
 }
 
 function albumTitle(name: string) {
-  return name
-    .replace(/ - (Single|EP)$/i, "")
+  return trimItunesCollectionPostfix(name)
     .replace(
       /\s*[([][^()[\]]*\b(deluxe|expanded|remaster(?:ed)?|anniversary|bonus track)[^()[\]]*[)\]]$/i,
       "",
@@ -50,8 +61,6 @@ async function request<T>(url: URL, signal: AbortSignal): Promise<T> {
   if (!response.ok) throw new Error(`Wikipedia: ${response.status}`);
   return response.json();
 }
-
-const noMatch = Symbol("no matching Wikipedia article");
 
 function matchesGenreTitle(title: string, name: string) {
   const key = (value: string) =>
@@ -257,63 +266,4 @@ export function getGenres(title: string) {
     const genres = extractGenres(result.parse.text);
     return genres.length ? genres : null;
   }).then((genres) => genres ?? []);
-}
-
-function createCache<T>() {
-  const cache = new Map<
-    string,
-    {
-      value: T | null;
-      freshUntil: number;
-      staleUntil: number;
-    }
-  >();
-  const pending = new Map<string, Promise<T | null>>();
-
-  return (key: string, lookup: () => Promise<T | null>) => {
-    const cached = cache.get(key);
-    const now = Date.now();
-
-    if (cached && cached.freshUntil > now) {
-      return Promise.resolve(cached.value);
-    }
-
-    let refresh = pending.get(key);
-
-    if (!refresh) {
-      refresh = lookup()
-        .then((value) => {
-          const now = Date.now();
-
-          cache.set(key, {
-            value,
-            freshUntil: now + (value ? DAY : 60 * MINUTE),
-            staleUntil: now + (value ? 7 * DAY : 60 * MINUTE),
-          });
-
-          return value;
-        })
-        .catch(() => {
-          const now = Date.now();
-          const stale = cached && cached.staleUntil > now ? cached : undefined;
-
-          cache.set(key, {
-            value: stale?.value ?? null,
-            freshUntil: now + MINUTE,
-            staleUntil: stale?.staleUntil ?? now + MINUTE,
-          });
-
-          return stale?.value ?? null;
-        })
-        .finally(() => {
-          pending.delete(key);
-
-          while (cache.size > 500) {
-            cache.delete(cache.keys().next().value!);
-          }
-        });
-      pending.set(key, refresh);
-    }
-    return cached && cached.staleUntil > now ? Promise.resolve(cached.value) : refresh;
-  };
 }

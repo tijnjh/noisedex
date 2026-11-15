@@ -1,11 +1,5 @@
 import { trimItunesCollectionPostfix } from "./api/platforms/itunes-data.ts";
 
-export interface PlatformLink {
-  name: string;
-  icon?: string;
-  href: string;
-}
-
 export const platforms = {
   lastfm: { name: "last.fm", domain: "last.fm", icon: "/last-fm.ico" },
   spotify: { name: "spotify", domain: "spotify.com", icon: "/spotify-com.png" },
@@ -24,110 +18,63 @@ export const platforms = {
   soundcloak: { name: "soundcloak", domain: "sc.maid.zone" },
 } as const;
 
-export function artistLinks(artistName: string, appleArtistId?: number): PlatformLink[] {
-  const encodedArtistName = encodeURIComponent(artistName);
-  return [
-    {
-      ...platforms.lastfm,
-      href: `https://last.fm/music/${encodedArtistName}`,
-    },
-    {
-      ...platforms.spotify,
-      href: `https://open.spotify.com/search/${encodedArtistName}`,
-    },
-    {
-      ...platforms.apple,
-      href: appleArtistId
-        ? `https://music.apple.com/artist/${appleArtistId}`
-        : `https://music.apple.com/search?term=${encodedArtistName}`,
-    },
-    {
-      ...platforms.aoty,
-      href: `https://www.albumoftheyear.org/search/artists/?q=${encodedArtistName}`,
-    },
-    {
-      ...platforms.rym,
-      href: `https://rateyourmusic.com/search?searchtype=a&searchterm=${encodedArtistName}`,
-    },
-    {
-      ...platforms.bandcamp,
-      href: `https://bandcamp.com/search?q=${encodedArtistName}&item_type=b`,
-    },
-    {
-      ...platforms.soundcloak,
-      href: `https://sc.maid.zone/search?q=${encodedArtistName}&type=users`,
-    },
-  ];
+type PlatformId = keyof typeof platforms;
+
+export interface PlatformLink {
+  name: string;
+  icon?: string;
+  href: string;
+}
+
+function toLinks(hrefs: Partial<Record<PlatformId, string>>): PlatformLink[] {
+  return Object.entries(hrefs).map(([id, href]) => ({ ...platforms[id as PlatformId], href }));
+}
+
+export function artistLinks(artistName: string, appleArtistId?: number) {
+  const name = encodeURIComponent(artistName);
+
+  return toLinks({
+    lastfm: `https://last.fm/music/${name}`,
+    spotify: `https://open.spotify.com/search/${name}`,
+    apple: appleArtistId
+      ? `https://music.apple.com/artist/${appleArtistId}`
+      : `https://music.apple.com/search?term=${name}`,
+    aoty: `https://www.albumoftheyear.org/search/artists/?q=${name}`,
+    rym: `https://rateyourmusic.com/search?searchtype=a&searchterm=${name}`,
+    bandcamp: `https://bandcamp.com/search?q=${name}&item_type=b`,
+    soundcloak: `https://sc.maid.zone/search?q=${name}&type=users`,
+  });
 }
 
 export function albumLinks(album: {
   artistName: string;
   collectionName: string;
   collectionViewUrl: string;
-}): PlatformLink[] {
-  const streamlinedCollectionName = trimItunesCollectionPostfix(album.collectionName);
-  const constructedSearchQuery = encodeURIComponent(
-    `${album.artistName} ${streamlinedCollectionName}`,
-  );
-  return [
-    {
-      ...platforms.lastfm,
-      href: `https://last.fm/music/${encodeURIComponent(album.artistName)}/${encodeURIComponent(streamlinedCollectionName)}`,
-    },
-    {
-      ...platforms.spotify,
-      href: `https://open.spotify.com/search/${constructedSearchQuery}`,
-    },
-    {
-      ...platforms.apple,
-      href:
-        album.collectionViewUrl || `https://music.apple.com/search?term=${constructedSearchQuery}`,
-    },
-    {
-      ...platforms.aoty,
-      href: `https://www.albumoftheyear.org/search/albums/?q=${constructedSearchQuery}`,
-    },
-    {
-      ...platforms.rym,
-      href: `https://rateyourmusic.com/search?searchtype=l&searchterm=${constructedSearchQuery}`,
-    },
-    {
-      ...platforms.bandcamp,
-      href: `https://bandcamp.com/search?q=${constructedSearchQuery}&item_type=a`,
-    },
-    {
-      ...platforms.soundcloak,
-      href: `https://sc.maid.zone/search?q=${constructedSearchQuery}&type=playlists`,
-    },
-  ];
+}) {
+  const artist = encodeURIComponent(album.artistName);
+  const title = trimItunesCollectionPostfix(album.collectionName);
+  const query = encodeURIComponent(`${album.artistName} ${title}`);
+
+  return toLinks({
+    lastfm: `https://last.fm/music/${artist}/${encodeURIComponent(title)}`,
+    spotify: `https://open.spotify.com/search/${query}`,
+    apple: album.collectionViewUrl || `https://music.apple.com/search?term=${query}`,
+    aoty: `https://www.albumoftheyear.org/search/albums/?q=${query}`,
+    rym: `https://rateyourmusic.com/search?searchtype=l&searchterm=${query}`,
+    bandcamp: `https://bandcamp.com/search?q=${query}&item_type=a`,
+    soundcloak: `https://sc.maid.zone/search?q=${query}&type=playlists`,
+  });
 }
 
-export function trackLinks(track: {
-  artistName: string;
-  trackName: string;
-  trackViewUrl: string;
-}): PlatformLink[] {
-  const constructedSearchQuery = encodeURIComponent(`${track.artistName} ${track.trackName}`);
-  return [
-    {
-      ...platforms.lastfm,
-      href: `https://last.fm/music/${encodeURIComponent(track.artistName)}/_/${encodeURIComponent(track.trackName)}`,
-    },
-    {
-      ...platforms.spotify,
-      href: `https://open.spotify.com/search/${constructedSearchQuery}`,
-    },
-    {
-      ...platforms.apple,
-      href: track.trackViewUrl || `https://music.apple.com/search?term=${constructedSearchQuery}`,
-    },
-    {
-      ...platforms.bandcamp,
-      href: `https://bandcamp.com/search?q=${constructedSearchQuery}&item_type=t`,
-    },
-    {
-      ...platforms.soundcloak,
-      href: `https://sc.maid.zone/search?q=${constructedSearchQuery}&type=tracks`,
-    },
-  ];
+export function trackLinks(track: { artistName: string; trackName: string; trackViewUrl: string }) {
+  const artist = encodeURIComponent(track.artistName);
+  const query = encodeURIComponent(`${track.artistName} ${track.trackName}`);
+
+  return toLinks({
+    lastfm: `https://last.fm/music/${artist}/_/${encodeURIComponent(track.trackName)}`,
+    spotify: `https://open.spotify.com/search/${query}`,
+    apple: track.trackViewUrl || `https://music.apple.com/search?term=${query}`,
+    bandcamp: `https://bandcamp.com/search?q=${query}&item_type=t`,
+    soundcloak: `https://sc.maid.zone/search?q=${query}&type=tracks`,
+  });
 }

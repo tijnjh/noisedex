@@ -1,5 +1,5 @@
 import { $everynoise } from "#lib/api/index";
-import { sortHexColorsToGradient } from "#lib/utils";
+import { sortHexColorsToGradient } from "#lib/color-sort";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 
 const filters = [

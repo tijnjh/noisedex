@@ -1,5 +1,7 @@
-import { upfetch } from "#lib/utils";
+import { up } from "up-fetch";
 import * as v from "valibot";
+
+const upfetch = up(fetch);
 
 let cachedToken: {
   accessToken: string;
