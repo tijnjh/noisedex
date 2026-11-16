@@ -160,7 +160,7 @@ function SearchBar() {
       />
 
       <button type="submit" aria-label="Search" className="btn-inverse size-9 justify-center">
-        →
+        ⌕
       </button>
     </form>
   );

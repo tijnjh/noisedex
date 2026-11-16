@@ -27,7 +27,7 @@ export function PlayButton({
       disabled={!track.url}
       onClick={() => setNowPlaying(isThisTrackPlaying ? stoppedPlayback : track)}
     >
-      {isThisTrackPlaying ? "☐" : "▶︎"}
+      {isThisTrackPlaying ? "■" : "▶"}
     </button>
   );
 }
