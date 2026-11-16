@@ -60,7 +60,7 @@ export function Layout({
 
   return (
     <div
-      className="relative isolate grid grid-rows-[min-content_auto] overflow-hidden"
+      className="relative isolate grid grid-rows-[auto_min-content] overflow-hidden md:grid-rows-[min-content_auto]"
       style={{ "--page-accent": color } as CSSProperties}
     >
       <div data-page-backdrop aria-hidden="true" />
@@ -182,7 +182,7 @@ function Header(title: ComponentProps<typeof Title>) {
   return (
     <header
       className={cn(
-        "flex gap-3 overflow-hidden p-3 max-md:flex-col md:items-center md:justify-between",
+        "flex gap-3 overflow-hidden p-3 max-md:order-last max-md:flex-col md:items-center md:justify-between",
       )}
     >
       <Title {...title} />
