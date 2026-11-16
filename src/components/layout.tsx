@@ -20,10 +20,12 @@ export function Layout({
   leading,
   trailing,
   accentColor,
-}: { header: ComponentProps<typeof Header> } & MergeExclusive<
-  { children?: ReactNode },
-  { leading: ReactNode; trailing: ReactNode }
-> & { accentColor?: string | Promise<string | undefined> }) {
+}: {
+  // heading replaces the plain title in the big sidebar heading, e.g. with an artist logo
+  header: ComponentProps<typeof Header> & { heading?: ReactNode };
+} & MergeExclusive<{ children?: ReactNode }, { leading: ReactNode; trailing: ReactNode }> & {
+    accentColor?: string | Promise<string | undefined>;
+  }) {
   const [resolvedColor, setResolvedColor] = useState<{
     source: typeof accentColor;
     color: string | undefined;
@@ -95,7 +97,7 @@ export function Layout({
                   }}
                   className={cn("mb-8 text-4xl text-balance md:text-5xl", header.titleClassName)}
                 >
-                  {header.title}
+                  {header.heading ?? header.title}
                 </motion.h1>
 
                 {leading}

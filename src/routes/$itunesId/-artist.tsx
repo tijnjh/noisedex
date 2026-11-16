@@ -5,17 +5,18 @@ import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
 import { WikipediaDescription } from "#components/wikipedia-description";
-import { $everynoise, $wikipedia } from "#lib/api/index";
+import { $appleMusic, $everynoise, $wikipedia } from "#lib/api/index";
+import type { AppleMusicArtistImages } from "#lib/api/platforms/apple-music.server";
 import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
 import { encodeItunesId, getReleaseType } from "#lib/api/platforms/itunes-data";
 import { siteName, siteUrl } from "#lib/constants";
 import { artistLinks } from "#lib/platform-links";
 import { buildReleaseTimeline } from "#lib/release-timeline";
 import { scrollRegions } from "#lib/scroll-regions";
-import { getRouteApi } from "@tanstack/react-router";
+import { Await, getRouteApi } from "@tanstack/react-router";
 import { cn } from "cn";
 import type { ResultAlbum, ResultMusicArtist } from "itunes-store-api";
-import { Fragment } from "react";
+import { Fragment, Suspense } from "react";
 
 const musicRoute = getRouteApi("/$itunesId/");
 
@@ -34,12 +35,17 @@ export function loadArtist({
 
   const everynoiseArtist = $everynoise.getArtistByName(artist.artistName).catch(() => undefined);
 
+  const appleMusicImages = $appleMusic
+    .getArtistImages({ data: artist.artistId })
+    .catch(() => ({ profileImage: null, logo: null }));
+
   return {
     artist,
     albums,
     wikipediaArtist,
     wikipediaArtistGenres,
     everynoiseArtist,
+    appleMusicImages,
     accentColor: everynoiseArtist.then((artist) => artist?.style.color),
   };
 }
@@ -69,7 +75,14 @@ export function ArtistPage() {
   if (music.type !== "artist") return;
   const data = music.data;
 
-  const { artist, wikipediaArtist, wikipediaArtistGenres, everynoiseArtist, accentColor } = data;
+  const {
+    artist,
+    wikipediaArtist,
+    wikipediaArtistGenres,
+    everynoiseArtist,
+    appleMusicImages,
+    accentColor,
+  } = data;
   const genre = artist.primaryGenreName;
 
   return (
@@ -77,6 +90,7 @@ export function ArtistPage() {
       header={{
         title: artist.artistName,
         titleVt: `artist-${artist.artistId}`,
+        heading: <ArtistHeading name={artist.artistName} images={appleMusicImages} />,
       }}
       accentColor={accentColor}
       leading={
@@ -113,6 +127,56 @@ export function ArtistPage() {
       }
       trailing={<ArtistReleasesList />}
     />
+  );
+}
+
+// like the ios apple music app: the artist photo as a hero, with the custom name logo
+// (or the plain name) in white at the bottom left over a dark gradient
+function ArtistHeading({
+  name,
+  images,
+}: {
+  name: string;
+  images: Promise<AppleMusicArtistImages>;
+}) {
+  return (
+    <Suspense fallback={name}>
+      <Await promise={images}>
+        {({ profileImage, logo }) =>
+          profileImage ? (
+            <span
+              style={{ backgroundColor: profileImage.bgColor }}
+              className="relative block aspect-square w-full overflow-hidden md:aspect-4/3"
+            >
+              <img
+                src={profileImage.url}
+                alt=""
+                width={profileImage.width}
+                height={profileImage.height}
+                className="absolute inset-0 size-full object-cover"
+              />
+              <span className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/70 to-transparent" />
+              <span className="absolute inset-x-0 bottom-0 flex p-5 text-white text-shadow-lg md:p-6">
+                {logo ? (
+                  <img
+                    src={logo.url}
+                    alt={name}
+                    title={name}
+                    width={logo.width}
+                    height={logo.height}
+                    className="size-auto max-h-24 max-w-3/4 object-contain object-left md:max-h-28"
+                  />
+                ) : (
+                  name
+                )}
+              </span>
+            </span>
+          ) : (
+            name
+          )
+        }
+      </Await>
+    </Suspense>
   );
 }
 

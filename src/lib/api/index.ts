@@ -4,3 +4,4 @@ export * as $itunes from "./platforms/itunes";
 export * as $soundcloud from "./platforms/soundcloud";
 export * as $wikipedia from "./platforms/wikipedia";
 export * as $fantano from "./platforms/fantano";
+export * as $appleMusic from "./platforms/apple-music";

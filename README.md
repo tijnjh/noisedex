@@ -14,6 +14,7 @@ NOT VIBECODED -- 100% human slop
 
 - [every noise at once](https://everynoise.com), via [everynoise-json](https://github.com/tijnjh/everynoise-json) on jsdelivr - genres, related genres, artist mappings and previews
 - [itunes](https://www.apple.com/itunes/) — search, artist discographies, albums, tracks, artwork and audio previews
+- [apple music](https://music.apple.com) - artist profile pictures and custom name logos, via the web player's api
 - [spotify](https://open.spotify.com) - artist lookup and metadata, plus embedded playback
 - [wikipedia](https://en.wikipedia.org) - artist and album descriptions, genre context
 - [soundcloud](https://soundcloud.com) - matched album tracks for playback when available
