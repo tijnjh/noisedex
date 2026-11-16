@@ -1,4 +1,6 @@
-export const SECOND = 1000;
-export const MINUTE = 60 * SECOND;
-export const HOUR = 60 * MINUTE;
-export const DAY = 24 * HOUR;
+export class Time {
+  static second = 1000;
+  static minute = 60 * this.second;
+  static hour = 60 * this.minute;
+  static day = 24 * this.hour;
+}

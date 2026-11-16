@@ -1,5 +1,5 @@
 import { cached } from "../../cache.server";
-import { DAY } from "../../time";
+import { Time } from "../../time";
 import { trimItunesCollectionPostfix } from "./itunes-data";
 import type { WikipediaSummary } from "./wikipedia-data";
 import * as cheerio from "cheerio";
@@ -17,8 +17,6 @@ interface SummaryResponse {
 }
 
 const noMatch = Symbol("no matching Wikipedia article");
-
-const lifetime = { freshMs: DAY, staleMs: 7 * DAY };
 
 const normalize = (name: string) =>
   name
@@ -184,7 +182,7 @@ const cachedLookup = cached(
       if (isMissing(error)) return null;
       throw error;
     }),
-  lifetime,
+  Time.day,
 );
 
 export function getSummary(subject: Subject) {
@@ -234,4 +232,4 @@ export const getGenres = cached(async (title: string) => {
   const result = await request<{ parse: { text: string } }>(url, AbortSignal.timeout(10_000));
 
   return extractGenres(result.parse.text);
-}, lifetime);
+}, Time.day);

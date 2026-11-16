@@ -1,21 +1,19 @@
+import { time } from "node:console";
 import { cached } from "../../cache.server";
-import { DAY } from "../../time";
+import { Time } from "../../time";
 import { genreNameToSlug } from "./everynoise-data";
 import type { ArtistMeta, Genre, GenreMeta } from "./everynoise-types";
 import { lookupArtists } from "./spotify";
 import uFuzzy from "@leeoniya/ufuzzy";
 import { isResponseError, up } from "up-fetch";
 
-// pinned so jsdelivr caches it
+// pinned so jsdelivr caches it, and so the data only changes when we deploy
 const everynoiseDataCommit = "1b1adbca29e767a44fd80dd20cfdcb1a40b39aaa";
 
 const everynoiseFetch = up(fetch, () => ({
   timeout: 4000,
   baseUrl: `https://cdn.jsdelivr.net/gh/tijnjh/everynoise-json@${everynoiseDataCommit}/data-min`,
 }));
-
-// the data is pinned to a commit, so it only changes when we deploy
-const lifetime = { freshMs: DAY, staleMs: 7 * DAY };
 
 async function fetchIfExists<T>(path: string) {
   try {
@@ -26,11 +24,11 @@ async function fetchIfExists<T>(path: string) {
   }
 }
 
-export const getAllGenres = cached(() => everynoiseFetch<Genre[]>("/genres.json"), lifetime);
+export const getAllGenres = cached(() => everynoiseFetch<Genre[]>("/genres.json"), Time.day);
 
 export const getGenreBySlug = cached(
   (genreSlug: string) => fetchIfExists<GenreMeta>(`/genres/${genreSlug}.json`),
-  lifetime,
+  Time.day,
 );
 
 const fuzzy = new uFuzzy({ intraMode: 1, intraIns: 1 });
@@ -49,7 +47,7 @@ export async function findSimilarGenres(genreSlug: string, limit = 5) {
 
 const getArtistById = cached(
   (artistId: string) => fetchIfExists<ArtistMeta>(`/artists/${artistId}.json`),
-  lifetime,
+  Time.day,
 );
 
 // everynoise artists are keyed by spotify id, so the name goes through spotify first
@@ -60,4 +58,4 @@ export const getArtistByName = cached(async (artistName: string) => {
   const artist = artists.find((candidate) => candidate.name.trim().toLowerCase() === name);
 
   return artist && getArtistById(artist.id);
-}, lifetime);
+}, Time.day);
