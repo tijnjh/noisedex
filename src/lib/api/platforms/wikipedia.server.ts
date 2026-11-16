@@ -56,9 +56,31 @@ function matchesGenreTitle(title: string, name: string) {
   return key(title) === key(name);
 }
 
+const kindTerms = {
+  artist:
+    /\b(band|musician|singer|rapper|songwriter|composer|record producer|DJ|orchestra|group|duo|trio|quartet|collective)\b/i,
+  genre:
+    /\b([a-z-]*genres?|styles?|forms?|types?|traditions?|movements?|aesthetics?|categories|category|fusion)\b/i,
+  album: /\b(album|EP|extended play|mixtape)\b/i,
+  song: /\b(song|single)\b/i,
+};
+
+// the earliest type term decides what an article is about,
+// so "a song by the synthpop band Freezepop" is a song and not a band
+function leadingKind(description: string) {
+  let leading: { kind: string; index: number } | undefined;
+  for (const [kind, pattern] of Object.entries(kindTerms)) {
+    const index = description.search(pattern);
+    if (index !== -1 && (!leading || index < leading.index)) leading = { kind, index };
+  }
+  return leading?.kind;
+}
+
 function matchesSubject(summary: SummaryResponse, subject: Subject) {
   if (summary.type !== "standard" || !summary.extract?.trim()) return false;
   const description = `${summary.description ?? ""} ${summary.extract.split(". ")[0]}`;
+  if (leadingKind(description) !== subject.kind) return false;
+
   const music =
     /\b(music|musical|rock|pop|jazz|punk|metal|house|techno|hip.hop|electronic|dance|soul|blues|rap|folk|reggae)\b/i;
 
@@ -66,22 +88,11 @@ function matchesSubject(summary: SummaryResponse, subject: Subject) {
     return (
       /\b(band|musician|singer|rapper|songwriter|composer|record producer|DJ|orchestra)\b/i.test(
         description,
-      ) ||
-      (music.test(description) && /\b(group|duo|trio|quartet|collective)\b/i.test(description))
+      ) || music.test(description)
     );
   }
-  if (subject.kind === "genre") {
-    return (
-      music.test(description) &&
-      /\b([a-z-]*genres?|styles?|forms?|types?|traditions?|movements?|aesthetics?|categories|category|fusion)\b/i.test(
-        description,
-      )
-    );
-  }
-  return (
-    /\b(album|EP|extended play)\b/i.test(description) &&
-    ` ${normalize(description)} `.includes(` ${normalize(subject.artist)} `)
-  );
+  if (subject.kind === "genre") return music.test(description);
+  return ` ${normalize(description)} `.includes(` ${normalize(subject.artist)} `);
 }
 
 function hasGenreAlias(summary: SummaryResponse, name: string) {
