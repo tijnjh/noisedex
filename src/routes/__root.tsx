@@ -62,7 +62,7 @@ function RootComponent() {
         <body className="relative isolate touch-manipulation bg-zinc-100 text-black scheme-light-dark dark:bg-black dark:text-white">
           <div
             data-app-shell
-            className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[auto_auto] md:grid-cols-1"
+            className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto] md:grid-cols-1"
           >
             <NavigationSpinner />
 

@@ -60,7 +60,7 @@ export function Layout({
 
   return (
     <div
-      className="relative isolate grid grid-rows-[auto_min-content] overflow-hidden md:grid-rows-[min-content_auto]"
+      className="relative isolate grid grid-rows-[minmax(0,1fr)_min-content] overflow-hidden md:grid-rows-[min-content_minmax(0,1fr)]"
       style={{ "--page-accent": color } as CSSProperties}
     >
       <div data-page-backdrop aria-hidden="true" />
