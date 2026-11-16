@@ -13,6 +13,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { Provider } from "jotai";
+import { domAnimation, LazyMotion } from "motion/react";
 import { SkulletProvider } from "skullet/react";
 
 export const Route = createRootRoute({
@@ -65,11 +66,13 @@ function RootComponent() {
           >
             <NavigationSpinner />
 
-            <CatchBoundary getResetKey={() => "reset"} errorComponent={ErrorPage}>
-              <SkulletProvider mode="system">
-                <Outlet />
-              </SkulletProvider>
-            </CatchBoundary>
+            <LazyMotion features={domAnimation} strict>
+              <CatchBoundary getResetKey={() => "reset"} errorComponent={ErrorPage}>
+                <SkulletProvider mode="system">
+                  <Outlet />
+                </SkulletProvider>
+              </CatchBoundary>
+            </LazyMotion>
 
             <MiniPlayer />
           </div>

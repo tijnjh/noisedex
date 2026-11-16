@@ -4,7 +4,8 @@ import type { PlaybackTrack } from "#lib/playback";
 import { scrollRegions } from "#lib/scroll-regions";
 import { viewTransition } from "#lib/utils";
 import { cn } from "cn";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
 import { useState, type CSSProperties, type ReactNode, type UIEvent } from "react";
 import { Skeleton } from "skullet/react";
 import type { MergeExclusive } from "type-fest";
@@ -100,10 +101,10 @@ export function Layout({
               />
             )}
 
-            <motion.div animate={{ opacity: atTop ? 1 : 0 }} className="my-6 flex items-start">
+            <m.div animate={{ opacity: atTop ? 1 : 0 }} className="my-6 flex items-start">
               <AnimatePresence initial={false}>
                 {(resolvedPlayback.pending || resolvedPlayback.value) && (
-                  <motion.div
+                  <m.div
                     className="shrink-0 overflow-hidden"
                     initial={{ width: 0, marginRight: 0 }}
                     animate={{ width: "auto", marginRight: 12 }}
@@ -116,7 +117,7 @@ export function Layout({
                         color={color}
                       />
                     </Skeleton>
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
               <h1
@@ -127,7 +128,7 @@ export function Layout({
               >
                 {header.title}
               </h1>
-            </motion.div>
+            </m.div>
 
             {leading}
           </div>

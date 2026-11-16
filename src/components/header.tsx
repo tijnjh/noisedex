@@ -2,7 +2,8 @@ import { useGenreFilters } from "#hooks/use-genre-filters";
 import { viewTransition } from "#lib/utils";
 import { Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
 import { cn } from "cn";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
 import { useState, type ReactNode } from "react";
 import { Switch } from "./switch";
 import { useAtom } from "jotai";
@@ -75,7 +76,7 @@ function CollapsibleLetters({
   return (
     <AnimatePresence initial={false}>
       {show && (
-        <motion.span
+        <m.span
           key={vt}
           initial={{ width: 0 }}
           animate={{ width: "auto" }}
@@ -83,7 +84,7 @@ function CollapsibleLetters({
           {...viewTransition(vt)}
         >
           {children}
-        </motion.span>
+        </m.span>
       )}
     </AnimatePresence>
   );
@@ -93,7 +94,7 @@ function PageTitle({ title, titleClassName, titleVt }: HeaderProps) {
   return (
     <AnimatePresence>
       {title && (
-        <motion.div
+        <m.div
           className="flex items-center gap-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -103,7 +104,7 @@ function PageTitle({ title, titleClassName, titleVt }: HeaderProps) {
           <h1 {...viewTransition(titleVt)} className={cn("truncate text-2xl", titleClassName)}>
             {title}
           </h1>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
