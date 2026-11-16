@@ -25,24 +25,14 @@ export function MiniPlayer() {
   }, [nowPlaying.url]);
 
   useEffect(() => {
-    if (nowPlaying) {
-      if ("mediaSession" in navigator && "MediaMetadata" in window) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: nowPlaying.title,
-          artist: nowPlaying.artist,
-          album: "noisedex.com",
-          artwork: nowPlaying.artworkSrc
-            ? [
-                {
-                  src: nowPlaying.artworkSrc,
-                  sizes: "500x500",
-                  type: "image/jpeg",
-                },
-              ]
-            : undefined,
-        });
-      }
-    }
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: nowPlaying.title,
+      artist: nowPlaying.artist,
+      album: "noisedex.com",
+      artwork: nowPlaying.artworkSrc
+        ? [{ src: nowPlaying.artworkSrc, sizes: "500x500", type: "image/jpeg" }]
+        : undefined,
+    });
   }, [nowPlaying]);
 
   return (

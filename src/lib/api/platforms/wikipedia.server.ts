@@ -1,5 +1,5 @@
-import { createSwrCache } from "../../cache.server";
-import { DAY, HOUR, MINUTE } from "../../time";
+import { cached } from "../../cache.server";
+import { DAY } from "../../time";
 import { trimItunesCollectionPostfix } from "./itunes-data";
 import type { WikipediaSummary } from "./wikipedia-data";
 import * as cheerio from "cheerio";
@@ -18,17 +18,7 @@ interface SummaryResponse {
 
 const noMatch = Symbol("no matching Wikipedia article");
 
-// misses are kept for an hour, and failures fall back to stale data and retry after a minute
-function createCache<T>() {
-  return createSwrCache<T | null>({
-    lifetime: (value) =>
-      value ? { freshMs: DAY, staleMs: 7 * DAY } : { freshMs: HOUR, staleMs: HOUR },
-    recover: { fallback: null, retryMs: MINUTE },
-  });
-}
-
-const cacheSummary = createCache<WikipediaSummary>();
-const cacheGenres = createCache<string[]>();
+const lifetime = { freshMs: DAY, staleMs: 7 * DAY };
 
 const normalize = (name: string) =>
   name
@@ -107,7 +97,7 @@ function hasGenreAlias(summary: SummaryResponse, name: string) {
   );
 }
 
-async function lookup(subject: Subject) {
+async function lookup(subject: Subject): Promise<WikipediaSummary> {
   const signal = AbortSignal.timeout(45_000);
   const requests = new Map<string, Promise<SummaryResponse>>();
   const getCandidate = (title: string) => {
@@ -184,55 +174,39 @@ async function lookup(subject: Subject) {
   };
 }
 
-export function getSummary(input: Subject) {
-  const subject: Subject =
-    input.kind === "album"
-      ? { ...input, name: albumTitle(input.name), artist: input.artist.trim() }
-      : { ...input, name: input.name.trim() };
+const isMissing = (reason: unknown): boolean =>
+  reason === noMatch || (reason instanceof AggregateError && reason.errors.every(isMissing));
 
-  if (!subject.name || (subject.kind === "album" && !subject.artist)) {
-    return Promise.resolve(null);
-  }
-
-  const key = JSON.stringify([
-    subject.kind,
-    normalize(subject.name),
-    subject.kind === "album" ? normalize(subject.artist) : "",
-  ]);
-
-  return cacheSummary(key, () =>
+// misses are cached as null, failures reject and get retried
+const cachedLookup = cached(
+  (subject: Subject) =>
     lookup(subject).catch((error) => {
-      const isMissing = (reason: unknown): boolean =>
-        reason === noMatch || (reason instanceof AggregateError && reason.errors.every(isMissing));
-
       if (isMissing(error)) return null;
-
       throw error;
     }),
+  lifetime,
+);
+
+export function getSummary(subject: Subject) {
+  return cachedLookup(
+    subject.kind === "album" ? { ...subject, name: albumTitle(subject.name) } : subject,
   );
 }
 
-export function extractGenres(html: string) {
+function extractGenres(html: string) {
   const $ = cheerio.load(html);
   const genres = new Map<string, string>();
 
   for (const row of $("table.infobox tr")) {
     const $row = $(row);
-
-    const label = $row.find("th").text().trim();
-
-    if (!/^genres?$/i.test(label ?? "")) continue;
+    if (!/^genres?$/i.test($row.find("th").text().trim())) continue;
 
     const cell = $row.find("td");
-
-    if (!cell.length) continue;
-
     cell.find("sup, style, script, .reference, .noprint").remove();
     cell.find("br").replaceWith("\n");
 
     const items = Array.from(cell.find("li"));
-
-    const texts = items.length ? items.map((item) => $(item).text() ?? "") : [cell.text() ?? ""];
+    const texts = items.length ? items.map((item) => $(item).text()) : [cell.text()];
 
     for (const text of texts) {
       for (const part of text.split(/[\n,;•·]+/)) {
@@ -244,26 +218,20 @@ export function extractGenres(html: string) {
   return [...genres.values()];
 }
 
-export function getGenres(title: string) {
-  const name = title.trim();
-  if (!name) return Promise.resolve([]);
+export const getGenres = cached(async (title: string) => {
+  const url = new URL("https://en.wikipedia.org/w/api.php");
 
-  return cacheGenres(name, async () => {
-    const url = new URL("https://en.wikipedia.org/w/api.php");
+  url.search = new URLSearchParams({
+    action: "parse",
+    page: title,
+    prop: "text",
+    section: "0",
+    redirects: "1",
+    format: "json",
+    formatversion: "2",
+  }).toString();
 
-    url.search = new URLSearchParams({
-      action: "parse",
-      page: name,
-      prop: "text",
-      section: "0",
-      redirects: "1",
-      format: "json",
-      formatversion: "2",
-    }).toString();
+  const result = await request<{ parse: { text: string } }>(url, AbortSignal.timeout(10_000));
 
-    const result = await request<{ parse: { text: string } }>(url, AbortSignal.timeout(10_000));
-
-    const genres = extractGenres(result.parse.text);
-    return genres.length ? genres : null;
-  }).then((genres) => genres ?? []);
-}
+  return extractGenres(result.parse.text);
+}, lifetime);

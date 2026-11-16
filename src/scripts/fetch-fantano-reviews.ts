@@ -4,17 +4,10 @@ import path from "node:path";
 import { cwd } from "node:process";
 
 async function swipeKey() {
-  try {
-    const url = "https://theneedledrop.com/";
-    const html = await fetch(url).then((r) => r.text());
-    const $ = cheerio.load(html);
-
-    const key = $("[data-key]").attr("data-key");
-    if (!key) throw 0;
-    return key;
-  } catch {
-    throw new Error("couldn't find key");
-  }
+  const html = await fetch("https://theneedledrop.com/").then((r) => r.text());
+  const key = cheerio.load(html)("[data-key]").attr("data-key");
+  if (!key) throw new Error("couldn't find key");
+  return key;
 }
 
 async function fetchReviews() {

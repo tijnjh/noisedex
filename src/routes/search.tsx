@@ -56,7 +56,7 @@ export const Route = createFileRoute("/search")({
 function RouteComponent() {
   const results = Route.useLoaderData();
 
-  // no query, so nothing was searched
+  // no query
   if (!results) return <Layout header={{ title: "search" }} />;
 
   const { artists, albums, tracks } = results;

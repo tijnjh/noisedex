@@ -75,7 +75,7 @@ export function VirtualGrid<T>({
     gap,
     overscan: 8,
     scrollMargin: viewport.paddingTop,
-    // Render the same initial rows on the server and during hydration.
+    // same initial rows on the server and during hydration
     initialRect: { width: 300, height: 600 },
   });
 
@@ -93,8 +93,8 @@ export function VirtualGrid<T>({
       return;
     }
 
-    // Filtering or adding columns can leave the virtualizer's previous offset
-    // beyond the shorter list, even after the browser clamps the DOM scrollTop.
+    // the virtualizer's offset can end up beyond a list that got shorter,
+    // even after the browser clamps scrollTop
     const maxOffset = Math.max(0, parent.scrollHeight - parent.clientHeight);
     if ((rowVirtualizer.scrollOffset ?? parent.scrollTop) > maxOffset) {
       rowVirtualizer.scrollToOffset(maxOffset);

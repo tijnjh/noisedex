@@ -195,8 +195,7 @@ button,
       color-mix(in srgb, var(--backdrop-accent) 24%, transparent),
       transparent 42%
     );
-  /* The gradients already soften their edges. A viewport-sized blur filter
-     makes scrolling over this backdrop expensive in Chromium. */
+  /* no blur filter: at viewport size it makes scrolling expensive in chromium */
   opacity: 0.72;
   transition: --backdrop-accent 350ms ease;
   transform: translateZ(0);

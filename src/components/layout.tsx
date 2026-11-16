@@ -13,7 +13,7 @@ import { NamedPlayButton } from "./play-button";
 interface Artwork {
   src: string;
   alt: string;
-  /** view transition name */
+  // view transition name
   vt?: string;
 }
 
@@ -24,7 +24,6 @@ export interface TitlePlayback {
 
 type LayoutProps = {
   header: HeaderProps;
-  /** tints the page; may still be loading */
   accentColor?: string | Promise<string | undefined>;
 } & MergeExclusive<
   // one full-size pane
@@ -79,7 +78,7 @@ export function Layout({
           <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
         </main>
       ) : (
-        // stacked and scrolling as one on small screens, two scrolling columns on large ones
+        // one scrolling stack on small screens, two scrolling columns on large ones
         <main
           data-scroll-restoration-id={scrollRegions.page}
           onScroll={handleScroll}
@@ -140,7 +139,7 @@ export function Layout({
   );
 }
 
-/** the scrolling `trailing` pane of a two-column layout */
+// the `trailing` pane of a two-column layout
 export function ContentPane({
   label,
   className,

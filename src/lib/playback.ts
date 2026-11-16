@@ -12,7 +12,6 @@ export const stoppedPlayback: PlaybackTrack = {};
 
 export const nowPlayingAtom = atom<PlaybackTrack>(stoppedPlayback);
 
-/** an itunes track, playing its 30 second preview */
 export function itunesPlayback(track: {
   trackName: string;
   artistName: string;
@@ -27,7 +26,7 @@ export function itunesPlayback(track: {
   };
 }
 
-/** the example track everynoise attaches to genres and artists */
+// the example track everynoise attaches to genres and artists
 export function previewPlayback(preview: { title: string; url: string }): PlaybackTrack {
   return { title: preview.title, ...splitPreviewTitle(preview.title), url: preview.url };
 }

@@ -17,13 +17,13 @@ export const Route = createFileRoute("/genre/$slug")({
   loader: async ({ params }) => {
     if (!/^[a-z0-9]+$/.test(params.slug)) throw notFound();
 
-    const genre = await $everynoise.getGenreBySlug(params.slug);
+    const genre = await $everynoise.getGenreBySlug({ data: params.slug });
 
     // wikipedia often says "folk music" where everynoise just has "folk"
     if (!genre && params.slug.endsWith("music")) {
       throw redirect({ to: "/genre/$slug", params: { slug: params.slug.slice(0, -5) } });
     }
-    if (!genre?.genreName) throw notFound();
+    if (!genre) throw notFound();
 
     return {
       ...genre,
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/genre/$slug")({
 
 function RouteComponent() {
   const genre = Route.useLoaderData();
-  const playlistId = findSoundOfPlaylistId(genre.links ?? []);
+  const playlistId = findSoundOfPlaylistId(genre.links);
 
   return (
     <Layout
@@ -57,7 +57,7 @@ function RouteComponent() {
           <span className="section-divider">related genres</span>
 
           <div className="cool-grid lg:mb-32">
-            {genre.relatedGenres?.map((genre) => (
+            {genre.relatedGenres.map((genre) => (
               <GenreChip key={genre.genreName} genre={genre} />
             ))}
           </div>
@@ -68,7 +68,7 @@ function RouteComponent() {
           <h2 className="section-divider">artists in this genre</h2>
 
           <div className="mb-32 grid grid-cols-responsive gap-3">
-            {genre.artists?.map((artist) => (
+            {genre.artists.map((artist) => (
               <ArtistChip key={artist.id} artist={artist} />
             ))}
           </div>

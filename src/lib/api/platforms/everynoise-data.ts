@@ -67,28 +67,24 @@ const aliasSlugs = new Map(
   Object.entries(genreAliases).map(([from, to]) => [toSlug(from), toSlug(to)]),
 );
 
-export function genreNameToSlug(genre: string | undefined | null) {
-  if (!genre) return;
+export function genreNameToSlug(genre: string) {
   const slug = toSlug(genre);
   return aliasSlugs.get(slug) ?? slug;
 }
 
 export function findSoundOfPlaylistId(links: Array<{ text: string; href: string }>) {
-  const fullUrl = links.find((l) => l.text === "playlist")?.href;
-  if (!fullUrl) return;
-  return fullUrl.replace("https://open.spotify.com/playlist/", "");
+  return links
+    .find((link) => link.text === "playlist")
+    ?.href.replace("https://open.spotify.com/playlist/", "");
 }
 
-export function splitPreviewTitle(previewTitle: string | undefined | null) {
-  if (previewTitle == null) return;
-
-  if (previewTitle.startsWith("e.g.")) {
-    previewTitle = previewTitle.replace("e.g.", "");
-  }
-
-  const match = previewTitle.trim().match(/^(.+?)\s+"([\s\S]*)"$/);
+export function splitPreviewTitle(previewTitle: string) {
+  const match = previewTitle
+    .replace(/^e\.g\./, "")
+    .trim()
+    .match(/^(.+?)\s+"([\s\S]*)"$/);
   if (!match) return;
 
   const [, artist, title] = match;
-  return { artist: artist.trimEnd(), title };
+  return { artist, title };
 }

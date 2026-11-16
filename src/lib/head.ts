@@ -3,7 +3,6 @@ import { siteName, siteUrl } from "./constants";
 export const absoluteUrl = (path: string) => `${siteUrl}${path}`;
 
 interface Page {
-  /** without the site name, which gets appended */
   title: string;
   description: string;
   path: string;
@@ -16,7 +15,6 @@ export function pageHead({ title, description, path }: Page) {
   };
 }
 
-/** page head plus open graph tags and schema.org structured data */
 export function musicHead({
   artwork,
   type,

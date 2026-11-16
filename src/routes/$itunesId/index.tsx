@@ -11,8 +11,7 @@ import { TrackPage, trackHead, loadTrack } from "./-track";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import * as v from "valibot";
 
-// artists, albums and tracks share one id space, so they share this route.
-// each kind lives in its own file as a `load` / `head` / `Page` trio
+// artists, albums and tracks share one id space, so they share this route
 export const Route = createFileRoute("/$itunesId/")({
   validateSearch: v.object({
     // filters the discography on artist pages

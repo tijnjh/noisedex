@@ -17,7 +17,7 @@ import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
 type AlbumData = ReturnType<typeof loadAlbum>;
 
-// everything beyond the itunes data is left as a promise, so it streams in after the page
+// unawaited promises stream in after the page
 export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: ResultMusicTrack[] }) {
   const { collectionName, artistName } = album;
 

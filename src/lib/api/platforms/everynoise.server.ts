@@ -1,6 +1,6 @@
 import { cached } from "../../cache.server";
 import { DAY } from "../../time";
-import { ArtistMeta, Genre, GenreMeta } from "./everynoise-types";
+import type { ArtistMeta, Genre, GenreMeta } from "./everynoise-types";
 import { lookupArtists } from "./spotify";
 import { isResponseError, up } from "up-fetch";
 
@@ -39,7 +39,6 @@ const getArtistById = cached(
 // everynoise artists are keyed by spotify id, so the name goes through spotify first
 export const getArtistByName = cached(async (artistName: string) => {
   const name = artistName.trim().toLowerCase();
-  if (!name) return;
 
   const artists = await lookupArtists({ data: name });
   const artist = artists.find((candidate) => candidate.name.trim().toLowerCase() === name);

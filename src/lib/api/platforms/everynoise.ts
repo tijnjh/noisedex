@@ -6,13 +6,10 @@ export type * from "./everynoise-types";
 
 export const getAllGenres = createServerFn().handler(() => server.getAllGenres());
 
-const genreBySlug = createServerFn()
+export const getGenreBySlug = createServerFn()
   .validator(v.string())
   .handler(({ data }) => server.getGenreBySlug(data));
 
-const artistByName = createServerFn()
+export const getArtistByName = createServerFn()
   .validator(v.string())
   .handler(({ data }) => server.getArtistByName(data));
-
-export const getGenreBySlug = (slug: string) => genreBySlug({ data: slug });
-export const getArtistByName = (name: string) => artistByName({ data: name.trim().toLowerCase() });

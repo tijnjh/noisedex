@@ -3,16 +3,16 @@ import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 const entry = createServerEntry({
   fetch(request, options) {
     if (!import.meta.env.DEV) {
-      const canonical = new URL(`https://${process.env.CANONICAL_HOST || "noisedex.com"}`);
+      const host = process.env.CANONICAL_HOST || "noisedex.com";
       const url = new URL(request.url);
 
-      if (url.host !== canonical.host) {
-        url.protocol = canonical.protocol;
-        url.host = canonical.host;
-        url.port = canonical.port;
+      if (url.host !== host) {
         return new Response(null, {
           status: 307,
-          headers: { Location: url.href, "Cache-Control": "no-store" },
+          headers: {
+            Location: `https://${host}${url.pathname}${url.search}`,
+            "Cache-Control": "no-store",
+          },
         });
       }
     }

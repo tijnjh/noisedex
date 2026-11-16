@@ -13,8 +13,6 @@ import type { ComponentProps, ReactNode } from "react";
 
 export function PlayButton({
   track,
-  disabled,
-  onClick,
   ...props
 }: ComponentProps<"button"> & { track: PlaybackTrack }) {
   const [nowPlaying, setNowPlaying] = useAtom(nowPlayingAtom);
@@ -26,12 +24,8 @@ export function PlayButton({
       aria-label={isThisTrackPlaying ? "Stop playback" : "Play track"}
       aria-pressed={isThisTrackPlaying}
       {...props}
-      disabled={disabled || !track.url}
-      onClick={(event) => {
-        onClick?.(event);
-        if (event.defaultPrevented) return;
-        setNowPlaying(isThisTrackPlaying ? stoppedPlayback : track);
-      }}
+      disabled={!track.url}
+      onClick={() => setNowPlaying(isThisTrackPlaying ? stoppedPlayback : track)}
     >
       {isThisTrackPlaying ? "☐" : "▶︎"}
     </button>

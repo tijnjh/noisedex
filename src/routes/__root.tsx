@@ -44,12 +44,6 @@ export const Route = createRootRoute({
       { property: "og:site_name", content: siteName },
     ],
     links: [{ href: styleCss, rel: "stylesheet" }],
-    scripts: [
-      // {
-      //   crossOrigin: "anonymous",
-      //   src: "https://unpkg.com/react-scan/dist/auto.global.js",
-      // },
-    ],
   }),
 
   component: RootComponent,

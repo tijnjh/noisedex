@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-/** one label/value row of a `<dl>` */
 export function Detail({
   label,
   className,

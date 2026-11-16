@@ -6,7 +6,6 @@ export function capitalizeWords(text: string): string {
   ).join("");
 }
 
-/** props that give an element a view transition name, or nothing when there is no name */
 export function viewTransition(name: string | undefined) {
   return name ? { style: { viewTransitionName: name } } : {};
 }
@@ -16,23 +15,7 @@ export function formatDate(date: Date, options?: Intl.DateTimeFormatOptions) {
 }
 
 export function getErrorMessage(error: unknown) {
-  const genericMsg = "an unknown error occurred, check logs for more info";
-
-  switch (typeof error) {
-    case "undefined":
-      return genericMsg;
-
-    case "string":
-      return error;
-
-    case "object":
-      if (error === null) return genericMsg;
-      if ("message" in error) return (error.message as string) || genericMsg;
-      return JSON.stringify(error);
-
-    default:
-      return genericMsg;
-  }
+  return error instanceof Error ? error.message : String(error);
 }
 
 export function formatMillis(millis: number): string {
@@ -42,7 +25,6 @@ export function formatMillis(millis: number): string {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-/** ISO 8601 duration, as used by schema.org */
 export function isoDuration(millis: number) {
   return Number.isFinite(millis) ? `PT${Math.round(millis / 1000)}S` : undefined;
 }

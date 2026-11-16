@@ -1,17 +1,11 @@
-/** oklab-based hue, lightness and chroma of a hex color */
+// oklab
 function colorCoordinates(hex: string) {
-  let value = hex.replace(/^#/, "");
-
-  if (value.length === 3)
-    // oxlint-disable-next-line typescript/no-misused-spread
-    value = [...value].map((digit) => digit + digit).join("");
-
-  const channels = [0, 2, 4].map((offset) => {
-    const channel = parseInt(value.slice(offset, offset + 2), 16) / 255;
+  // srgb to linear
+  const [r, g, b] = [1, 3, 5].map((offset) => {
+    const channel = parseInt(hex.slice(offset, offset + 2), 16) / 255;
     return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
   });
 
-  const [r, g, b] = channels;
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
   const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);

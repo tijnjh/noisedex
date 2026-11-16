@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 
-/**
- * unwraps a value that may still be a promise, without suspending:
- * yields undefined until the promise settles (and if it rejects)
- */
+// undefined while the promise is pending, and when it rejects
 export function useResolved<T>(value: T | Promise<T>): T | undefined {
   return useResolvedState(value).value;
 }

@@ -10,7 +10,6 @@ import { getRequestHeader } from "@tanstack/react-start/server";
 import type * as itunes from "itunes-store-api";
 import * as v from "valibot";
 
-// the store to query, picked from the visitor's preferred languages
 const requestCountry = () => storeCountryFromLanguages(getRequestHeader("accept-language"));
 
 export const searchMusic = createServerFn()

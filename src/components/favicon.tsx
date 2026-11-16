@@ -2,14 +2,12 @@ import { useResolved } from "#hooks/use-resolved";
 import logoSvg from "../assets/favicon.svg?raw";
 import logoUrl from "../assets/favicon.svg?url";
 import { useMatches } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 
 function coloredLogo(color?: string) {
   if (!color) return logoUrl;
-  const escaped = color.replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
   const svg = logoSvg
     .replace(/<style>.*?<\/style>/s, "")
-    .replace('fill="#18181b"', `fill="${escaped}"`);
+    .replace('fill="#18181b"', `fill="${color}"`);
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
@@ -30,25 +28,12 @@ export function Favicon() {
   }
 
   const resolvedColor = useResolved(color);
-  const [failedArtwork, setFailedArtwork] = useState<string>();
-
-  useEffect(() => {
-    if (!artwork) return;
-    const image = new Image();
-    image.onerror = () => setFailedArtwork(artwork);
-    image.src = artwork;
-    return () => {
-      image.onerror = null;
-    };
-  }, [artwork]);
-
-  const artworkUrl = artwork && artwork !== failedArtwork ? artwork : undefined;
 
   return (
     <link
       rel="icon"
-      href={artworkUrl || coloredLogo(resolvedColor)}
-      type={artworkUrl ? undefined : "image/svg+xml"}
+      href={artwork ?? coloredLogo(resolvedColor)}
+      type={artwork ? undefined : "image/svg+xml"}
     />
   );
 }

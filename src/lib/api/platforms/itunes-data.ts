@@ -43,9 +43,7 @@ export function encodeItunesId(id: number) {
 }
 
 export function parseItunesId(value: string) {
-  if (!/^[\w-]{1,9}$/.test(value)) {
-    return;
-  }
+  if (!/^[\w-]{1,8}$/.test(value)) return;
 
   let id = 0;
 
@@ -53,5 +51,5 @@ export function parseItunesId(value: string) {
     id = id * 64 + availableChars.indexOf(char);
   }
 
-  return Number.isSafeInteger(id) && id > 0 && encodeItunesId(id) === value ? id : undefined;
+  return id;
 }

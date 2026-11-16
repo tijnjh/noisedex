@@ -23,7 +23,7 @@ const musicRoute = getRouteApi("/$itunesId/");
 
 type ArtistData = ReturnType<typeof loadArtist>;
 
-// everything beyond the itunes data is left as a promise, so it streams in after the page
+// unawaited promises stream in after the page
 export function loadArtist({
   artist,
   albums,
@@ -31,7 +31,9 @@ export function loadArtist({
   artist: ResultMusicArtist;
   albums: ResultAlbum[];
 }) {
-  const everynoiseArtist = $everynoise.getArtistByName(artist.artistName).catch(() => undefined);
+  const everynoiseArtist = $everynoise
+    .getArtistByName({ data: artist.artistName })
+    .catch(() => undefined);
 
   return {
     artist,
@@ -141,7 +143,7 @@ function Discography({ releases }: { releases: ResultAlbum[] }) {
         <Fragment key={release.collectionId}>
           {showYear && (
             <h2 className="flex h-9 items-center gap-3 font-semibold tabular-nums">
-              {year ?? "Unknown date"}
+              {year}
               <span className="grow border-t border-zinc-300-700" />
             </h2>
           )}

@@ -11,7 +11,7 @@ const filters = [
   {
     value: "preview",
     placeholder: "filter genre preview track name",
-    text: (genre: $everynoise.Genre) => genre.preview!.title,
+    text: (genre: $everynoise.Genre) => genre.preview.title,
   },
 ] as const;
 
@@ -28,7 +28,7 @@ const sorts = [
   {
     value: "color",
     apply: (genres: $everynoise.Genre[]) =>
-      sortHexColorsToGradient(genres, (genre) => genre.style!.color),
+      sortHexColorsToGradient(genres, (genre) => genre.style.color),
   },
 ] as const;
 

@@ -17,7 +17,6 @@ import type { ResultMusicTrack } from "itunes-store-api";
 
 type TrackData = ReturnType<typeof loadTrack>;
 
-// everything beyond the itunes data is left as a promise, so it streams in after the page
 export function loadTrack({ track }: { track: ResultMusicTrack }) {
   return {
     track,

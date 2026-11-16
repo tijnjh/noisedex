@@ -9,7 +9,7 @@ import {
 } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-/** shows `content` in a card anchored to the element the returned props are spread on */
+// spread the returned props on the element to anchor to
 export function usePopover(content: ReactNode) {
   const hasContent = content != null;
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
