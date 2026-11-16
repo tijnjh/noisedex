@@ -21,6 +21,8 @@ import { Fragment } from "react";
 
 const musicRoute = getRouteApi("/$itunesId/");
 
+const releaseFilterLabels = { All: "all", LPs: "LPs", EPs: "EPs", Singles: "singles" } as const;
+
 type ArtistData = ReturnType<typeof loadArtist>;
 
 // unawaited promises stream in after the page
@@ -132,19 +134,19 @@ function Discography({ releases }: { releases: ResultAlbum[] }) {
             }
             className={filter === type ? "btn-inverse" : "btn"}
           >
-            {type}
+            {releaseFilterLabels[type]}
           </button>
         ))}
       </div>
 
-      {!timeline.length && <p role="status">No releases found.</p>}
+      {!timeline.length && <p role="status">no releases found</p>}
 
       {timeline.map(({ release, year, showYear, month, dateTime }) => (
         <Fragment key={release.collectionId}>
           {showYear && (
             <h2 className="flex h-9 items-center gap-3 font-semibold tabular-nums">
               {year}
-              <span className="grow border-t border-zinc-300-700" />
+              <span className="grow border-t border-zinc-950-50/20" />
             </h2>
           )}
 

@@ -28,13 +28,13 @@ export function NavigationSpinner() {
     >
       <div
         className={cn(
-          "absolute top-0 h-80 w-full rounded-[100%] bg-black/25 blur-3xl transition-all duration-500",
+          "absolute top-0 h-80 w-full rounded-[100%] bg-black/25 blur-3xl transition-[translate,opacity] duration-500",
           showNavigationSpinner ? "-translate-y-1/2 opacity-100" : "-translate-y-full opacity-0",
         )}
       />
       <div
         className={cn(
-          "absolute top-6 left-1/2 -translate-x-1/2 transition-all duration-300",
+          "absolute top-6 left-1/2 -translate-x-1/2 transition-[translate,opacity] duration-300",
           showNavigationSpinner ? "translate-y-0 opacity-100" : "-translate-y-6 opacity-0",
         )}
       >

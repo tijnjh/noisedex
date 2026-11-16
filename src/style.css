@@ -211,10 +211,6 @@ button,
   --description-preview-height: 4lh;
 }
 
-[data-wikipedia-preview] {
-  min-height: var(--description-preview-height);
-}
-
 [data-wikipedia-description]:has(> [data-wikipedia-panel]:not([hidden]))
   > [data-wikipedia-preview] {
   visibility: hidden;

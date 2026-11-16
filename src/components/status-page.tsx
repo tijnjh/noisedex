@@ -40,12 +40,8 @@ function StatusPage({
 
 export function NotFoundPage() {
   return (
-    <StatusPage code="404" title="never heard of it">
-      <p>
-        there's no genre, artist, album or track at this address. the link might be off-key, or
-        whatever lived here is gone.
-      </p>
-      <p>try the search bar up top, or start over from the genre list.</p>
+    <StatusPage code="404" title="page not found">
+      <p>there's no genre, artist, album or track at this address. try searching for it instead.</p>
     </StatusPage>
   );
 }
@@ -56,7 +52,7 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
   return (
     <StatusPage
       code="err"
-      title="that hit a wrong note"
+      title="something went wrong"
       actions={
         <button
           type="button"
@@ -70,7 +66,7 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
         </button>
       }
     >
-      <p>something broke while loading this page. it's usually temporary, so give it another go.</p>
+      <p>this page failed to load. it's usually temporary, so try again in a moment.</p>
       <p role="alert" className="font-mono text-sm wrap-anywhere">
         {getErrorMessage(error)}
       </p>

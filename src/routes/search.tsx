@@ -93,7 +93,7 @@ function RouteComponent() {
         </Results>
 
         {!artists.length && !albums.length && !tracks.length && (
-          <p role="status">No artists, albums, or tracks found.</p>
+          <p role="status">nothing found for that search</p>
         )}
       </div>
     </Layout>
