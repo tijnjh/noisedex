@@ -3,16 +3,18 @@ import { getErrorMessage } from "#lib/utils";
 import { Link, useRouter, type ErrorComponentProps } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-function StatusPage({
+export function StatusPage({
   code,
   title,
   children,
   actions,
+  extra,
 }: {
   code: string;
   title: string;
   children: ReactNode;
   actions?: ReactNode;
+  extra?: ReactNode;
 }) {
   return (
     <Layout header={{}}>
@@ -25,6 +27,8 @@ function StatusPage({
           <h1 className="text-4xl text-balance md:text-5xl">{title}</h1>
 
           <div className="flex flex-col gap-3 text-pretty opacity-75">{children}</div>
+
+          {extra}
 
           <div className="mt-3 flex flex-wrap gap-3">
             {actions}

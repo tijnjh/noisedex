@@ -10,6 +10,10 @@ export const getGenreBySlug = createServerFn()
   .validator(v.string())
   .handler(({ data }) => server.getGenreBySlug(data));
 
+export const findSimilarGenres = createServerFn()
+  .validator(v.string())
+  .handler(({ data }) => server.findSimilarGenres(data));
+
 export const getArtistByName = createServerFn()
   .validator(v.string())
   .handler(({ data }) => server.getArtistByName(data));

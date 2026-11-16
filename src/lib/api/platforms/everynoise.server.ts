@@ -1,5 +1,7 @@
 import { cached } from "../../cache.server";
+import { similarity } from "../../similarity";
 import { DAY } from "../../time";
+import { genreNameToSlug } from "./everynoise-data";
 import type { ArtistMeta, Genre, GenreMeta } from "./everynoise-types";
 import { lookupArtists } from "./spotify";
 import { isResponseError, up } from "up-fetch";
@@ -30,6 +32,18 @@ export const getGenreBySlug = cached(
   (genreSlug: string) => fetchIfExists<GenreMeta>(`/genres/${genreSlug}.json`),
   lifetime,
 );
+
+// genres whose slug looks like the given one, most similar first
+export async function findSimilarGenres(genreSlug: string, limit: number = 5) {
+  const genres = await getAllGenres();
+
+  return genres
+    .map((genre) => ({ genre, score: similarity(genreSlug, genreNameToSlug(genre.genreName)) }))
+    .filter(({ score }) => score >= 0.5)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(({ genre }) => genre);
+}
 
 const getArtistById = cached(
   (artistId: string) => fetchIfExists<ArtistMeta>(`/artists/${artistId}.json`),

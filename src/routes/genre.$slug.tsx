@@ -3,6 +3,7 @@ import { GenreChip } from "#components/genre-chip";
 import { ContentPane, Layout } from "#components/layout";
 import { PreviewPlayButton, TrackCard } from "#components/play-button";
 import { SpotifyWidget } from "#components/spotify-widget";
+import { StatusPage } from "#components/status-page";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import { $everynoise, $wikipedia } from "#lib/api/index";
 import { findSoundOfPlaylistId } from "#lib/api/platforms/everynoise-data";
@@ -15,7 +16,7 @@ import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/genre/$slug")({
   loader: async ({ params }) => {
-    if (!/^[a-z0-9]+$/.test(params.slug)) throw notFound();
+    if (!/^[a-z0-9]+$/.test(params.slug)) throw await genreNotFound(params.slug);
 
     const genre = await $everynoise.getGenreBySlug({ data: params.slug });
 
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/genre/$slug")({
     if (!genre && params.slug.endsWith("music")) {
       throw redirect({ to: "/genre/$slug", params: { slug: params.slug.slice(0, -5) } });
     }
-    if (!genre) throw notFound();
+    if (!genre) throw await genreNotFound(params.slug);
 
     return {
       ...genre,
@@ -37,7 +38,39 @@ export const Route = createFileRoute("/genre/$slug")({
       path: `/genre/${params.slug}`,
     }),
   component: RouteComponent,
+  notFoundComponent: ({ data }) => <GenreNotFound {...(data as GenreNotFoundData)} />,
 });
+
+interface GenreNotFoundData {
+  suggestions: $everynoise.Genre[];
+}
+
+async function genreNotFound(slug: string) {
+  const query = slug.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const suggestions = await $everynoise.findSimilarGenres({ data: query }).catch(() => []);
+  return notFound({ data: { suggestions } satisfies GenreNotFoundData });
+}
+
+function GenreNotFound({ suggestions }: GenreNotFoundData) {
+  return (
+    <StatusPage
+      code="404"
+      title="genre not found"
+      extra={
+        suggestions.length > 0 && (
+          <section className="flex w-full flex-col gap-3">
+            <h2 className="section-divider">did you mean one of these?</h2>
+            {suggestions.map((genre) => (
+              <GenreChip key={genre.genreName} genre={genre} />
+            ))}
+          </section>
+        )
+      }
+    >
+      <p>there's no genre at this address. try searching for it instead.</p>
+    </StatusPage>
+  );
+}
 
 function RouteComponent() {
   const genre = Route.useLoaderData();
