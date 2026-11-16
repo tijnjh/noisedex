@@ -1,9 +1,9 @@
 import { cached } from "../../cache.server";
-import { similarity } from "../../similarity";
 import { DAY } from "../../time";
 import { genreNameToSlug } from "./everynoise-data";
 import type { ArtistMeta, Genre, GenreMeta } from "./everynoise-types";
 import { lookupArtists } from "./spotify";
+import uFuzzy from "@leeoniya/ufuzzy";
 import { isResponseError, up } from "up-fetch";
 
 // pinned so jsdelivr caches it
@@ -33,16 +33,18 @@ export const getGenreBySlug = cached(
   lifetime,
 );
 
-// genres whose slug looks like the given one, most similar first
-export async function findSimilarGenres(genreSlug: string, limit: number = 5) {
-  const genres = await getAllGenres();
+const fuzzy = new uFuzzy({ intraMode: 1, intraIns: 1 });
 
-  return genres
-    .map((genre) => ({ genre, score: similarity(genreSlug, genreNameToSlug(genre.genreName)) }))
-    .filter(({ score }) => score >= 0.5)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map(({ genre }) => genre);
+// genres whose slug looks like the given one, most similar first
+export async function findSimilarGenres(genreSlug: string, limit = 5) {
+  const genres = await getAllGenres();
+  const slugs = genres.map((genre) => genreNameToSlug(genre.genreName));
+
+  const [matches, info, order] = fuzzy.search(slugs, genreSlug);
+  // ranking is skipped when there are too many matches, so fall back to haystack order
+  const ranked = info ? order.map((i) => info.idx[i]) : (matches ?? []);
+
+  return ranked.slice(0, limit).map((i) => genres[i]);
 }
 
 const getArtistById = cached(
