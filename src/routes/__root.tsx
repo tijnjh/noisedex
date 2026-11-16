@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { Favicon } from "#components/favicon";
+import { AccentHead } from "#components/accent-head";
 import { MiniPlayer } from "#components/mini-player";
 import { NavigationSpinner } from "#components/navigation-spinner";
 import { ErrorPage } from "#components/status-page";
@@ -27,16 +27,6 @@ export const Route = createRootRoute({
         content:
           "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content",
       },
-      {
-        name: "theme-color",
-        media: "(prefers-color-scheme: light)",
-        content: "#e4e4e7",
-      },
-      {
-        name: "theme-color",
-        media: "(prefers-color-scheme: dark)",
-        content: "#27272a",
-      },
       { title: `${siteName} • Explore music genres and albums` },
       {
         name: "description",
@@ -56,7 +46,7 @@ function RootComponent() {
       <html lang="en" className="antialiased pointer-coarse:overscroll-none">
         <head>
           <HeadContent />
-          <Favicon />
+          <AccentHead />
         </head>
 
         <body className="relative isolate touch-manipulation bg-zinc-100 text-black scheme-light-dark dark:bg-black dark:text-white">
