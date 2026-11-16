@@ -19,7 +19,7 @@ export function Header(props: HeaderProps) {
   const [playOnHover, setPlayOnHover] = useAtom(playOnHoverAtom);
 
   return (
-    <header className="flex gap-3 overflow-hidden p-3 max-md:flex-col md:items-center md:justify-between">
+    <header className="flex gap-3 overflow-hidden p-3 max-md:order-last max-md:flex-col md:items-center md:justify-between">
       <div className="flex items-center gap-3 truncate">
         <Logo collapsed={props.collapsed} />
         <PageTitle {...props} />
