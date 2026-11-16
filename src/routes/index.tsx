@@ -38,18 +38,22 @@ function RouteComponent() {
   );
 }
 
-function Genres(props: {
+function Genres({
+  genres,
+  filters,
+}: {
   genres: $everynoise.Genre[];
   filters: ReturnType<typeof useGenreFilters>;
 }) {
-  const { query, filter, sort, setQuery } = props.filters;
+  const { query, sort, setQuery } = filters;
+
   const sortedGenres = useMemo(() => {
     const term = query.toLowerCase();
     const filtered = term
-      ? props.genres.filter((genre) => filter.text(genre).toLowerCase().includes(term))
-      : props.genres;
+      ? genres.filter((genre) => genre.genreName.toLowerCase().includes(term))
+      : genres;
     return sort.apply(filtered);
-  }, [props.genres, query, filter, sort]);
+  }, [genres, query, sort]);
 
   if (!sortedGenres.length) {
     return (

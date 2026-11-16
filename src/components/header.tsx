@@ -1,4 +1,5 @@
 import { useGenreFilters } from "#hooks/use-genre-filters";
+import { usePopover } from "#hooks/use-popover";
 import { viewTransition } from "#lib/utils";
 import { Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
 import { cn } from "cn";
@@ -16,18 +17,18 @@ export interface HeaderProps {
   collapsed?: boolean;
 }
 
-export function Header(props: HeaderProps) {
+export function Header({ collapsed, ...titleProps }: HeaderProps) {
   const [playOnHover, setPlayOnHover] = useAtom(playOnHoverAtom);
 
   return (
     <header className="flex gap-3 overflow-hidden p-3 max-md:order-last max-md:flex-col md:items-center md:justify-between">
       <div className="flex items-center gap-3 truncate">
-        <Logo collapsed={props.collapsed} />
-        <PageTitle {...props} />
+        <Logo collapsed={collapsed} />
+        <PageTitle {...titleProps} />
       </div>
 
       <div className="flex max-w-xl grow items-center gap-3">
-        <label className="flex cursor-pointer items-center gap-3 select-none pointer-coarse:hidden">
+        <label className="flex cursor-pointer items-center gap-3 select-none max-md:hidden pointer-coarse:hidden">
           play on hover
           <Switch checked={playOnHover} onCheckedChange={setPlayOnHover} />
         </label>
@@ -137,6 +138,8 @@ function SearchBar() {
         void navigate({ to: "/search", search: { q: query } });
       }}
     >
+      {isHomepage && <SortButton filters={filters} />}
+
       <input
         value={value}
         onChange={(e) => setValue(e.currentTarget.value)}
@@ -160,5 +163,26 @@ function SearchBar() {
         →
       </button>
     </form>
+  );
+}
+
+// cycles the homepage genre order; the popover names the current and next order
+function SortButton({ filters }: { filters: ReturnType<typeof useGenreFilters> }) {
+  const popoverProps = usePopover(
+    <p>
+      sorted by {filters.sort.value}. click to sort by {filters.nextSort.value}.
+    </p>,
+  );
+
+  return (
+    <button
+      {...popoverProps}
+      type="button"
+      onClick={filters.cycleSort}
+      aria-label={`Sorted by ${filters.sort.value}; sort by ${filters.nextSort.value}`}
+      className="btn size-9 shrink-0 justify-center px-0 text-sm"
+    >
+      {filters.sort.label}
+    </button>
   );
 }
