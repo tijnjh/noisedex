@@ -9,6 +9,7 @@ import { CSSProperties, useState, type ReactNode } from "react";
 import { Switch } from "./switch";
 import { useAtom } from "jotai";
 import { playOnHoverAtom } from "#lib/atoms";
+import { useFontSwap } from "#hooks/use-font-swap";
 
 export interface HeaderProps {
   title?: string;
@@ -94,6 +95,7 @@ function CollapsibleLetters({
 
 function PageTitle({ title, titleClassName, titleVt, titleStyle }: HeaderProps) {
   console.log({ titleStyle });
+  const style = useFontSwap(titleStyle);
   return (
     <AnimatePresence>
       {title && (
@@ -106,11 +108,8 @@ function PageTitle({ title, titleClassName, titleVt, titleStyle }: HeaderProps) 
           &bull;
           <h1
             {...viewTransition(titleVt)}
-            style={titleStyle}
-            className={cn(
-              "truncate text-2xl transition-[font-weight] duration-500",
-              titleClassName,
-            )}
+            style={style}
+            className={cn("truncate text-2xl", titleClassName)}
           >
             {title}
           </h1>

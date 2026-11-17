@@ -3,6 +3,9 @@
 @import "tailwind-color-pairings";
 @import "@fontsource/zen-dots";
 @import "allo-font";
+@import "@fontsource-variable/fraunces/soft.css";
+@import "@fontsource-variable/fraunces/soft-italic.css";
+@import "@fontsource-variable/recursive/full.css";
 
 @theme {
   --spacing-control: 2.25rem;
@@ -10,6 +13,8 @@
   --spacing-grid-min: 12rem;
 
   --font-sans: "Allo", system-ui, sans-serif;
+  --font-serif: "Fraunces Variable", ui-serif, serif;
+  --font-mono: "Recursive Variable", ui-monospace, monospace;
   --font-logo: "Zen Dots";
 }
 
