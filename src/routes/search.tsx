@@ -28,7 +28,7 @@ export const Route = createFileRoute("/search")({
     const query = search.q?.trim();
     if (!query) return;
 
-    const artists = $itunes.searchArtists({ data: query });
+    const artists = $itunes.searchArtists(query);
 
     if (search.lucky) {
       const [topArtist] = await artists;
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/search")({
 
     const [foundArtists, music] = await Promise.all([
       artists,
-      $itunes.searchMusic({ data: query }),
+      $itunes.searchMusic(query),
     ]);
 
     return { artists: foundArtists, ...music };

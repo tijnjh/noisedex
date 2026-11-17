@@ -22,7 +22,7 @@ export const Route = createFileRoute("/$itunesId/")({
     const id = parseItunesId(params.itunesId);
     if (id === undefined) throw notFound();
 
-    const music = await $itunes.getMusic({ data: id });
+    const music = await $itunes.getMusic(id);
     if (!music) throw notFound();
 
     switch (music.type) {

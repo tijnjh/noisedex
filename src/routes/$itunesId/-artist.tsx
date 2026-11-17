@@ -52,7 +52,7 @@ export function loadArtist({
 
 export function artistHead({ artist }: ArtistData) {
   return pageHead({
-    title: `${artist.artistName} albums`,
+    title: `${artist.artistName} discography`,
     description: `Browse albums and music genres for ${artist.artistName} on ${siteName}.`,
     path: `/${encodeItunesId(artist.artistId)}`,
   });

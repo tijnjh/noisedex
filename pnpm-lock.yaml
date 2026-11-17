@@ -220,6 +220,9 @@ importers:
       lru-cache:
         specifier: 11.5.3
         version: 11.5.3
+      matchexpr:
+        specifier: ^0.0.3
+        version: 0.0.3
       motion:
         specifier: ^14.12.0
         version: 14.12.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -2731,6 +2734,9 @@ packages:
 
   magicast@0.5.5:
     resolution: {integrity: sha512-UicdXN8zQ3JHlxVq+28afMXPr1z7WNY6+7EJnzTdQWkTAlMLF5fNCCKxJHBQwGaNGR11581EiQmQzx73+MvszA==}
+
+  matchexpr@0.0.3:
+    resolution: {integrity: sha512-8Ua7b5pgGfETx3mPIfvcLFkdg64zxU6e96aYUJLIaosTMa0Wq1iOm2I7Ge9jXfftki38MSVBH5CWOY/BuxZ60A==}
 
   mdn-data@2.37.2:
     resolution: {integrity: sha512-rz9YOBGItdSbe7HcSArUbhiAv4SB/4DKRYg96CSFS2CcIYMbUvBtZlzA1NCbk2AdgbmYwMqwNblLpR441lLeiQ==}
@@ -5847,6 +5853,8 @@ snapshots:
       '@babel/parser': 7.29.13
       '@babel/types': 7.29.11
       source-map-js: 1.2.2
+
+  matchexpr@0.0.3: {}
 
   mdn-data@2.37.2: {}
 

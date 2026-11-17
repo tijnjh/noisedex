@@ -1,7 +1,7 @@
 import { Layout } from "#components/layout";
 import { getErrorMessage } from "#lib/utils";
 import { Link, useRouter, type ErrorComponentProps } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 export function StatusPage({
   code,
@@ -50,8 +50,19 @@ export function NotFoundPage() {
   );
 }
 
+// itunes rate limits the server, so a failed page gets one retry from the browser, which can fetch itunes itself
+const retriedPages = new Set<string>();
+
 export function ErrorPage({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
+
+  useEffect(() => {
+    const href = router.state.location.href;
+    if (retriedPages.has(href)) return;
+    retriedPages.add(href);
+    reset();
+    void router.invalidate();
+  }, [reset, router]);
 
   return (
     <StatusPage
