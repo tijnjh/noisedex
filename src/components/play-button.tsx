@@ -51,7 +51,7 @@ export function PreviewPlayButton({
 }) {
   return (
     <PlayButton
-      className="btn size-9 shrink-0 justify-center"
+      className="btn border-0 size-9 shrink-0 justify-center"
       style={{ backgroundColor: color }}
       track={previewPlayback(preview)}
     />

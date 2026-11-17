@@ -158,7 +158,7 @@ function SearchBar() {
             ? "Filter genres; press Enter to search artists, albums, and tracks"
             : "Search artists, albums, and tracks"
         }
-        className="h-9 min-w-0 grow px-3 surface"
+        className="h-9 min-w-0 grow surface px-3"
         name="q"
         enterKeyHint="search"
         autoCapitalize="none"
@@ -168,7 +168,7 @@ function SearchBar() {
         }
       />
 
-      <button type="submit" aria-label="Search" className="btn-inverse size-9 justify-center">
+      <button type="submit" aria-label="Search" className="btn size-9 justify-center">
         ⌕
       </button>
     </form>

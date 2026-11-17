@@ -53,13 +53,13 @@ dd {
   }
 }
 
-@utility surface {
+/* @utility surface {
   color: var(--surface-text);
   background: color-mix(in srgb, var(--surface-base) 94%, var(--page-accent, var(--surface-base)));
   box-shadow: inset 0 0 0 1px var(--surface-edge);
-}
+} */
 
-@utility btn {
+/* @utility btn {
   @apply surface flex h-control items-center gap-2 px-3 pointer-coarse:active:scale-95 pointer-fine:active:translate-y-px;
   cursor: pointer;
   transition:
@@ -82,7 +82,7 @@ dd {
     cursor: not-allowed;
     opacity: 0.45;
   }
-}
+} */
 
 @utility btn-inverse {
   @apply btn;
@@ -227,5 +227,27 @@ button,
 @media (prefers-reduced-motion: reduce) {
   [data-wikipedia-panel] {
     transition: none;
+  }
+}
+
+@utility surface {
+  @apply bg-white dark:bg-zinc-900;
+  @apply border-l border-r-2 border-b-2 border-t;
+  @apply border-b-zinc-200 border-r-zinc-200 border-t-zinc-100 border-l-zinc-100;
+  @apply dark:border-b-zinc-900 dark:border-r-zinc-900 dark:border-t-zinc-800 dark:border-l-zinc-800;
+}
+
+@utility btn {
+  @apply surface h-control gap-2 px-3 cursor-pointer flex items-center;
+  /* @apply hover:border-b-zinc-300-700 hover:border-r-zinc-300-700 hover:border-t-zinc-200-800 hover:border-l-zinc-200-800; */
+  /* @media (hover: hover) {
+    &:hover {
+      @apply border-b-zinc-300;
+      @apply dark:border-b-zinc-800 dark:border-t-700;
+    }
+  } */
+
+  &:active {
+    @apply border-l-2 border-t-2 border-r border-b;
   }
 }
