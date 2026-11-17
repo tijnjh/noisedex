@@ -13,21 +13,6 @@
   --font-logo: "Zen Dots";
 }
 
-:root {
-  font-variation-settings: "ROND" 0;
-  font-feature-settings: "ss01", "ss02";
-}
-
-@layer base {
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-semibold tracking-tight;
-  }
-}
-
 @utility grid-metrics {
   position: absolute;
   visibility: hidden;

@@ -8,7 +8,6 @@ export function getRouter() {
     routeTree,
     defaultErrorComponent: ErrorPage,
     defaultNotFoundComponent: NotFoundPage,
-    defaultPreload: "intent",
     defaultStaleTime: 60_000,
     defaultViewTransition: true,
     scrollRestoration: true,

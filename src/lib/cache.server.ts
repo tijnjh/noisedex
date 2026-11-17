@@ -17,5 +17,11 @@ export function cached<Args extends unknown[], T>(
     fetchMethod: async (key) => ({ value: await load(...(JSON.parse(key) as Args)) }),
   });
 
-  return async (...args: Args) => (await cache.fetch(JSON.stringify(args)))!.value;
+  return async (...args: Args) => {
+    const status: LRUCache.Status<string, { value: T }> = {};
+    const entry = await cache.fetch(JSON.stringify(args), { status });
+    // allowStaleOnFetchRejection resolves a failed first load to undefined instead of rejecting
+    if (!entry) throw status.fetchError ?? new Error("cache fetch returned nothing");
+    return entry.value;
+  };
 }

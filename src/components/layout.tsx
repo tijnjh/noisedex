@@ -83,7 +83,7 @@ export function Layout({
         <main
           data-scroll-restoration-id={scrollRegions.page}
           onScroll={handleScroll}
-          className="grid h-full grid-cols-1 gap-6 overflow-y-auto px-3 max-lg:content-start lg:grid-cols-[auto_1fr] lg:overflow-hidden"
+          className="grid h-full grid-cols-1 gap-6 overflow-y-auto px-3 max-lg:content-start max-md:pt-15 lg:grid-cols-[auto_1fr] lg:overflow-hidden"
         >
           <div
             data-scroll-restoration-id={scrollRegions.sidebar}
@@ -121,8 +121,9 @@ export function Layout({
                 )}
               </AnimatePresence>
               <h1
+                style={header.titleStyle}
                 className={cn(
-                  "text-4xl text-balance [text-box-edge:cap_alphabetic] [text-box-trim:trim-both] md:text-5xl",
+                  "text-4xl text-balance transition-[font-weight] duration-500 [text-box-edge:cap_alphabetic] [text-box-trim:trim-both] max-md:mt-1 md:text-5xl",
                   header.titleClassName,
                 )}
               >

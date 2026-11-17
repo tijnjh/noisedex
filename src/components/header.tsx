@@ -5,7 +5,7 @@ import { Link, useLocation, useNavigate, useSearch } from "@tanstack/react-route
 import { cn } from "cn";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
-import { useState, type ReactNode } from "react";
+import { CSSProperties, useState, type ReactNode } from "react";
 import { Switch } from "./switch";
 import { useAtom } from "jotai";
 import { playOnHoverAtom } from "#lib/atoms";
@@ -13,6 +13,7 @@ import { playOnHoverAtom } from "#lib/atoms";
 export interface HeaderProps {
   title?: string;
   titleClassName?: string;
+  titleStyle?: CSSProperties;
   titleVt?: string;
   collapsed?: boolean;
 }
@@ -27,7 +28,7 @@ export function Header({ collapsed, ...titleProps }: HeaderProps) {
         <PageTitle {...titleProps} />
       </div>
 
-      <div className="flex max-w-xl grow items-center gap-3">
+      <div className="flex grow items-center gap-3 md:max-w-xl">
         <label className="flex cursor-pointer items-center gap-3 select-none max-md:hidden pointer-coarse:hidden">
           play on hover
           <Switch checked={playOnHover} onCheckedChange={setPlayOnHover} />
@@ -91,7 +92,8 @@ function CollapsibleLetters({
   );
 }
 
-function PageTitle({ title, titleClassName, titleVt }: HeaderProps) {
+function PageTitle({ title, titleClassName, titleVt, titleStyle }: HeaderProps) {
+  console.log({ titleStyle });
   return (
     <AnimatePresence>
       {title && (
@@ -102,7 +104,14 @@ function PageTitle({ title, titleClassName, titleVt }: HeaderProps) {
           exit={{ opacity: 0 }}
         >
           &bull;
-          <h1 {...viewTransition(titleVt)} className={cn("truncate text-2xl", titleClassName)}>
+          <h1
+            {...viewTransition(titleVt)}
+            style={titleStyle}
+            className={cn(
+              "truncate text-2xl transition-[font-weight] duration-500",
+              titleClassName,
+            )}
+          >
             {title}
           </h1>
         </m.div>

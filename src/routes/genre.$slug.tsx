@@ -5,11 +5,13 @@ import { PreviewPlayButton, TrackCard } from "#components/play-button";
 import { SpotifyWidget } from "#components/spotify-widget";
 import { StatusPage } from "#components/status-page";
 import { WikipediaDescription } from "#components/wikipedia-description";
+import { useResolved } from "#hooks/use-resolved";
 import { $everynoise, $wikipedia } from "#lib/api/index";
 import { findSoundOfPlaylistId } from "#lib/api/platforms/everynoise-data";
 import { siteName } from "#lib/constants";
 import { pageHead } from "#lib/head";
 import { useHoverPlayAction } from "#lib/hover-play-action";
+import { evaluateGenreFontOptions } from "#lib/misc";
 import { previewPlayback } from "#lib/playback";
 import { capitalizeWords } from "#lib/utils";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
@@ -29,6 +31,7 @@ export const Route = createFileRoute("/genre/$slug")({
     return {
       ...genre,
       wikipediaGenre: $wikipedia.getGenreByName({ data: genre.genreName }).catch(() => null),
+      fontOptions: evaluateGenreFontOptions(genre.genreName).catch(() => undefined),
     };
   },
   head: ({ loaderData, params }) =>
@@ -75,10 +78,18 @@ function GenreNotFound({ suggestions }: GenreNotFoundData) {
 function RouteComponent() {
   const genre = Route.useLoaderData();
   const playlistId = findSoundOfPlaylistId(genre.links);
+  const fontOptions = useResolved(genre.fontOptions);
 
   return (
     <Layout
-      header={{ title: genre.genreName, titleClassName: "capitalize" }}
+      header={{
+        title: genre.genreName,
+        titleClassName: "capitalize",
+        titleStyle: fontOptions && {
+          fontWeight: fontOptions.weight,
+          fontVariationSettings: `"ROND" ${fontOptions.round}`,
+        },
+      }}
       accentColor={genre.style?.color}
       playback={genre.preview && { track: previewPlayback(genre.preview), note: "example track" }}
       leading={
