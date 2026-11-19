@@ -2,7 +2,7 @@ import { Layout } from "#components/layout";
 import { Spinner } from "#components/spinner";
 import { getErrorMessage } from "#lib/utils";
 import { Link, useRouter, type ErrorComponentProps } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export function StatusPage({
   code,
@@ -21,7 +21,7 @@ export function StatusPage({
     <Layout header={{}}>
       <div className="grid h-full place-items-center overflow-y-auto p-3">
         <div className="flex w-full max-w-md flex-col items-start gap-3">
-          <span aria-hidden="true" className="font-logo text-7xl opacity-20 md:text-8xl">
+          <span aria-hidden="true" className="text-7xl opacity-20 md:text-8xl">
             {code}
           </span>
 
@@ -62,23 +62,8 @@ export function NotFoundPage() {
   );
 }
 
-// itunes rate limits the server, so a failed page gets one retry from the browser, which can fetch itunes itself
-const retriedPages = new Set<string>();
-
 export function ErrorPage({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
-  const href = router.state.location.href;
-  const retried = retriedPages.has(href);
-
-  useEffect(() => {
-    if (retried) return;
-    retriedPages.add(href);
-    reset();
-    void router.invalidate();
-  }, [retried, href, reset, router]);
-
-  // render nothing until the retry has failed too, so the error doesn't flash first
-  if (!retried) return null;
 
   return (
     <StatusPage

@@ -5,16 +5,14 @@ import { Link, useLocation, useNavigate, useSearch } from "@tanstack/react-route
 import { cn } from "cn";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
-import { CSSProperties, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Switch } from "./switch";
 import { useAtom } from "jotai";
 import { playOnHoverAtom } from "#lib/atoms";
-import { useFontSwap } from "#hooks/use-font-swap";
 
 export interface HeaderProps {
   title?: string;
   titleClassName?: string;
-  titleStyle?: CSSProperties;
   titleVt?: string;
   collapsed?: boolean;
 }
@@ -46,7 +44,7 @@ function Logo({ collapsed = false }: { collapsed?: boolean }) {
   const expanded = !collapsed || isHovering;
 
   return (
-    <Link to="/" className="font-logo text-2xl hover:opacity-75">
+    <Link to="/" className="text-2xl hover:opacity-75">
       <div
         className="group flex *:overflow-hidden"
         onMouseEnter={() => setIsHovering(true)}
@@ -93,9 +91,7 @@ function CollapsibleLetters({
   );
 }
 
-function PageTitle({ title, titleClassName, titleVt, titleStyle }: HeaderProps) {
-  console.log({ titleStyle });
-  const style = useFontSwap(titleStyle);
+function PageTitle({ title, titleClassName, titleVt }: HeaderProps) {
   return (
     <AnimatePresence>
       {title && (
@@ -106,11 +102,7 @@ function PageTitle({ title, titleClassName, titleVt, titleStyle }: HeaderProps) 
           exit={{ opacity: 0 }}
         >
           &bull;
-          <h1
-            {...viewTransition(titleVt)}
-            style={style}
-            className={cn("truncate text-2xl", titleClassName)}
-          >
+          <h1 {...viewTransition(titleVt)} className={cn("truncate text-2xl", titleClassName)}>
             {title}
           </h1>
         </m.div>

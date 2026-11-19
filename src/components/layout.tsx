@@ -1,5 +1,4 @@
 import { Header, type HeaderProps } from "#components/header";
-import { useFontSwap } from "#hooks/use-font-swap";
 import { useResolved, useResolvedState } from "#hooks/use-resolved";
 import type { PlaybackTrack } from "#lib/playback";
 import { scrollRegions } from "#lib/scroll-regions";
@@ -50,7 +49,6 @@ export function Layout({
 }: LayoutProps) {
   const color = useResolved(accentColor);
   const resolvedPlayback = useResolvedState(playback);
-  const titleStyle = useFontSwap(header.titleStyle);
 
   // once the big title scrolls out of view, it moves into the header
   const [atTop, setAtTop] = useState(true);
@@ -123,7 +121,6 @@ export function Layout({
                 )}
               </AnimatePresence>
               <h1
-                style={titleStyle}
                 className={cn(
                   "text-4xl text-balance [text-box-edge:cap_alphabetic] [text-box-trim:trim-both] max-md:mt-1 md:text-5xl",
                   header.titleClassName,
