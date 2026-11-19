@@ -1,5 +1,5 @@
 import { LoadingPage } from "#components/status-page";
-import { $itunes } from "#lib/api/index";
+import * as $itunes from "#lib/api/platforms/itunes";
 import {
   encodeItunesId,
   isSingleRelease,

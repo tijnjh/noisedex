@@ -1,13 +1,15 @@
-import type { StoreCountry } from "../../store-country.ts";
 import {
   lookup,
   search,
+  type Options,
   type ResultAlbum,
   type ResultMusicArtist,
   type ResultMusicTrack,
 } from "itunes-store-api";
 
 // plain itunes-store-api calls, so they run on the server and in the browser alike
+
+export type StoreCountry = Options["country"];
 
 const catalogLimit = 200;
 
@@ -20,37 +22,26 @@ export async function getMusic(id: number, country: StoreCountry) {
   });
   const result = results[0] as ResultMusicArtist | ResultAlbum | ResultMusicTrack | undefined;
 
-  if (result?.wrapperType === "artist" && result.artistId === id) {
+  if (result?.wrapperType === "artist") {
     const { results } = await lookup("id", id, {
       entity: "album",
       country,
       limit: catalogLimit,
     });
+    // the artist itself comes first
+    const albums = results.filter((item) => item.wrapperType === "collection");
 
-    return {
-      type: "artist" as const,
-      artist: result,
-      albums: mergeCatalogEditions(
-        (results as Array<ResultMusicArtist | ResultAlbum>).filter(
-          (item): item is ResultAlbum => item.wrapperType === "collection",
-        ),
-      ),
-    };
+    return { type: "artist" as const, artist: result, albums: mergeCatalogEditions(albums) };
   }
 
-  if (
-    result?.wrapperType === "collection" &&
-    result.collectionType === "Album" &&
-    result.collectionId === id
-  ) {
-    const tracks = (results as Array<ResultAlbum | ResultMusicTrack>).filter(
-      (item): item is ResultMusicTrack => item.wrapperType === "track" && item.kind === "song",
-    );
+  if (result?.wrapperType === "collection" && result.collectionType === "Album") {
+    // the album itself comes first
+    const tracks = results.filter((item) => item.wrapperType === "track" && item.kind === "song");
 
     return { type: "album" as const, album: result, tracks };
   }
 
-  if (result?.wrapperType === "track" && result.kind === "song" && result.trackId === id) {
+  if (result?.wrapperType === "track" && result.kind === "song") {
     return { type: "track" as const, track: result };
   }
 }
@@ -79,12 +70,8 @@ function mergeCatalogEditions(albums: ResultAlbum[]) {
 }
 
 export async function searchArtists(name: string, country: StoreCountry) {
-  const { results } = await search(name, {
-    entity: "musicArtist",
-    limit: 25,
-    country,
-  });
-  return results.filter((result): result is ResultMusicArtist => result.wrapperType === "artist");
+  const { results } = await search(name, { entity: "musicArtist", limit: 25, country });
+  return results;
 }
 
 export async function searchMusic(term: string, country: StoreCountry) {

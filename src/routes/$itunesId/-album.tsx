@@ -2,17 +2,17 @@ import { AsyncContent } from "#components/async-content";
 import { Chip } from "#components/chip";
 import { ContentPane, Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
-import { TrackPlayButton } from "#components/play-button";
+import { NamedPlayButton, useHoverPlayAction } from "#components/play-button";
 import { WikipediaDescription } from "#components/wikipedia-description";
-import { $fantano, $wikipedia } from "#lib/api/index";
+import * as $fantano from "#lib/api/platforms/fantano";
 import { encodeItunesId, getBigItunesArtwork } from "#lib/api/platforms/itunes-data";
+import * as $wikipedia from "#lib/api/platforms/wikipedia";
 import { getArtworkColor } from "#lib/artwork-color";
 import { siteName } from "#lib/constants";
 import { musicHead } from "#lib/head";
-import { useHoverPlayAction } from "#lib/hover-play-action";
 import { albumLinks } from "#lib/platform-links";
 import { itunesPlayback } from "#lib/playback";
-import { formatDate, isoDuration } from "#lib/utils";
+import { isoDuration } from "#lib/utils";
 import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
 type AlbumData = ReturnType<typeof loadAlbum>;
@@ -62,10 +62,8 @@ export function albumHead({ album, tracks }: AlbumData) {
 export function AlbumPage({ album, tracks, wikipedia, accentColor, fantanoReview }: AlbumData) {
   return (
     <Layout
-      header={{
-        title: album.collectionName,
-        titleVt: `album-${album.collectionId}`,
-      }}
+      title={album.collectionName}
+      titleVt={`album-${album.collectionId}`}
       accentColor={accentColor}
       artwork={{
         src: getBigItunesArtwork(album),
@@ -81,7 +79,9 @@ export function AlbumPage({ album, tracks, wikipedia, accentColor, fantanoReview
           >
             {album.artistName}
           </Chip>
-          <p>released {formatDate(new Date(album.releaseDate), { dateStyle: "long" })}</p>
+          <p>
+            released {new Date(album.releaseDate).toLocaleDateString("en", { dateStyle: "long" })}
+          </p>
 
           <PlatformLinks links={albumLinks(album)} />
           <FantanoReview review={fantanoReview} />
@@ -105,7 +105,7 @@ export function AlbumPage({ album, tracks, wikipedia, accentColor, fantanoReview
 
 function FantanoReview({ review }: { review: AlbumData["fantanoReview"] }) {
   return (
-    <AsyncContent<{ excerpt: string; url: string } | undefined>
+    <AsyncContent<{ excerpt: string | null; url: string } | undefined>
       promise={review}
       sample={{
         excerpt:
@@ -138,7 +138,8 @@ function FantanoReview({ review }: { review: AlbumData["fantanoReview"] }) {
 }
 
 function Track({ track }: { track: ResultMusicTrack }) {
-  const hoverProps = useHoverPlayAction(() => itunesPlayback(track));
+  const playback = itunesPlayback(track);
+  const hoverProps = useHoverPlayAction(() => playback);
 
   return (
     <div {...hoverProps} className="col-span-full grid w-full grid-cols-subgrid">
@@ -147,7 +148,13 @@ function Track({ track }: { track: ResultMusicTrack }) {
       <Chip
         to="/$itunesId"
         params={{ itunesId: encodeItunesId(track.trackId) }}
-        trailing={<TrackPlayButton track={track} />}
+        trailing={
+          <NamedPlayButton
+            track={playback}
+            note={track.previewUrl ? "30 second preview" : undefined}
+            className="btn-inverse"
+          />
+        }
       >
         {track.trackName}
       </Chip>

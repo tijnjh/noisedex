@@ -1,10 +1,9 @@
 import { Chip } from "#components/chip";
-import { TrackCard } from "#components/play-button";
+import { TrackCard, useHoverPlayAction } from "#components/play-button";
+import * as $itunes from "#lib/api/platforms/itunes";
 import { encodeItunesId, trimItunesCollectionPostfix } from "#lib/api/platforms/itunes-data";
-import { useHoverPlayAction } from "#lib/hover-play-action";
 import { itunesPlayback, type PlaybackTrack } from "#lib/playback";
-import { storeCountryFromLanguages } from "#lib/store-country";
-import { lookup, type ResultAlbum, type ResultMusicTrack } from "itunes-store-api";
+import type { ResultAlbum, ResultMusicTrack } from "itunes-store-api";
 
 export function MusicChip({
   music,
@@ -14,19 +13,17 @@ export function MusicChip({
   showArtist?: boolean;
 }) {
   const track = music.wrapperType === "track" ? music : undefined;
-  const title = track?.trackName ?? music.collectionName;
+  const title = track ? track.trackName : trimItunesCollectionPostfix(music.collectionName);
 
   const hoverProps = useHoverPlayAction(
     () => (track ? itunesPlayback(track) : loadFirstTrack(music.collectionId)),
     track ? undefined : (playing) => <TrackCard track={playing} note="track 1" />,
   );
 
-  const label = track ? title : trimItunesCollectionPostfix(title);
-
   return (
     <Chip
       containerProps={hoverProps}
-      leading={music.artworkUrl60}
+      artwork={music.artworkUrl60}
       vt={
         track
           ? undefined
@@ -40,7 +37,7 @@ export function MusicChip({
         itunesId: encodeItunesId(track?.trackId ?? music.collectionId),
       }}
     >
-      {showArtist ? `${label} — ${music.artistName}` : label}
+      {showArtist ? `${title} — ${music.artistName}` : title}
     </Chip>
   );
 }
@@ -50,14 +47,11 @@ const firstTracks = new Map<number, Promise<PlaybackTrack | undefined>>();
 function loadFirstTrack(albumId: number) {
   let first = firstTracks.get(albumId);
   if (!first) {
-    first = lookup("id", albumId, {
-      entity: "song",
-      country: storeCountryFromLanguages(navigator.languages.join(",")),
-    })
-      .then(({ results }) => {
-        const track = results.find((result) => result.wrapperType === "track");
-        return track && itunesPlayback(track as ResultMusicTrack);
-      })
+    first = $itunes
+      .getMusic(albumId)
+      .then((music) =>
+        music?.type === "album" && music.tracks[0] ? itunesPlayback(music.tracks[0]) : undefined,
+      )
       .catch(() => undefined);
     firstTracks.set(albumId, first);
   }

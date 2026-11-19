@@ -1,3 +1,37 @@
+export interface Genre {
+  genreName: string;
+  style: Style;
+  preview: Preview;
+}
+
+export interface GenreMeta {
+  genreName: string;
+  style?: Style;
+  preview?: Preview;
+  artists: Artist[];
+  relatedGenres: Genre[];
+}
+
+export interface Artist {
+  id: string;
+  artistName: string;
+  style: Style;
+  preview: Preview;
+}
+
+export interface ArtistMeta extends Artist {
+  genres: string[];
+}
+
+interface Style {
+  color: string;
+}
+
+interface Preview {
+  url: string;
+  title: string;
+}
+
 // wikipedia names for genres everynoise calls something else
 const genreAliases: Record<string, string> = {
   "alt country": "alternative country",
@@ -70,21 +104,4 @@ const aliasSlugs = new Map(
 export function genreNameToSlug(genre: string) {
   const slug = toSlug(genre);
   return aliasSlugs.get(slug) ?? slug;
-}
-
-export function findSoundOfPlaylistId(links: Array<{ text: string; href: string }>) {
-  return links
-    .find((link) => link.text === "playlist")
-    ?.href.replace("https://open.spotify.com/playlist/", "");
-}
-
-export function splitPreviewTitle(previewTitle: string) {
-  const match = previewTitle
-    .replace(/^e\.g\./, "")
-    .trim()
-    .match(/^(.+?)\s+"([\s\S]*)"$/);
-  if (!match) return;
-
-  const [, artist, title] = match;
-  return { artist, title };
 }

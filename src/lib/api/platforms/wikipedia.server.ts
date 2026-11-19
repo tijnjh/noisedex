@@ -1,7 +1,5 @@
-import { cached } from "../../cache.server";
-import { Time } from "../../time";
+import { cached, day } from "../../cache.server";
 import { trimItunesCollectionPostfix } from "./itunes-data";
-import type { WikipediaSummary } from "./wikipedia-data";
 import * as cheerio from "cheerio";
 
 type Subject =
@@ -106,23 +104,17 @@ function hasGenreAlias(summary: SummaryResponse, name: string) {
   );
 }
 
-async function lookup(subject: Subject): Promise<WikipediaSummary> {
+async function lookup(subject: Subject) {
   const signal = AbortSignal.timeout(45_000);
-  const requests = new Map<string, Promise<SummaryResponse>>();
-  const getCandidate = (title: string) => {
-    const key = title.replaceAll(" ", "_");
-    let pending = requests.get(key);
-    if (!pending) {
-      pending = request<SummaryResponse>(
-        new URL(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(key)}`),
-        signal,
-      ).then((summary) => {
-        if (!matchesSubject(summary, subject)) throw noMatch;
-        return summary;
-      });
-      requests.set(key, pending);
-    }
-    return pending;
+  const getCandidate = async (title: string) => {
+    const summary = await request<SummaryResponse>(
+      new URL(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replaceAll(" ", "_"))}`,
+      ),
+      signal,
+    );
+    if (!matchesSubject(summary, subject)) throw noMatch;
+    return summary;
   };
 
   const searchUrl = new URL("https://en.wikipedia.org/w/api.php");
@@ -193,7 +185,7 @@ const cachedLookup = cached(
       if (isMissing(error)) return null;
       throw error;
     }),
-  Time.day,
+  day,
 );
 
 export function getSummary(subject: Subject) {
@@ -243,4 +235,4 @@ export const getGenres = cached(async (title: string) => {
   const result = await request<{ parse: { text: string } }>(url, AbortSignal.timeout(10_000));
 
   return extractGenres(result.parse.text);
-}, Time.day);
+}, day);

@@ -1,7 +1,6 @@
 import { scrollRegions } from "#lib/scroll-regions";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useEffect, useRef, useState } from "react";
-import type { Key, ReactNode } from "react";
+import { useEffect, useRef, useState, type Key, type ReactNode } from "react";
 
 export function VirtualGrid<T>({
   entries,
@@ -26,7 +25,6 @@ export function VirtualGrid<T>({
   const { minWidth, itemHeight, gap } = viewport;
   const columns = Math.max(1, Math.floor((viewport.width + gap) / (minWidth + gap)));
   const itemWidth = Math.max(0, (viewport.width - gap * (columns - 1)) / columns);
-  const rowCount = Math.ceil(entries.length / columns);
 
   useEffect(() => {
     const parent = parentRef.current;
@@ -47,14 +45,9 @@ export function VirtualGrid<T>({
         gap: parseFloat(metricStyle.paddingRight),
         paddingTop: parseFloat(style.paddingTop),
       };
+      // keeps the same object when nothing changed, so nothing rerenders
       setViewport((previous) =>
-        previous.width === next.width &&
-        previous.minWidth === next.minWidth &&
-        previous.itemHeight === next.itemHeight &&
-        previous.gap === next.gap &&
-        previous.paddingTop === next.paddingTop
-          ? previous
-          : next,
+        JSON.stringify(previous) === JSON.stringify(next) ? previous : next,
       );
     };
 
@@ -69,37 +62,24 @@ export function VirtualGrid<T>({
 
   // oxlint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
-    count: rowCount,
+    count: Math.ceil(entries.length / columns),
     getScrollElement: () => parentRef.current,
     estimateSize: () => itemHeight,
     gap,
     overscan: 8,
     scrollMargin: viewport.paddingTop,
-    // same initial rows on the server and during hydration
-    initialRect: { width: 300, height: 600 },
   });
 
   useEffect(() => {
     rowVirtualizer.measure();
   }, [itemHeight, gap, rowVirtualizer]);
 
+  // a different filter starts back at the top
   useEffect(() => {
-    const parent = parentRef.current;
-    if (!parent) return;
-
-    if (previousEntryCount.current !== entries.length) {
-      previousEntryCount.current = entries.length;
-      rowVirtualizer.scrollToOffset(0);
-      return;
-    }
-
-    // the virtualizer's offset can end up beyond a list that got shorter,
-    // even after the browser clamps scrollTop
-    const maxOffset = Math.max(0, parent.scrollHeight - parent.clientHeight);
-    if ((rowVirtualizer.scrollOffset ?? parent.scrollTop) > maxOffset) {
-      rowVirtualizer.scrollToOffset(maxOffset);
-    }
-  }, [entries.length, rowCount, columns, viewport.paddingTop, rowVirtualizer]);
+    if (previousEntryCount.current === entries.length) return;
+    previousEntryCount.current = entries.length;
+    rowVirtualizer.scrollToOffset(0);
+  }, [entries.length, rowVirtualizer]);
 
   return (
     <div
@@ -111,11 +91,7 @@ export function VirtualGrid<T>({
         <div ref={metricsRef} aria-hidden="true" className="grid-metrics" />
         <ul
           className="relative"
-          style={{
-            height: rowVirtualizer.getTotalSize(),
-            width: "100%",
-            overflowAnchor: "none",
-          }}
+          style={{ height: rowVirtualizer.getTotalSize(), overflowAnchor: "none" }}
         >
           {rowVirtualizer.getVirtualItems().flatMap((row) =>
             Array.from({ length: columns }, (_, column) => {

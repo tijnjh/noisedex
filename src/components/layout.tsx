@@ -1,54 +1,45 @@
-import { Header, type HeaderProps } from "#components/header";
-import { useResolved, useResolvedState } from "#hooks/use-resolved";
+import { Header } from "#components/header";
+import { useResolved } from "#hooks/use-resolved";
 import type { PlaybackTrack } from "#lib/playback";
 import { scrollRegions } from "#lib/scroll-regions";
-import { viewTransition } from "#lib/utils";
 import { cn } from "cn";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { useState, type CSSProperties, type ReactNode, type UIEvent } from "react";
 import { Skeleton } from "skullet/react";
-import type { MergeExclusive } from "type-fest";
 import { NamedPlayButton } from "./play-button";
 
-interface Artwork {
-  src: string;
-  alt: string;
-  // view transition name
-  vt?: string;
-}
-
-export interface TitlePlayback {
+interface TitlePlayback {
   track: PlaybackTrack;
   note?: string;
 }
 
-type LayoutProps = {
-  header: HeaderProps;
-  accentColor?: string | Promise<string | undefined>;
-} & MergeExclusive<
-  // one full-size pane
-  { children?: ReactNode },
-  // a sidebar (artwork, title, `leading`) next to a `trailing` content pane
-  {
-    leading: ReactNode;
-    trailing: ReactNode;
-    artwork?: Artwork;
-    playback?: TitlePlayback | Promise<TitlePlayback | undefined>;
-  }
->;
-
 export function Layout({
-  header,
+  title,
+  titleClassName,
+  titleVt,
+  accentColor,
   children,
   artwork,
+  playback,
   leading,
   trailing,
-  accentColor,
-  playback,
-}: LayoutProps) {
-  const color = useResolved(accentColor);
-  const resolvedPlayback = useResolvedState(playback);
+}: {
+  title?: string;
+  titleClassName?: string;
+  // view transition name of the title in the header
+  titleVt?: string;
+  accentColor?: string | Promise<string | undefined>;
+  // one full-size pane
+  children?: ReactNode;
+  // or without children, a sidebar (artwork, title, `leading`) next to a `trailing` content pane
+  artwork?: { src: string; alt: string; vt?: string };
+  playback?: TitlePlayback | Promise<TitlePlayback | undefined>;
+  leading?: ReactNode;
+  trailing?: ReactNode;
+}) {
+  const color = useResolved(accentColor).value;
+  const resolvedPlayback = useResolved(playback);
 
   // once the big title scrolls out of view, it moves into the header
   const [atTop, setAtTop] = useState(true);
@@ -66,9 +57,10 @@ export function Layout({
       <div data-page-backdrop aria-hidden="true" />
 
       <Header
-        {...header}
-        collapsed={header.collapsed ?? !atTop}
-        title={atTop ? "" : header.title}
+        title={atTop ? undefined : title}
+        titleClassName={titleClassName}
+        titleVt={titleVt}
+        collapsed={!atTop}
       />
 
       {children ? (
@@ -92,7 +84,7 @@ export function Layout({
           >
             {artwork && (
               <img
-                {...viewTransition(artwork.vt)}
+                style={{ viewTransitionName: artwork.vt }}
                 src={artwork.src}
                 alt={artwork.alt}
                 className="mx-auto mt-6 aspect-square w-full max-w-72"
@@ -123,10 +115,10 @@ export function Layout({
               <h1
                 className={cn(
                   "text-4xl text-balance [text-box-edge:cap_alphabetic] [text-box-trim:trim-both] max-md:mt-1 md:text-5xl",
-                  header.titleClassName,
+                  titleClassName,
                 )}
               >
-                {header.title}
+                {title}
               </h1>
             </m.div>
 

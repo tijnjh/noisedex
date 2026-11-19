@@ -1,11 +1,10 @@
-import { viewTransition } from "#lib/utils";
 import { Link, type LinkProps } from "@tanstack/react-router";
 import { cn } from "cn";
 import type { HTMLAttributes, ReactNode } from "react";
 
 export function Chip({
   children,
-  leading,
+  artwork,
   trailing,
   className,
   vt,
@@ -13,33 +12,28 @@ export function Chip({
   ...props
 }: LinkProps & {
   children?: string;
-  leading?: ReactNode;
+  artwork?: string;
   trailing?: ReactNode;
   className?: string;
+  // view transition names
   vt?: { img?: string; title?: string };
   containerProps?: HTMLAttributes<HTMLElement>;
 }) {
   return (
     <div {...containerProps} className="flex h-control items-center truncate">
-      {typeof leading === "string" ? (
+      {artwork && (
         <img
-          {...viewTransition(vt?.img)}
+          style={{ viewTransitionName: vt?.img }}
           className="aspect-square size-control"
-          src={leading}
+          src={artwork}
           loading="lazy"
           decoding="async"
           alt=""
         />
-      ) : (
-        leading
       )}
 
-      <Link
-        {...props}
-        draggable={false}
-        className={cn("btn min-w-0 grow items-center px-0 [-webkit-touch-callout:none]", className)}
-      >
-        <span {...viewTransition(vt?.title)} className="truncate px-3">
+      <Link {...props} draggable={false} className={cn("btn min-w-0 grow px-0", className)}>
+        <span style={{ viewTransitionName: vt?.title }} className="truncate px-3">
           {children}
         </span>
       </Link>

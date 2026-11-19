@@ -1,9 +1,6 @@
-import { time } from "node:console";
-import { cached } from "../../cache.server";
-import { Time } from "../../time";
-import { genreNameToSlug } from "./everynoise-data";
-import type { ArtistMeta, Genre, GenreMeta } from "./everynoise-types";
-import { lookupArtists } from "./spotify";
+import { cached, day } from "../../cache.server";
+import { genreNameToSlug, type ArtistMeta, type Genre, type GenreMeta } from "./everynoise-data";
+import { searchArtists } from "./spotify.server";
 import uFuzzy from "@leeoniya/ufuzzy";
 import { isResponseError, up } from "up-fetch";
 
@@ -24,17 +21,17 @@ async function fetchIfExists<T>(path: string) {
   }
 }
 
-export const getAllGenres = cached(() => everynoiseFetch<Genre[]>("/genres.json"), Time.day);
+export const getAllGenres = cached(() => everynoiseFetch<Genre[]>("/genres.json"), day);
 
 export const getGenreBySlug = cached(
   (genreSlug: string) => fetchIfExists<GenreMeta>(`/genres/${genreSlug}.json`),
-  Time.day,
+  day,
 );
 
 const fuzzy = new uFuzzy({ intraMode: 1, intraIns: 1 });
 
-// genres whose slug looks like the given one, most similar first
-export async function findSimilarGenres(genreSlug: string, limit = 5) {
+// the five genres whose slug looks the most like the given one
+export async function findSimilarGenres(genreSlug: string) {
   const genres = await getAllGenres();
   const slugs = genres.map((genre) => genreNameToSlug(genre.genreName));
 
@@ -42,20 +39,15 @@ export async function findSimilarGenres(genreSlug: string, limit = 5) {
   // ranking is skipped when there are too many matches, so fall back to haystack order
   const ranked = info ? order.map((i) => info.idx[i]) : (matches ?? []);
 
-  return ranked.slice(0, limit).map((i) => genres[i]);
+  return ranked.slice(0, 5).map((i) => genres[i]);
 }
-
-const getArtistById = cached(
-  (artistId: string) => fetchIfExists<ArtistMeta>(`/artists/${artistId}.json`),
-  Time.day,
-);
 
 // everynoise artists are keyed by spotify id, so the name goes through spotify first
 export const getArtistByName = cached(async (artistName: string) => {
   const name = artistName.trim().toLowerCase();
 
-  const artists = await lookupArtists({ data: name });
+  const artists = await searchArtists(name);
   const artist = artists.find((candidate) => candidate.name.trim().toLowerCase() === name);
 
-  return artist && getArtistById(artist.id);
-}, Time.day);
+  return artist && fetchIfExists<ArtistMeta>(`/artists/${artist.id}.json`);
+}, day);

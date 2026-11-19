@@ -3,7 +3,7 @@ import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { Section } from "#components/section";
-import { $itunes } from "#lib/api/index";
+import * as $itunes from "#lib/api/platforms/itunes";
 import { encodeItunesId } from "#lib/api/platforms/itunes-data";
 import { siteName } from "#lib/constants";
 import { scrollRegions } from "#lib/scroll-regions";
@@ -57,12 +57,12 @@ function RouteComponent() {
   const results = Route.useLoaderData();
 
   // no query
-  if (!results) return <Layout header={{ title: "search" }} />;
+  if (!results) return <Layout title="search" />;
 
   const { artists, albums, tracks } = results;
 
   return (
-    <Layout header={{ title: "search" }}>
+    <Layout>
       <div
         data-scroll-restoration-id={scrollRegions.content}
         className="flex h-full flex-col gap-3 overflow-y-auto p-3"

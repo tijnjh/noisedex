@@ -1,7 +1,12 @@
-import type { WikipediaSummary } from "./wikipedia-data";
 import { getGenres, getSummary } from "./wikipedia.server";
 import { createServerFn } from "@tanstack/react-start";
 import * as v from "valibot";
+
+export interface WikipediaSummary {
+  title: string;
+  extract: string;
+  url: string;
+}
 
 export const getArtistByName = createServerFn()
   .validator(v.string())
