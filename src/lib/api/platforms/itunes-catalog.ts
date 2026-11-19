@@ -14,7 +14,6 @@ const catalogLimit = 200;
 // artists, albums and tracks share one id space, so look it up and see what it is
 export async function getMusic(id: number, country: StoreCountry) {
   const { results } = await lookup("id", id, {
-    media: "music",
     entity: "song",
     country,
     limit: catalogLimit,
@@ -23,7 +22,6 @@ export async function getMusic(id: number, country: StoreCountry) {
 
   if (result?.wrapperType === "artist" && result.artistId === id) {
     const { results } = await lookup("id", id, {
-      media: "music",
       entity: "album",
       country,
       limit: catalogLimit,
@@ -82,7 +80,6 @@ function mergeCatalogEditions(albums: ResultAlbum[]) {
 
 export async function searchArtists(name: string, country: StoreCountry) {
   const { results } = await search(name, {
-    media: "music",
     entity: "musicArtist",
     limit: 25,
     country,
@@ -92,8 +89,8 @@ export async function searchArtists(name: string, country: StoreCountry) {
 
 export async function searchMusic(term: string, country: StoreCountry) {
   const [albums, tracks] = await Promise.all([
-    search(term, { media: "music", entity: "album", limit: 25, country }),
-    search(term, { media: "music", entity: "song", limit: 25, country }),
+    search(term, { entity: "album", limit: 25, country }),
+    search(term, { entity: "song", limit: 25, country }),
   ]);
   return { albums: albums.results, tracks: tracks.results };
 }
