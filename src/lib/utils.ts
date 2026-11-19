@@ -6,18 +6,6 @@ export function capitalizeWords(text: string): string {
   ).join("");
 }
 
-export function viewTransition(name: string | undefined) {
-  return name ? { style: { viewTransitionName: name } } : {};
-}
-
-export function formatDate(date: Date, options?: Intl.DateTimeFormatOptions) {
-  return Intl.DateTimeFormat("en", options).format(date);
-}
-
-export function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error);
-}
-
 export function formatMillis(millis: number): string {
   const totalSeconds = Math.trunc(millis / 1000);
   const minutes = Math.trunc(totalSeconds / 60);

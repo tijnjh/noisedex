@@ -2,8 +2,6 @@ import * as server from "./everynoise.server";
 import { createServerFn } from "@tanstack/react-start";
 import * as v from "valibot";
 
-export type * from "./everynoise-types";
-
 export const getAllGenres = createServerFn().handler(() => server.getAllGenres());
 
 export const getGenreBySlug = createServerFn()

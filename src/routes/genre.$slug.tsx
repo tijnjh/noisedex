@@ -1,15 +1,14 @@
 import { Chip } from "#components/chip";
 import { GenreChip } from "#components/genre-chip";
 import { ContentPane, Layout } from "#components/layout";
-import { PreviewPlayButton, TrackCard } from "#components/play-button";
-import { SpotifyWidget } from "#components/spotify-widget";
+import { PlayButton, TrackCard, useHoverPlayAction } from "#components/play-button";
 import { StatusPage } from "#components/status-page";
 import { WikipediaDescription } from "#components/wikipedia-description";
-import { $everynoise, $wikipedia } from "#lib/api/index";
-import { findSoundOfPlaylistId } from "#lib/api/platforms/everynoise-data";
+import * as $everynoise from "#lib/api/platforms/everynoise";
+import type { Artist, Genre } from "#lib/api/platforms/everynoise-data";
+import * as $wikipedia from "#lib/api/platforms/wikipedia";
 import { siteName } from "#lib/constants";
 import { pageHead } from "#lib/head";
-import { useHoverPlayAction } from "#lib/hover-play-action";
 import { previewPlayback } from "#lib/playback";
 import { capitalizeWords } from "#lib/utils";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
@@ -38,20 +37,15 @@ export const Route = createFileRoute("/genre/$slug")({
       path: `/genre/${params.slug}`,
     }),
   component: RouteComponent,
-  notFoundComponent: ({ data }) => <GenreNotFound {...(data as GenreNotFoundData)} />,
+  notFoundComponent: ({ data }) => <GenreNotFound suggestions={data as Genre[]} />,
 });
-
-interface GenreNotFoundData {
-  suggestions: $everynoise.Genre[];
-}
 
 async function genreNotFound(slug: string) {
   const query = slug.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const suggestions = await $everynoise.findSimilarGenres({ data: query }).catch(() => []);
-  return notFound({ data: { suggestions } satisfies GenreNotFoundData });
+  return notFound({ data: await $everynoise.findSimilarGenres({ data: query }) });
 }
 
-function GenreNotFound({ suggestions }: GenreNotFoundData) {
+function GenreNotFound({ suggestions }: { suggestions: Genre[] }) {
   return (
     <StatusPage
       code="404"
@@ -74,20 +68,15 @@ function GenreNotFound({ suggestions }: GenreNotFoundData) {
 
 function RouteComponent() {
   const genre = Route.useLoaderData();
-  const playlistId = findSoundOfPlaylistId(genre.links);
 
   return (
     <Layout
-      header={{
-        title: genre.genreName,
-        titleClassName: "capitalize",
-      }}
+      title={genre.genreName}
+      titleClassName="capitalize"
       accentColor={genre.style?.color}
       playback={genre.preview && { track: previewPlayback(genre.preview), note: "example track" }}
       leading={
         <>
-          {playlistId && <SpotifyWidget id={playlistId} type="playlist" />}
-
           <WikipediaDescription summary={genre.wikipediaGenre} />
 
           <span className="section-divider">related genres</span>
@@ -114,7 +103,7 @@ function RouteComponent() {
   );
 }
 
-function ArtistChip({ artist }: { artist: $everynoise.Artist }) {
+function ArtistChip({ artist }: { artist: Artist }) {
   const track = previewPlayback(artist.preview);
   const hoverProps = useHoverPlayAction(
     () => track,
@@ -127,7 +116,7 @@ function ArtistChip({ artist }: { artist: $everynoise.Artist }) {
       // everynoise only knows spotify ids, so jump to the best itunes match for the name
       to="/search"
       search={{ q: artist.artistName, lucky: true }}
-      trailing={<PreviewPlayButton preview={artist.preview} color={artist.style.color} />}
+      trailing={<PlayButton track={track} color={artist.style.color} />}
     >
       {artist.artistName}
     </Chip>

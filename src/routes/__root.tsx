@@ -1,17 +1,9 @@
-/// <reference types="vite/client" />
 import { AccentHead } from "#components/accent-head";
 import { MiniPlayer } from "#components/mini-player";
 import { NavigationSpinner } from "#components/navigation-spinner";
-import { ErrorPage } from "#components/status-page";
 import { siteName } from "#lib/constants";
 import styleCss from "../style.css?url";
-import {
-  CatchBoundary,
-  createRootRoute,
-  HeadContent,
-  Outlet,
-  Scripts,
-} from "@tanstack/react-router";
+import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { Provider } from "jotai";
 import { domAnimation, LazyMotion } from "motion/react";
 import { SkulletProvider } from "skullet/react";
@@ -52,16 +44,14 @@ function RootComponent() {
         <body className="relative isolate touch-manipulation bg-zinc-100 text-black scheme-light-dark dark:bg-black dark:text-white">
           <div
             data-app-shell
-            className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto] md:grid-cols-1"
+            className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto]"
           >
             <NavigationSpinner />
 
             <LazyMotion features={domAnimation} strict>
-              <CatchBoundary getResetKey={() => "reset"} errorComponent={ErrorPage}>
-                <SkulletProvider mode="system">
-                  <Outlet />
-                </SkulletProvider>
-              </CatchBoundary>
+              <SkulletProvider mode="system">
+                <Outlet />
+              </SkulletProvider>
             </LazyMotion>
 
             <MiniPlayer />

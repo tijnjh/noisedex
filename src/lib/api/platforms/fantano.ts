@@ -2,16 +2,6 @@ import fantanoReviews from "../../../data/fantano-reviews.json" with { type: "js
 import { createServerFn } from "@tanstack/react-start";
 import * as v from "valibot";
 
-interface Review {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  url: string;
-  updated_at: string;
-  visibility: string;
-}
-
 export const getReview = createServerFn()
   .validator(
     v.object({
@@ -20,5 +10,5 @@ export const getReview = createServerFn()
     }),
   )
   .handler(({ data: { artist, album } }) =>
-    (fantanoReviews as Review[]).find((review) => review.title === `${artist} - ${album}`),
+    fantanoReviews.find((review) => review.title === `${artist} - ${album}`),
   );

@@ -1,15 +1,16 @@
 import { AsyncContent } from "#components/async-content";
 import { GenreList } from "#components/genre-list";
-import { ContentPane, Layout, type TitlePlayback } from "#components/layout";
+import { ContentPane, Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
 import { WikipediaDescription } from "#components/wikipedia-description";
-import { $everynoise, $wikipedia } from "#lib/api/index";
+import * as $everynoise from "#lib/api/platforms/everynoise";
 import {
   encodeItunesId,
   matchesReleaseFilter,
   releaseFilters,
 } from "#lib/api/platforms/itunes-data";
+import * as $wikipedia from "#lib/api/platforms/wikipedia";
 import { siteName } from "#lib/constants";
 import { pageHead } from "#lib/head";
 import { artistLinks } from "#lib/platform-links";
@@ -44,7 +45,7 @@ export function loadArtist({
     everynoiseArtist,
     accentColor: everynoiseArtist.then((artist) => artist?.style.color),
     playback: everynoiseArtist.then(
-      (artist): TitlePlayback | undefined =>
+      (artist) =>
         artist?.preview && { track: previewPlayback(artist.preview), note: "example track" },
     ),
   };
@@ -68,10 +69,8 @@ export function ArtistPage({
 }: ArtistData) {
   return (
     <Layout
-      header={{
-        title: artist.artistName,
-        titleVt: `artist-${artist.artistId}`,
-      }}
+      title={artist.artistName}
+      titleVt={`artist-${artist.artistId}`}
       accentColor={accentColor}
       playback={playback}
       leading={

@@ -1,6 +1,6 @@
 import { AsyncContent } from "#components/async-content";
 import { GenreList } from "#components/genre-list";
-import type { WikipediaSummary } from "#lib/api/platforms/wikipedia-data";
+import type { WikipediaSummary } from "#lib/api/platforms/wikipedia";
 import { Collapsible } from "@base-ui/react/collapsible";
 import { useEffect, useRef, useState } from "react";
 

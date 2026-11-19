@@ -1,19 +1,10 @@
-import {
-  createElement,
-  HTMLAttributes,
-  ReactNode,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { createElement, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 // spread the returned props on the element to anchor to
 export function usePopover(content: ReactNode) {
   const hasContent = content != null;
-  const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  const anchor = `--popover-${id}`;
+  const anchor = `--popover-${useId().replace(/[^\w-]/g, "")}`;
 
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<Root>(undefined);
@@ -22,17 +13,9 @@ export function usePopover(content: ReactNode) {
     if (!isOpen || !hasContent) return;
 
     const el = document.createElement("div");
-    el.style.setProperty("position-anchor", anchor);
-    el.style.setProperty("top", "anchor(bottom)");
-    el.style.setProperty("left", "anchor(left)");
-    el.style.setProperty(
-      "position-try-fallbacks",
-      "flip-block, flip-inline, flip-block flip-inline",
-    );
-
     el.className = "surface absolute pointer-coarse:hidden";
-
-    document.body.appendChild(el);
+    el.style.cssText = `position-anchor: ${anchor}; top: anchor(bottom); left: anchor(left); position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline`;
+    document.body.append(el);
 
     const root = createRoot(el);
     rootRef.current = root;
@@ -57,12 +40,5 @@ export function usePopover(content: ReactNode) {
 
   const close = () => setIsOpen(false);
 
-  const props: HTMLAttributes<HTMLElement> = {
-    onMouseEnter: open,
-    onMouseLeave: close,
-    onFocus: open,
-    onBlur: close,
-  };
-
-  return props;
+  return { onMouseEnter: open, onMouseLeave: close, onFocus: open, onBlur: close };
 }

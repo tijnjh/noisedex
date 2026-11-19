@@ -1,9 +1,7 @@
 // itunes marks singles and EPs with a suffix on the collection name
 const releaseSuffix = / - (Single|EP)$/i;
 
-export type ReleaseType = "LP" | "EP" | "Single";
-
-export function getReleaseType(collectionName: string): ReleaseType {
+function getReleaseType(collectionName: string) {
   const suffix = collectionName.match(releaseSuffix)?.[1].toLowerCase();
   if (suffix === "single") return "Single";
   if (suffix === "ep") return "EP";
@@ -19,9 +17,11 @@ export function isSingleRelease(collectionName: string, trackCount: number) {
 }
 
 export const releaseFilters = ["All", "LPs", "EPs", "Singles"] as const;
-export type ReleaseFilter = (typeof releaseFilters)[number];
 
-export function matchesReleaseFilter(collectionName: string, filter: ReleaseFilter) {
+export function matchesReleaseFilter(
+  collectionName: string,
+  filter: (typeof releaseFilters)[number],
+) {
   return filter === "All" || `${getReleaseType(collectionName)}s` === filter;
 }
 

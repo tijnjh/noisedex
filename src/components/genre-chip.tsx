@@ -1,11 +1,9 @@
-import { $everynoise } from "#lib/api/index";
-import { genreNameToSlug } from "#lib/api/platforms/everynoise-data";
-import { useHoverPlayAction } from "#lib/hover-play-action";
+import { genreNameToSlug, type Genre } from "#lib/api/platforms/everynoise-data";
 import { previewPlayback } from "#lib/playback";
 import { Chip } from "./chip";
-import { PreviewPlayButton, TrackCard } from "./play-button";
+import { PlayButton, TrackCard, useHoverPlayAction } from "./play-button";
 
-export function GenreChip({ genre }: { genre: $everynoise.Genre }) {
+export function GenreChip({ genre }: { genre: Genre }) {
   const track = previewPlayback(genre.preview);
   const hoverProps = useHoverPlayAction(
     () => track,
@@ -15,10 +13,10 @@ export function GenreChip({ genre }: { genre: $everynoise.Genre }) {
   return (
     <Chip
       containerProps={hoverProps}
-      className="capitalize"
+      className="lowercase"
       to="/genre/$slug"
       params={{ slug: genreNameToSlug(genre.genreName) }}
-      trailing={<PreviewPlayButton preview={genre.preview} color={genre.style.color} />}
+      trailing={<PlayButton track={track} color={genre.style.color} />}
     >
       {genre.genreName}
     </Chip>

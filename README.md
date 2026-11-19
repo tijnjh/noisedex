@@ -14,7 +14,7 @@ NOT VIBECODED -- 100% human slop
 
 - [every noise at once](https://everynoise.com), via [everynoise-json](https://github.com/tijnjh/everynoise-json) on jsdelivr - genres, related genres, artist mappings and previews
 - [itunes](https://www.apple.com/itunes/) — search, artist discographies, albums, tracks, artwork and audio previews
-- [spotify](https://open.spotify.com) - artist lookup and metadata, plus embedded playback
+- [spotify](https://open.spotify.com) - artist lookup and metadata
 - [wikipedia](https://en.wikipedia.org) - artist and album descriptions, genre context
 - [the needle drop](https://theneedledrop.com) - review links from a locally stored index
 

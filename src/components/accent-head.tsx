@@ -20,21 +20,15 @@ export function AccentHead() {
   for (const match of matches) {
     if (match.status !== "success") continue;
     if (match.routeId === "/genre/$slug") color = match.loaderData?.style?.color;
-    if (match.routeId === "/$itunesId/") {
+    if (match.routeId === "/$itunesId/" && match.loaderData) {
       const music = match.loaderData;
-      if (music?.type === "artist") color = music.data.accentColor;
-      if (music?.type === "album") {
-        artwork = music.data.album.artworkUrl100;
-        color = music.data.accentColor;
-      }
-      if (music?.type === "track") {
-        artwork = music.data.track.artworkUrl100;
-        color = music.data.accentColor;
-      }
+      color = music.data.accentColor;
+      if (music.type === "album") artwork = music.data.album.artworkUrl100;
+      if (music.type === "track") artwork = music.data.track.artworkUrl100;
     }
   }
 
-  const resolvedColor = useResolved(color);
+  const resolvedColor = useResolved(color).value;
 
   return (
     <>

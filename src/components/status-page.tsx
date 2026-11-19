@@ -1,6 +1,5 @@
 import { Layout } from "#components/layout";
 import { Spinner } from "#components/spinner";
-import { getErrorMessage } from "#lib/utils";
 import { Link, useRouter, type ErrorComponentProps } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
@@ -18,7 +17,7 @@ export function StatusPage({
   extra?: ReactNode;
 }) {
   return (
-    <Layout header={{}}>
+    <Layout>
       <div className="grid h-full place-items-center overflow-y-auto p-3">
         <div className="flex w-full max-w-md flex-col items-start gap-3">
           <span aria-hidden="true" className="text-7xl opacity-20 md:text-8xl">
@@ -44,9 +43,9 @@ export function StatusPage({
 }
 
 // server rendered stand-in while a route loader runs in the browser
-export function LoadingPage({ label = "Loading" }: { label?: string }) {
+export function LoadingPage({ label }: { label: string }) {
   return (
-    <Layout header={{ collapsed: false }}>
+    <Layout>
       <div role="status" aria-label={label} className="grid h-full place-items-center">
         <Spinner />
       </div>
@@ -84,7 +83,7 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
     >
       <p>this page failed to load. it's usually temporary, so try again in a moment.</p>
       <p role="alert" className="font-mono text-sm wrap-anywhere">
-        {getErrorMessage(error)}
+        {error instanceof Error ? error.message : String(error)}
       </p>
     </StatusPage>
   );

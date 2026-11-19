@@ -1,17 +1,16 @@
 import { useGenreFilters } from "#hooks/use-genre-filters";
 import { usePopover } from "#hooks/use-popover";
-import { viewTransition } from "#lib/utils";
-import { Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
+import { playOnHoverAtom } from "#lib/playback";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
+import { useAtom } from "jotai";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { useState, type ReactNode } from "react";
 import { LogoGlyph } from "./logo-glyph";
 import { Switch } from "./switch";
-import { useAtom } from "jotai";
-import { playOnHoverAtom } from "#lib/atoms";
 
-export interface HeaderProps {
+interface HeaderProps {
   title?: string;
   titleClassName?: string;
   titleVt?: string;
@@ -51,13 +50,13 @@ function Logo({ collapsed = false }: { collapsed?: boolean }) {
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
-        <span {...viewTransition("header-title-n")}>
+        <span style={{ viewTransitionName: "header-title-n" }}>
           <LogoGlyph part="n" />
         </span>
         <CollapsibleLetters show={expanded} vt="header-title-oise">
           <LogoGlyph part="oise" />
         </CollapsibleLetters>
-        <span {...viewTransition("header-title-d")}>
+        <span style={{ viewTransitionName: "header-title-d" }}>
           <LogoGlyph part="d" />
         </span>
         <CollapsibleLetters show={expanded} vt="header-title-ex">
@@ -87,7 +86,7 @@ function CollapsibleLetters({
           initial={{ width: 0 }}
           animate={{ width: "auto" }}
           exit={{ width: 0 }}
-          {...viewTransition(vt)}
+          style={{ viewTransitionName: vt }}
         >
           {children}
         </m.span>
@@ -107,7 +106,10 @@ function PageTitle({ title, titleClassName, titleVt }: HeaderProps) {
           exit={{ opacity: 0 }}
         >
           &bull;
-          <h1 {...viewTransition(titleVt)} className={cn("truncate text-2xl", titleClassName)}>
+          <h1
+            style={{ viewTransitionName: titleVt }}
+            className={cn("truncate text-2xl", titleClassName)}
+          >
             {title}
           </h1>
         </m.div>
@@ -122,19 +124,15 @@ function SearchBar() {
     select: (location) => location.pathname === "/",
   });
   const filters = useGenreFilters();
-  const q = useSearch({
-    strict: false,
-    select: (search) => search.q ?? "",
-  });
   const navigate = useNavigate();
 
-  const [searchTerm, setSearchTerm] = useState(q);
+  const [searchTerm, setSearchTerm] = useState(filters.query);
   const value = isHomepage ? filters.query : searchTerm;
   const setValue = isHomepage ? filters.setQuery : setSearchTerm;
 
   return (
     <form
-      {...viewTransition("search")}
+      style={{ viewTransitionName: "search" }}
       className="flex grow gap-3"
       onSubmit={(e) => {
         e.preventDefault();

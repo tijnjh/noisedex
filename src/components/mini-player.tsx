@@ -1,42 +1,23 @@
-import { playOnHoverAtom } from "#lib/atoms";
-import { nowPlayingAtom, stoppedPlayback } from "#lib/playback";
+import { nowPlayingAtom, playOnHoverAtom } from "#lib/playback";
 import { Link } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export function MiniPlayer() {
   const [nowPlaying, setNowPlaying] = useAtom(nowPlayingAtom);
-  const audioRef = useRef<HTMLAudioElement>(null);
   const playOnHover = useAtomValue(playOnHoverAtom);
 
   useEffect(() => {
-    const audio = audioRef.current;
-    const url = nowPlaying.url;
-    if (!url || !audio) return;
-
-    audio.src = url;
-    audio.play().catch(() => {});
-
-    return () => {
-      audio.pause();
-      audio.removeAttribute("src");
-      audio.load();
-    };
-  }, [nowPlaying.url]);
-
-  useEffect(() => {
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: nowPlaying.title,
-      artist: nowPlaying.artist,
+      title: nowPlaying?.title,
+      artist: nowPlaying?.artist,
       album: "noisedex.com",
-      artwork: nowPlaying.artworkSrc
-        ? [{ src: nowPlaying.artworkSrc, sizes: "500x500", type: "image/jpeg" }]
-        : undefined,
+      artwork: nowPlaying?.artworkSrc ? [{ src: nowPlaying.artworkSrc }] : undefined,
     });
   }, [nowPlaying]);
 
   return (
-    nowPlaying.url && (
+    nowPlaying?.url && (
       <div
         // hidden rather than unmounted, so the audio keeps playing
         hidden={playOnHover}
@@ -62,17 +43,18 @@ export function MiniPlayer() {
             type="button"
             aria-label="Close player"
             className="btn-inverse size-9 shrink-0 justify-center"
-            onClick={() => setNowPlaying(stoppedPlayback)}
+            onClick={() => setNowPlaying(undefined)}
           >
             &times;
           </button>
         </div>
 
         <audio
-          ref={audioRef}
-          className="w-full"
+          src={nowPlaying.url}
+          autoPlay
           controls
-          onEnded={() => setNowPlaying(stoppedPlayback)}
+          className="w-full"
+          onEnded={() => setNowPlaying(undefined)}
         />
       </div>
     )

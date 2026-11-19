@@ -3,7 +3,7 @@ import { Layout } from "#components/layout";
 import { LoadingPage } from "#components/status-page";
 import { VirtualGrid } from "#components/virtual-grid";
 import { useGenreFilters } from "#hooks/use-genre-filters";
-import { $everynoise } from "#lib/api/index";
+import * as $everynoise from "#lib/api/platforms/everynoise";
 import { siteUrl } from "#lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
@@ -11,35 +11,15 @@ import { useMemo } from "react";
 export const Route = createFileRoute("/")({
   // the full genre list is 2.4mb, so we load it on the browser hehe
   ssr: false,
-  loader: async () => {
-    const genres = await $everynoise.getAllGenres();
-    return { genres };
-  },
+  loader: () => $everynoise.getAllGenres(),
   head: () => ({ links: [{ rel: "canonical", href: siteUrl }] }),
   component: RouteComponent,
   pendingComponent: () => <LoadingPage label="Loading genres" />,
 });
 
 function RouteComponent() {
-  const data = Route.useLoaderData();
-
-  const filters = useGenreFilters();
-
-  return (
-    <Layout header={{ collapsed: false }}>
-      <Genres filters={filters} genres={data.genres} />
-    </Layout>
-  );
-}
-
-function Genres({
-  genres,
-  filters,
-}: {
-  genres: $everynoise.Genre[];
-  filters: ReturnType<typeof useGenreFilters>;
-}) {
-  const { query, sort, setQuery } = filters;
+  const genres = Route.useLoaderData();
+  const { query, sort, setQuery } = useGenreFilters();
 
   const sortedGenres = useMemo(() => {
     const term = query.toLowerCase();
@@ -49,25 +29,25 @@ function Genres({
     return sort.apply(filtered);
   }, [genres, query, sort]);
 
-  if (!sortedGenres.length) {
-    return (
-      <div className="flex flex-col items-start gap-3 p-3">
-        <p role="status">
-          no genres found.
-          {query.trim() && " press enter to search artists, albums and tracks."}
-        </p>
-        {query && (
-          <button type="button" className="btn" onClick={() => setQuery("")}>
-            clear filter
-          </button>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <VirtualGrid entries={sortedGenres} getKey={(genre) => genre.genreName}>
-      {(genre) => <GenreChip genre={genre} />}
-    </VirtualGrid>
+    <Layout>
+      {sortedGenres.length ? (
+        <VirtualGrid entries={sortedGenres} getKey={(genre) => genre.genreName}>
+          {(genre) => <GenreChip genre={genre} />}
+        </VirtualGrid>
+      ) : (
+        <div className="flex flex-col items-start gap-3 p-3">
+          <p role="status">
+            no genres found.
+            {query.trim() && " press enter to search artists, albums and tracks."}
+          </p>
+          {query && (
+            <button type="button" className="btn" onClick={() => setQuery("")}>
+              clear filter
+            </button>
+          )}
+        </div>
+      )}
+    </Layout>
   );
 }

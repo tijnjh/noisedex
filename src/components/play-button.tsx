@@ -1,22 +1,18 @@
 import { usePopover } from "#hooks/use-popover";
-import {
-  itunesPlayback,
-  nowPlayingAtom,
-  previewPlayback,
-  stoppedPlayback,
-  type PlaybackTrack,
-} from "#lib/playback";
+import { nowPlayingAtom, playOnHoverAtom, type PlaybackTrack } from "#lib/playback";
 import { cn } from "cn";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useRef, useState, type ComponentProps, type HTMLAttributes, type ReactNode } from "react";
 import { Skeleton } from "skullet/react";
-import type { ComponentProps, ReactNode } from "react";
 
 export function PlayButton({
   track,
+  color,
+  className = "btn",
   ...props
-}: ComponentProps<"button"> & { track: PlaybackTrack }) {
+}: ComponentProps<"button"> & { track: PlaybackTrack; color?: string }) {
   const [nowPlaying, setNowPlaying] = useAtom(nowPlayingAtom);
-  const isThisTrackPlaying = Boolean(track.url) && nowPlaying.url === track.url;
+  const isThisTrackPlaying = Boolean(track.url) && nowPlaying?.url === track.url;
 
   return (
     <button
@@ -24,47 +20,100 @@ export function PlayButton({
       aria-label={isThisTrackPlaying ? "Stop playback" : "Play track"}
       aria-pressed={isThisTrackPlaying}
       {...props}
+      className={cn(className, "size-9 shrink-0 justify-center")}
+      style={{ backgroundColor: color }}
       disabled={!track.url}
-      onClick={() => setNowPlaying(isThisTrackPlaying ? stoppedPlayback : track)}
+      onClick={() => setNowPlaying(isThisTrackPlaying ? undefined : track)}
     >
       {isThisTrackPlaying ? "■" : "▶"}
     </button>
   );
 }
 
-export function TrackPlayButton({ track }: { track: Parameters<typeof itunesPlayback>[0] }) {
+// a play button that names its track in a popover
+export function NamedPlayButton({
+  track,
+  note,
+  ...props
+}: ComponentProps<typeof PlayButton> & { note?: string }) {
+  const popoverProps = usePopover(<TrackCard track={track} note={note} />);
+
+  return <PlayButton {...props} {...popoverProps} track={track} />;
+}
+
+export function TrackCard({ track, note }: { track: PlaybackTrack; note?: string }) {
   return (
-    <NamedPlayButton
-      track={itunesPlayback(track)}
-      note={track.previewUrl ? "30 second preview" : undefined}
-      className="btn-inverse"
-    />
+    <div className="flex flex-col">
+      {note && <span className="text-sm opacity-60">{note}</span>}
+      <span className="font-bold">{track.title}</span>
+      {track.artist && <span>{track.artist}</span>}
+    </div>
   );
 }
 
-export function PreviewPlayButton({
-  preview,
-  color,
-}: {
-  preview: { title: string; url: string };
-  color?: string;
-}) {
-  return (
-    <PlayButton
-      className="btn size-9 shrink-0 justify-center"
-      style={{ backgroundColor: color }}
-      track={previewPlayback(preview)}
-    />
+const sampleTrack: PlaybackTrack = { title: "A track title", artist: "An artist" };
+
+// with play on hover on, hovering plays the track from `load`; `popover` shows while hovered,
+// or, when it's a function of the track, only while that track loads and plays
+export function useHoverPlayAction(
+  load: () => PlaybackTrack | undefined | Promise<PlaybackTrack | undefined>,
+  popover?: ReactNode | ((playing: PlaybackTrack) => ReactNode),
+): HTMLAttributes<HTMLElement> {
+  const playOnHover = useAtomValue(playOnHoverAtom);
+  const setNowPlaying = useSetAtom(nowPlayingAtom);
+  const [playing, setPlaying] = useState<PlaybackTrack>();
+  const [loading, setLoading] = useState(false);
+
+  const card =
+    typeof popover === "function"
+      ? playing || loading
+        ? popover(playing ?? sampleTrack)
+        : undefined
+      : popover;
+  const popoverProps = usePopover(
+    (playing || loading) && card != null ? (
+      <PlayingPrefix loading={loading}>{card}</PlayingPrefix>
+    ) : (
+      card
+    ),
   );
+
+  // the hover in progress, so a track that loads after the pointer left never starts
+  const hover = useRef<{ url?: string }>(undefined);
+
+  return {
+    ...popoverProps,
+    onMouseEnter(event) {
+      popoverProps.onMouseEnter(event);
+      if (!playOnHover) return;
+
+      const current: { url?: string } = (hover.current = {});
+      const track = load();
+      if (track instanceof Promise) setLoading(true);
+
+      void Promise.resolve(track).then((track) => {
+        if (hover.current !== current) return;
+        setLoading(false);
+        if (!track?.url) return;
+
+        current.url = track.url;
+        setNowPlaying(track);
+        setPlaying(track);
+      });
+    },
+    onMouseLeave() {
+      popoverProps.onMouseLeave();
+      const url = hover.current?.url;
+      hover.current = undefined;
+      setPlaying(undefined);
+      setLoading(false);
+
+      if (url) setNowPlaying((playing) => (playing?.url === url ? undefined : playing));
+    },
+  };
 }
 
-export function PlayingPrefix({
-  loading = false,
-  children,
-}: {
-  loading?: boolean;
-  children?: ReactNode;
-}) {
+function PlayingPrefix({ loading, children }: { loading: boolean; children: ReactNode }) {
   return (
     <Skeleton loading={loading} label="Loading track">
       <div className="flex items-start gap-2">
@@ -86,38 +135,5 @@ export function PlayingPrefix({
         {children}
       </div>
     </Skeleton>
-  );
-}
-
-export function TrackCard({ track, note }: { track: PlaybackTrack; note?: string }) {
-  return (
-    <div className="flex flex-col">
-      {note && <span className="text-sm opacity-60">{note}</span>}
-      <span className="font-bold">{track.title}</span>
-      {track.artist && <span>{track.artist}</span>}
-    </div>
-  );
-}
-
-export function NamedPlayButton({
-  track,
-  note,
-  color,
-  className = "btn",
-}: {
-  track: PlaybackTrack;
-  note?: string;
-  color?: string;
-  className?: string;
-}) {
-  const triggerProps = usePopover(<TrackCard track={track} note={note} />);
-
-  return (
-    <PlayButton
-      className={cn(className, "size-9 shrink-0 justify-center")}
-      style={{ backgroundColor: color }}
-      track={track}
-      {...triggerProps}
-    />
   );
 }

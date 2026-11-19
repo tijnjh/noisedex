@@ -1,6 +1,6 @@
 import { Chip } from "#components/chip";
 import { Detail } from "#components/detail";
-import { ContentPane, Layout, type TitlePlayback } from "#components/layout";
+import { ContentPane, Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
 import {
   encodeItunesId,
@@ -12,7 +12,7 @@ import { siteName } from "#lib/constants";
 import { absoluteUrl, musicHead } from "#lib/head";
 import { trackLinks } from "#lib/platform-links";
 import { itunesPlayback } from "#lib/playback";
-import { formatDate, formatMillis, isoDuration } from "#lib/utils";
+import { formatMillis, isoDuration } from "#lib/utils";
 import type { ResultMusicTrack } from "itunes-store-api";
 
 type TrackData = ReturnType<typeof loadTrack>;
@@ -21,7 +21,7 @@ export function loadTrack({ track }: { track: ResultMusicTrack }) {
   return {
     track,
     playback: track.previewUrl
-      ? ({ track: itunesPlayback(track), note: "30 second preview" } satisfies TitlePlayback)
+      ? { track: itunesPlayback(track), note: "30 second preview" }
       : undefined,
     accentColor: getArtworkColor({ data: track.artworkUrl100 }).catch(() => undefined),
   };
@@ -59,10 +59,8 @@ export function TrackPage({ track, playback, accentColor }: TrackData) {
 
   return (
     <Layout
-      header={{
-        title: track.trackName,
-        titleVt: isSingle ? `album-${track.collectionId}` : undefined,
-      }}
+      title={track.trackName}
+      titleVt={isSingle ? `album-${track.collectionId}` : undefined}
       accentColor={accentColor}
       playback={playback}
       artwork={{
@@ -87,7 +85,7 @@ export function TrackPage({ track, playback, accentColor }: TrackData) {
               <Chip
                 to="/$itunesId"
                 params={{ itunesId: encodeItunesId(track.collectionId) }}
-                leading={track.artworkUrl60}
+                artwork={track.artworkUrl60}
                 vt={{
                   title: `album-${track.collectionId}`,
                   img: `album-artwork-${track.collectionId}`,
@@ -101,7 +99,7 @@ export function TrackPage({ track, playback, accentColor }: TrackData) {
           <h2>track details</h2>
           <dl>
             <Detail label="released">
-              {formatDate(new Date(track.releaseDate), { dateStyle: "long" })}
+              {new Date(track.releaseDate).toLocaleDateString("en", { dateStyle: "long" })}
             </Detail>
             {Number.isFinite(track.trackTimeMillis) && (
               <Detail label="duration">{formatMillis(track.trackTimeMillis)}</Detail>
