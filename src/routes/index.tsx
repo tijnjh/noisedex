@@ -1,6 +1,6 @@
 import { GenreChip } from "#components/genre-chip";
 import { Layout } from "#components/layout";
-import { Spinner } from "#components/spinner";
+import { LoadingPage } from "#components/status-page";
 import { VirtualGrid } from "#components/virtual-grid";
 import { useGenreFilters } from "#hooks/use-genre-filters";
 import { $everynoise } from "#lib/api/index";
@@ -17,13 +17,7 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({ links: [{ rel: "canonical", href: siteUrl }] }),
   component: RouteComponent,
-  pendingComponent: () => (
-    <Layout header={{ collapsed: false }}>
-      <div role="status" aria-label="Loading genres" className="grid h-full place-items-center">
-        <Spinner />
-      </div>
-    </Layout>
-  ),
+  pendingComponent: () => <LoadingPage label="Loading genres" />,
 });
 
 function RouteComponent() {

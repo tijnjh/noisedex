@@ -1,4 +1,5 @@
 import { Layout } from "#components/layout";
+import { Spinner } from "#components/spinner";
 import { getErrorMessage } from "#lib/utils";
 import { Link, useRouter, type ErrorComponentProps } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
@@ -37,6 +38,17 @@ export function StatusPage({
             </Link>
           </div>
         </div>
+      </div>
+    </Layout>
+  );
+}
+
+// server rendered stand-in while a route loader runs in the browser
+export function LoadingPage({ label = "Loading" }: { label?: string }) {
+  return (
+    <Layout header={{ collapsed: false }}>
+      <div role="status" aria-label={label} className="grid h-full place-items-center">
+        <Spinner />
       </div>
     </Layout>
   );

@@ -1,3 +1,4 @@
+import { LoadingPage } from "#components/status-page";
 import { $itunes } from "#lib/api/index";
 import {
   encodeItunesId,
@@ -13,6 +14,8 @@ import * as v from "valibot";
 
 // artists, albums and tracks share one id space, so they share this route
 export const Route = createFileRoute("/$itunesId/")({
+  ssr: () => $itunes.ssrForCrawlers(),
+  pendingComponent: () => <LoadingPage label="Loading music" />,
   validateSearch: v.object({
     // filters the discography on artist pages
     filter: v.optional(v.fallback(v.picklist(releaseFilters), "All")),

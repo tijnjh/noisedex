@@ -1,3 +1,4 @@
+import { LoadingPage } from "#components/status-page";
 import { Chip } from "#components/chip";
 import { Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
@@ -11,6 +12,8 @@ import type { ReactNode } from "react";
 import * as v from "valibot";
 
 export const Route = createFileRoute("/search")({
+  ssr: () => $itunes.ssrForCrawlers(),
+  pendingComponent: () => <LoadingPage label="Loading results" />,
   head: () => ({
     meta: [
       { title: `Search artists, albums, and tracks • ${siteName}` },
@@ -42,10 +45,7 @@ export const Route = createFileRoute("/search")({
       }
     }
 
-    const [foundArtists, music] = await Promise.all([
-      artists,
-      $itunes.searchMusic(query),
-    ]);
+    const [foundArtists, music] = await Promise.all([artists, $itunes.searchMusic(query)]);
 
     return { artists: foundArtists, ...music };
   },

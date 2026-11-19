@@ -211,6 +211,9 @@ importers:
       culori:
         specifier: 4.0.2
         version: 4.0.2
+      isbot:
+        specifier: 5.2.3
+        version: 5.2.3
       itunes-store-api:
         specifier: ^2.1.0
         version: 2.1.0(patch_hash=cf53f5161efff7187ef8aec88bcfcbd059ff16464fdafb4ce2a926ca26d363e4)

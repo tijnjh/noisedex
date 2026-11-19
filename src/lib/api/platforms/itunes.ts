@@ -1,50 +1,36 @@
 import * as catalog from "./itunes-catalog";
 import * as server from "./itunes.server";
-import { storeCountryFromLanguages, type StoreCountry } from "#lib/store-country";
-import { createServerFn } from "@tanstack/react-start";
+import { storeCountryFromLanguages } from "#lib/store-country";
+import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
-import * as v from "valibot";
+import { isbot } from "isbot";
 
-const requestCountry = () => storeCountryFromLanguages(getRequestHeader("accept-language"));
+// crawlers get server rendered (and cached) pages, people fetch from itunes in their own browser
+export const ssrForCrawlers = createIsomorphicFn()
+  .server(() => isbot(getRequestHeader("user-agent")))
+  .client(() => false);
 
-const serverGetMusic = createServerFn()
-  .validator(v.number())
-  .handler(({ data }) => server.getMusic(data, requestCountry()));
+const source = createIsomorphicFn()
+  .server(() => ({
+    api: server,
+    country: storeCountryFromLanguages(getRequestHeader("accept-language")),
+  }))
+  .client(() => ({
+    api: catalog,
+    country: storeCountryFromLanguages(navigator.languages.join(",")),
+  }));
 
-const serverSearchArtists = createServerFn()
-  .validator(v.string())
-  .handler(({ data }) => server.searchArtists(data, requestCountry()));
+export const getMusic = (id: number) => {
+  const { api, country } = source();
+  return api.getMusic(id, country);
+};
 
-const serverSearchMusic = createServerFn()
-  .validator(v.string())
-  .handler(({ data }) => server.searchMusic(data, requestCountry()));
+export const searchArtists = (name: string) => {
+  const { api, country } = source();
+  return api.searchArtists(name, country);
+};
 
-async function withBrowserFallback<T>(
-  fromServer: () => Promise<T>,
-  fromBrowser: (country: StoreCountry) => Promise<T>,
-) {
-  try {
-    return await fromServer();
-  } catch (error) {
-    if (typeof window === "undefined") throw error;
-    return fromBrowser(storeCountryFromLanguages(navigator.languages.join(",")));
-  }
-}
-
-export const getMusic = (id: number) =>
-  withBrowserFallback(
-    () => serverGetMusic({ data: id }),
-    (country) => catalog.getMusic(id, country),
-  );
-
-export const searchArtists = (name: string) =>
-  withBrowserFallback(
-    () => serverSearchArtists({ data: name }),
-    (country) => catalog.searchArtists(name, country),
-  );
-
-export const searchMusic = (term: string) =>
-  withBrowserFallback(
-    () => serverSearchMusic({ data: term }),
-    (country) => catalog.searchMusic(term, country),
-  );
+export const searchMusic = (term: string) => {
+  const { api, country } = source();
+  return api.searchMusic(term, country);
+};
