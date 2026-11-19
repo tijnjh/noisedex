@@ -6,6 +6,7 @@ import { cn } from "cn";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { useState, type ReactNode } from "react";
+import { LogoGlyph } from "./logo-glyph";
 import { Switch } from "./switch";
 import { useAtom } from "jotai";
 import { playOnHoverAtom } from "#lib/atoms";
@@ -50,13 +51,17 @@ function Logo({ collapsed = false }: { collapsed?: boolean }) {
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
-        <span {...viewTransition("header-title-n")}>n</span>
+        <span {...viewTransition("header-title-n")}>
+          <LogoGlyph part="n" />
+        </span>
         <CollapsibleLetters show={expanded} vt="header-title-oise">
-          oise
+          <LogoGlyph part="oise" />
         </CollapsibleLetters>
-        <span {...viewTransition("header-title-d")}>d</span>
+        <span {...viewTransition("header-title-d")}>
+          <LogoGlyph part="d" />
+        </span>
         <CollapsibleLetters show={expanded} vt="header-title-ex">
-          ex
+          <LogoGlyph part="ex" />
         </CollapsibleLetters>
       </div>
 
