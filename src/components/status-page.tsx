@@ -55,14 +55,18 @@ const retriedPages = new Set<string>();
 
 export function ErrorPage({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
+  const href = router.state.location.href;
+  const retried = retriedPages.has(href);
 
   useEffect(() => {
-    const href = router.state.location.href;
-    if (retriedPages.has(href)) return;
+    if (retried) return;
     retriedPages.add(href);
     reset();
     void router.invalidate();
-  }, [reset, router]);
+  }, [retried, href, reset, router]);
+
+  // render nothing until the retry has failed too, so the error doesn't flash first
+  if (!retried) return null;
 
   return (
     <StatusPage
