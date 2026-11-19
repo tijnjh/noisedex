@@ -22,10 +22,9 @@ export function LogoGlyph({ part }: { part: keyof typeof glyphs }) {
   return (
     <svg
       aria-hidden="true"
-      className="block"
+      className="block h-lh"
       viewBox={`0 0 ${width} 1200`}
       width={`${width / 1000}em`}
-      height="1.2em"
       fill="currentColor"
     >
       <path d={d} />
