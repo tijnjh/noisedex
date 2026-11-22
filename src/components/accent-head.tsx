@@ -11,8 +11,7 @@ function coloredLogo(color?: string) {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-// favicon and browser theme-color, both tinted with the current page's accent color
-export function AccentHead() {
+export function usePageAccent() {
   const matches = useMatches();
   let artwork: string | undefined;
   let color: string | Promise<string | undefined> | undefined;
@@ -28,18 +27,26 @@ export function AccentHead() {
     }
   }
 
-  const resolvedColor = useResolved(color).value;
+  return {
+    artwork,
+    color: useResolved(color).value,
+  };
+}
+
+// favicon and browser theme-color, both tinted with the current page's accent color
+export function AccentHead() {
+  const { artwork, color } = usePageAccent();
 
   return (
     <>
       <link
         rel="icon"
-        href={artwork ?? coloredLogo(resolvedColor)}
+        href={artwork ?? coloredLogo(color)}
         type={artwork ? undefined : "image/svg+xml"}
       />
 
-      {resolvedColor ? (
-        <meta name="theme-color" content={resolvedColor} />
+      {color ? (
+        <meta name="theme-color" content={color} />
       ) : (
         <>
           <meta name="theme-color" media="(prefers-color-scheme: light)" content="#e4e4e7" />

@@ -1,4 +1,4 @@
-import { AccentHead } from "#components/accent-head";
+import { AccentHead, usePageAccent } from "#components/accent-head";
 import { MiniPlayer } from "#components/mini-player";
 import { NavigationSpinner } from "#components/navigation-spinner";
 import { siteName } from "#lib/constants";
@@ -33,6 +33,8 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const { color } = usePageAccent();
+
   return (
     <Provider>
       <html lang="en" className="antialiased pointer-coarse:overscroll-none">
@@ -47,6 +49,14 @@ function RootComponent() {
             className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto]"
           >
             <NavigationSpinner />
+            {color && (
+              <div
+                key={color}
+                aria-hidden="true"
+                className="pointer-events-none fixed inset-x-0 -top-1.75 z-100000000 h-3"
+                style={{ backgroundColor: color }}
+              />
+            )}
 
             <LazyMotion features={domAnimation} strict>
               <SkulletProvider mode="system">
