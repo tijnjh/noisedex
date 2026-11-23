@@ -8,6 +8,8 @@ export function MiniPlayer() {
   const playOnHover = useAtomValue(playOnHoverAtom);
 
   useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+
     navigator.mediaSession.metadata = new MediaMetadata({
       title: nowPlaying?.title,
       artist: nowPlaying?.artist,
