@@ -188,8 +188,14 @@ button,
   initial-value: transparent;
 }
 
+/* starts as the exact theme-color (so it continues the browser bar / mobile accent strip), holds
+   it, then eases down to 40% by --top-gradient-hold, before the first line of text: black or
+   white text on 40% of any accent stays above 4.5:1. After that it fades out by half the viewport */
 [data-top-gradient] {
   --top-gradient-color: var(--theme-color, #e4e4e7);
+  --top-gradient-hold: 1.25rem;
+  --c: var(--top-gradient-color);
+  --h: var(--top-gradient-hold);
   position: fixed;
   z-index: -1;
   inset-inline: 0;
@@ -198,11 +204,30 @@ button,
   pointer-events: none;
   background: linear-gradient(
     to bottom,
-    var(--top-gradient-color),
-    color-mix(in srgb, var(--top-gradient-color) 40%, transparent) 1.25rem,
+    var(--c),
+    color-mix(in srgb, var(--c) 95%, transparent) calc(var(--h) * 0.3),
+    color-mix(in srgb, var(--c) 80%, transparent) calc(var(--h) * 0.55),
+    color-mix(in srgb, var(--c) 58%, transparent) calc(var(--h) * 0.8),
+    color-mix(in srgb, var(--c) 40%, transparent) var(--h),
+    color-mix(in srgb, var(--c) 22%, transparent) calc(var(--h) + (100% - var(--h)) * 0.3),
+    color-mix(in srgb, var(--c) 8%, transparent) calc(var(--h) + (100% - var(--h)) * 0.65),
     transparent
   );
   transition: --top-gradient-color 350ms ease;
+}
+
+/* small screens put the header at the bottom, so the first text is ~5rem down: hold longer */
+@media (width < 48rem) {
+  [data-top-gradient] {
+    --top-gradient-hold: 4.5rem;
+  }
+}
+
+/* the accent strip (see __root.tsx) covers the top ~6px on touch phones, start below it */
+@media (width < 48rem) and (pointer: coarse) {
+  [data-top-gradient] {
+    top: 6px;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
