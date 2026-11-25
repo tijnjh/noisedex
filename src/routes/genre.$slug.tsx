@@ -1,7 +1,7 @@
 import { Chip } from "#components/chip";
 import { GenreChip } from "#components/genre-chip";
 import { ContentPane, Layout } from "#components/layout";
-import { PlayButton, TrackCard, useHoverPlayAction } from "#components/play-button";
+import { TrackCard, useHoverPlayAction } from "#components/play-button";
 import { StatusPage } from "#components/status-page";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import * as $everynoise from "#lib/api/platforms/everynoise";
@@ -116,7 +116,6 @@ function ArtistChip({ artist }: { artist: Artist }) {
       // everynoise only knows spotify ids, so jump to the best itunes match for the name
       to="/search"
       search={{ q: artist.artistName, lucky: true }}
-      trailing={<PlayButton track={track} color={artist.style.color} />}
     >
       {artist.artistName}
     </Chip>

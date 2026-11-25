@@ -3,7 +3,7 @@ import { AsyncContent } from "#components/async-content";
 import { Chip } from "#components/chip";
 import { ContentPane, Layout } from "#components/layout";
 import { PlatformLinks } from "#components/platform-links";
-import { NamedPlayButton, useHoverPlayAction } from "#components/play-button";
+import { TrackCard, useHoverPlayAction } from "#components/play-button";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import * as $fantano from "#lib/api/platforms/fantano";
 import { encodeItunesId, getBigItunesArtwork } from "#lib/api/platforms/itunes-data";
@@ -147,23 +147,18 @@ function FantanoReview({ review }: { review: AlbumData["fantanoReview"] }) {
 
 function Track({ track }: { track: ResultMusicTrack }) {
   const playback = itunesPlayback(track);
-  const hoverProps = useHoverPlayAction(() => playback);
+  const hoverProps = useHoverPlayAction(
+    () => playback,
+    (playing) => (
+      <TrackCard track={playing} note={track.previewUrl ? "30 second preview" : undefined} />
+    ),
+  );
 
   return (
     <div {...hoverProps} className="col-span-full grid w-full grid-cols-subgrid">
       <div className="flex items-center justify-end">{track.trackNumber}</div>
 
-      <Chip
-        to="/$itunesId"
-        params={{ itunesId: encodeItunesId(track.trackId) }}
-        trailing={
-          <NamedPlayButton
-            track={playback}
-            note={track.previewUrl ? "30 second preview" : undefined}
-            className="btn-inverse"
-          />
-        }
-      >
+      <Chip to="/$itunesId" params={{ itunesId: encodeItunesId(track.trackId) }}>
         {track.trackName}
       </Chip>
     </div>
