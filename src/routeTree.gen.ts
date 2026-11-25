@@ -15,6 +15,8 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ItunesIdIndexRouteImport } from './routes/$itunesId/index'
 import { Route as GenreSlugRouteImport } from './routes/genre.$slug'
+import { Route as SitemapsArtistsChar123pageChar125DotxmlRouteImport } from './routes/sitemaps/artists-{$page}[.]xml'
+import { Route as SitemapsPagesDotxmlRouteImport } from './routes/sitemaps/pages[.]xml'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +48,17 @@ const GenreSlugRoute = GenreSlugRouteImport.update({
   path: '/genre/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapsArtistsChar123pageChar125DotxmlRoute =
+  SitemapsArtistsChar123pageChar125DotxmlRouteImport.update({
+    id: '/sitemaps/artists-{$page}.xml',
+    path: '/sitemaps/artists-{$page}.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SitemapsPagesDotxmlRoute = SitemapsPagesDotxmlRouteImport.update({
+  id: '/sitemaps/pages.xml',
+  path: '/sitemaps/pages.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,6 +66,8 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/genre/$slug': typeof GenreSlugRoute
+  '/sitemaps/artists-{$page}.xml': typeof SitemapsArtistsChar123pageChar125DotxmlRoute
+  '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/$itunesId/': typeof ItunesIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +76,8 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/genre/$slug': typeof GenreSlugRoute
+  '/sitemaps/artists-{$page}.xml': typeof SitemapsArtistsChar123pageChar125DotxmlRoute
+  '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/$itunesId': typeof ItunesIdIndexRoute
 }
 export interface FileRoutesById {
@@ -70,6 +87,8 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/genre/$slug': typeof GenreSlugRoute
+  '/sitemaps/artists-{$page}.xml': typeof SitemapsArtistsChar123pageChar125DotxmlRoute
+  '/sitemaps/pages.xml': typeof SitemapsPagesDotxmlRoute
   '/$itunesId/': typeof ItunesIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +99,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/genre/$slug'
+    | '/sitemaps/artists-{$page}.xml'
+    | '/sitemaps/pages.xml'
     | '/$itunesId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +109,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/genre/$slug'
+    | '/sitemaps/artists-{$page}.xml'
+    | '/sitemaps/pages.xml'
     | '/$itunesId'
   id:
     | '__root__'
@@ -96,6 +119,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/genre/$slug'
+    | '/sitemaps/artists-{$page}.xml'
+    | '/sitemaps/pages.xml'
     | '/$itunesId/'
   fileRoutesById: FileRoutesById
 }
@@ -105,6 +130,8 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   GenreSlugRoute: typeof GenreSlugRoute
+  SitemapsArtistsChar123pageChar125DotxmlRoute: typeof SitemapsArtistsChar123pageChar125DotxmlRoute
+  SitemapsPagesDotxmlRoute: typeof SitemapsPagesDotxmlRoute
   ItunesIdIndexRoute: typeof ItunesIdIndexRoute
 }
 
@@ -152,6 +179,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GenreSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemaps/artists-{$page}.xml': {
+      id: '/sitemaps/artists-{$page}.xml'
+      path: '/sitemaps/artists-{$page}.xml'
+      fullPath: '/sitemaps/artists-{$page}.xml'
+      preLoaderRoute: typeof SitemapsArtistsChar123pageChar125DotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemaps/pages.xml': {
+      id: '/sitemaps/pages.xml'
+      path: '/sitemaps/pages.xml'
+      fullPath: '/sitemaps/pages.xml'
+      preLoaderRoute: typeof SitemapsPagesDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -161,6 +202,9 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   GenreSlugRoute: GenreSlugRoute,
+  SitemapsArtistsChar123pageChar125DotxmlRoute:
+    SitemapsArtistsChar123pageChar125DotxmlRoute,
+  SitemapsPagesDotxmlRoute: SitemapsPagesDotxmlRoute,
   ItunesIdIndexRoute: ItunesIdIndexRoute,
 }
 export const routeTree = rootRouteImport

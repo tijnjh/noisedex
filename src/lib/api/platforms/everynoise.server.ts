@@ -23,6 +23,22 @@ async function fetchIfExists<T>(path: string) {
 
 export const getAllGenres = cached(() => everynoiseFetch<Genre[]>("/genres.json"), day);
 
+// mappings update hourly so read from main, jsdelivr refuses unpinned urls since the repo is over 50MB
+const artistMappingsFetch = up(fetch, () => ({
+  timeout: 20_000,
+  baseUrl: "https://raw.githubusercontent.com/tijnjh/everynoise-json/main/data/artist-mappings",
+}));
+
+export const getMappedArtistIds = cached(async () => {
+  const ids = await artistMappingsFetch<unknown>("/all.json");
+
+  if (!Array.isArray(ids)) {
+    throw new Error("artist-mappings/all.json is not a list");
+  }
+
+  return ids.filter((id): id is number => Number.isSafeInteger(id) && id > 0);
+}, day);
+
 export const getGenreBySlug = cached(
   (genreSlug: string) => fetchIfExists<GenreMeta>(`/genres/${genreSlug}.json`),
   day,
