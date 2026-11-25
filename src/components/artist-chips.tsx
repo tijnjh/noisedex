@@ -42,11 +42,13 @@ export function ArtistChips({
 
   return (
     <AsyncContent promise={artists} sample={sample} label="Loading artists">
-      {(artists) =>
-        artists.map((artist, i) => (
-          <ArtistChip key={artist.name} {...artist} vt={i === 0 ? vt : undefined} />
-        ))
-      }
+      {(artists) => (
+        <div className="flex flex-wrap gap-3">
+          {artists.map((artist, i) => (
+            <ArtistChip key={artist.name} {...artist} vt={i === 0 ? vt : undefined} />
+          ))}
+        </div>
+      )}
     </AsyncContent>
   );
 }
