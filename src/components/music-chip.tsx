@@ -32,12 +32,13 @@ export function MusicChip({
               img: `album-artwork-${music.collectionId}`,
             }
       }
+      subtitle={showArtist ? music.artistName : undefined}
       to="/$itunesId"
       params={{
         itunesId: encodeItunesId(track?.trackId ?? music.collectionId),
       }}
     >
-      {showArtist ? `${title} — ${music.artistName}` : title}
+      {title}
     </Chip>
   );
 }

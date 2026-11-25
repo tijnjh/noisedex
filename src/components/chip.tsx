@@ -4,6 +4,7 @@ import type { HTMLAttributes, ReactNode } from "react";
 
 export function Chip({
   children,
+  subtitle,
   artwork,
   trailing,
   className,
@@ -12,6 +13,7 @@ export function Chip({
   ...props
 }: LinkProps & {
   children?: string;
+  subtitle?: string;
   artwork?: string;
   trailing?: ReactNode;
   className?: string;
@@ -20,11 +22,14 @@ export function Chip({
   containerProps?: HTMLAttributes<HTMLElement>;
 }) {
   return (
-    <div {...containerProps} className="flex h-control items-center truncate">
+    <div
+      {...containerProps}
+      className={cn("flex items-center truncate", subtitle ? "h-12" : "h-control")}
+    >
       {artwork && (
         <img
           style={{ viewTransitionName: vt?.img }}
-          className="aspect-square size-control"
+          className={cn("aspect-square", subtitle ? "size-12" : "size-control")}
           src={artwork}
           loading="lazy"
           decoding="async"
@@ -32,10 +37,23 @@ export function Chip({
         />
       )}
 
-      <Link {...props} draggable={false} className={cn("btn min-w-0 grow px-0", className)}>
-        <span style={{ viewTransitionName: vt?.title }} className="truncate px-3">
-          {children}
-        </span>
+      <Link
+        {...props}
+        draggable={false}
+        className={cn("btn min-w-0 grow px-0", subtitle && "h-full", className)}
+      >
+        {subtitle ? (
+          <span className="flex min-w-0 flex-col px-3 leading-tight">
+            <span style={{ viewTransitionName: vt?.title }} className="truncate">
+              {children}
+            </span>
+            <span className="truncate text-sm opacity-60">{subtitle}</span>
+          </span>
+        ) : (
+          <span style={{ viewTransitionName: vt?.title }} className="truncate px-3">
+            {children}
+          </span>
+        )}
       </Link>
 
       {trailing}
