@@ -1,8 +1,10 @@
 import { AsyncContent } from "#components/async-content";
+import { ArtistChip } from "#components/artist-chips";
 import { GenreList } from "#components/genre-list";
 import { ContentPane, Layout } from "#components/layout";
 import { MusicChip } from "#components/music-chip";
 import { PlatformLinks } from "#components/platform-links";
+import { Section } from "#components/section";
 import { WikipediaDescription } from "#components/wikipedia-description";
 import * as $everynoise from "#lib/api/platforms/everynoise";
 import {
@@ -11,13 +13,14 @@ import {
   releaseFilters,
 } from "#lib/api/platforms/itunes-data";
 import * as $wikipedia from "#lib/api/platforms/wikipedia";
+import { findCollaborators, type Collaborator } from "#lib/collaborators";
 import { siteName } from "#lib/constants";
 import { pageHead } from "#lib/head";
 import { artistLinks } from "#lib/platform-links";
 import { previewPlayback } from "#lib/playback";
 import { buildReleaseTimeline } from "#lib/release-timeline";
 import { getRouteApi } from "@tanstack/react-router";
-import type { ResultAlbum, ResultMusicArtist } from "itunes-store-api";
+import type { ResultAlbum, ResultMusicArtist, ResultMusicTrack } from "itunes-store-api";
 import { Fragment } from "react";
 
 const musicRoute = getRouteApi("/$itunesId/");
@@ -30,9 +33,11 @@ type ArtistData = ReturnType<typeof loadArtist>;
 export function loadArtist({
   artist,
   albums,
+  tracks,
 }: {
   artist: ResultMusicArtist;
   albums: ResultAlbum[];
+  tracks: ResultMusicTrack[];
 }) {
   const everynoiseArtist = $everynoise
     .getArtistByName({ data: artist.artistName })
@@ -41,6 +46,7 @@ export function loadArtist({
   return {
     artist,
     albums,
+    collaborators: findCollaborators(artist, [...albums, ...tracks]),
     wikipedia: $wikipedia.enrichWithGenres($wikipedia.getArtistByName({ data: artist.artistName })),
     everynoiseArtist,
     accentColor: everynoiseArtist.then((artist) => artist?.style.color),
@@ -62,6 +68,7 @@ export function artistHead({ artist }: ArtistData) {
 export function ArtistPage({
   artist,
   albums,
+  collaborators,
   wikipedia,
   everynoiseArtist,
   accentColor,
@@ -93,13 +100,39 @@ export function ArtistPage({
             <GenreList
               title="itunes genre"
               names={[artist.primaryGenreName]}
-              className="lg:mb-32"
+              className={collaborators.length ? undefined : "lg:mb-32"}
             />
           )}
+
+          <Collaborators collaborators={collaborators} className="lg:mb-32" />
         </>
       }
       trailing={<Discography releases={albums} />}
     />
+  );
+}
+
+const shownCollaborators = 24;
+
+function Collaborators({
+  collaborators,
+  className,
+}: {
+  collaborators: Collaborator[];
+  className?: string;
+}) {
+  if (!collaborators.length) return;
+
+  const shown = collaborators.slice(0, shownCollaborators);
+
+  return (
+    <Section title="collabed with" className={className}>
+      <div className="flex flex-wrap gap-grid-gap">
+        {shown.map(({ name, artistId }) => (
+          <ArtistChip key={name} name={name} artistId={artistId} />
+        ))}
+      </div>
+    </Section>
   );
 }
 

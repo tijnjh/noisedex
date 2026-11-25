@@ -24,16 +24,26 @@ export async function getMusic(id: number, country: StoreCountry) {
   const result = results[0] as ResultMusicArtist | ResultAlbum | ResultMusicTrack | undefined;
 
   if (result?.wrapperType === "artist") {
-    const { results } = await lookup("id", id, {
+    // includes songs the artist is only featured on
+    const tracks = results.filter(
+      (item): item is ResultMusicTrack => item.wrapperType === "track" && item.kind === "song",
+    );
+
+    const { results: albumResults } = await lookup("id", id, {
       entity: "album",
       country,
       limit: catalogLimit,
     });
 
     // the artist itself comes first
-    const albums = results.filter((item) => item.wrapperType === "collection");
+    const albums = albumResults.filter((item) => item.wrapperType === "collection");
 
-    return { type: "artist" as const, artist: result, albums: mergeCatalogEditions(albums) };
+    return {
+      type: "artist" as const,
+      artist: result,
+      albums: mergeCatalogEditions(albums),
+      tracks,
+    };
   }
 
   if (result?.wrapperType === "collection" && result.collectionType === "Album") {
@@ -46,6 +56,13 @@ export async function getMusic(id: number, country: StoreCountry) {
   if (result?.wrapperType === "track" && result.kind === "song") {
     return { type: "track" as const, track: result };
   }
+}
+
+export async function getArtistName(id: number, country: StoreCountry) {
+  const { results } = await lookup("id", id, { country });
+  const [artist] = results as (ResultMusicArtist | undefined)[];
+
+  return artist?.wrapperType === "artist" ? artist.artistName : undefined;
 }
 
 // keeps one edition per release: explicit over clean, then the earliest

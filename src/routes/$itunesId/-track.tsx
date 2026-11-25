@@ -1,3 +1,4 @@
+import { ArtistChips } from "#components/artist-chips";
 import { Chip } from "#components/chip";
 import { Detail } from "#components/detail";
 import { ContentPane, Layout } from "#components/layout";
@@ -7,6 +8,7 @@ import {
   getBigItunesArtwork,
   isSingleRelease,
 } from "#lib/api/platforms/itunes-data";
+import { resolveArtistCredit } from "#lib/artist-credit";
 import { getArtworkColor } from "#lib/artwork-color";
 import { siteName } from "#lib/constants";
 import { absoluteUrl, musicHead } from "#lib/head";
@@ -20,6 +22,7 @@ type TrackData = ReturnType<typeof loadTrack>;
 export function loadTrack({ track }: { track: ResultMusicTrack }) {
   return {
     track,
+    artists: resolveArtistCredit(track.artistName, track.artistId),
     playback: track.previewUrl
       ? { track: itunesPlayback(track), note: "30 second preview" }
       : undefined,
@@ -53,7 +56,7 @@ export function trackHead({ track }: TrackData) {
   });
 }
 
-export function TrackPage({ track, playback, accentColor }: TrackData) {
+export function TrackPage({ track, artists, playback, accentColor }: TrackData) {
   // a single has no album page of its own, so its track page stands in for it
   const isSingle = isSingleRelease(track.collectionName, track.trackCount);
 
@@ -70,9 +73,7 @@ export function TrackPage({ track, playback, accentColor }: TrackData) {
       }}
       leading={
         <div className="flex min-w-0 flex-col gap-3 lg:mb-32">
-          <Chip to="/$itunesId" params={{ itunesId: encodeItunesId(track.artistId) }}>
-            {track.artistName}
-          </Chip>
+          <ArtistChips credit={track.artistName} artists={artists} />
 
           <PlatformLinks links={trackLinks(track)} />
         </div>

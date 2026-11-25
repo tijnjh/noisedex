@@ -1,3 +1,4 @@
+import { ArtistChips } from "#components/artist-chips";
 import { AsyncContent } from "#components/async-content";
 import { Chip } from "#components/chip";
 import { ContentPane, Layout } from "#components/layout";
@@ -7,6 +8,7 @@ import { WikipediaDescription } from "#components/wikipedia-description";
 import * as $fantano from "#lib/api/platforms/fantano";
 import { encodeItunesId, getBigItunesArtwork } from "#lib/api/platforms/itunes-data";
 import * as $wikipedia from "#lib/api/platforms/wikipedia";
+import { resolveArtistCredit } from "#lib/artist-credit";
 import { getArtworkColor } from "#lib/artwork-color";
 import { siteName } from "#lib/constants";
 import { musicHead } from "#lib/head";
@@ -23,6 +25,7 @@ export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: Resul
 
   return {
     album,
+    artists: resolveArtistCredit(album.artistName, album.artistId),
     tracks,
     wikipedia: $wikipedia.enrichWithGenres(
       $wikipedia.getAlbumByName({ data: { album: collectionName, artist: artistName } }),
@@ -59,7 +62,14 @@ export function albumHead({ album, tracks }: AlbumData) {
   });
 }
 
-export function AlbumPage({ album, tracks, wikipedia, accentColor, fantanoReview }: AlbumData) {
+export function AlbumPage({
+  album,
+  artists,
+  tracks,
+  wikipedia,
+  accentColor,
+  fantanoReview,
+}: AlbumData) {
   return (
     <Layout
       title={album.collectionName}
@@ -72,13 +82,11 @@ export function AlbumPage({ album, tracks, wikipedia, accentColor, fantanoReview
       }}
       leading={
         <div className="flex flex-col gap-3 lg:mb-32">
-          <Chip
-            vt={{ title: `artist-${album.artistId}` }}
-            to="/$itunesId"
-            params={{ itunesId: encodeItunesId(album.artistId) }}
-          >
-            {album.artistName}
-          </Chip>
+          <ArtistChips
+            credit={album.artistName}
+            artists={artists}
+            vt={`artist-${album.artistId}`}
+          />
           <p>
             released {new Date(album.releaseDate).toLocaleDateString("en", { dateStyle: "long" })}
           </p>

@@ -27,6 +27,11 @@ export const getMusic = (id: number) => {
   return api.getMusic(id, country);
 };
 
+export const getArtistName = (id: number) => {
+  const { api, country } = source();
+  return api.getArtistName(id, country);
+};
+
 export const searchArtists = (name: string) => {
   const { api, country } = source();
   return api.searchArtists(name, country);
