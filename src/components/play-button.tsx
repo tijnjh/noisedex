@@ -53,8 +53,7 @@ export function TrackCard({ track, note }: { track: PlaybackTrack; note?: string
 
 const sampleTrack: PlaybackTrack = { title: "A track title", artist: "An artist" };
 
-// with play on hover on, hovering plays the track from `load`; `popover` shows while hovered,
-// or, when it's a function of the track, only while that track loads and plays
+// plays on hover (if enabled) or touch hold; a `popover` function only shows while playing
 export function useHoverPlayAction(
   load: () => PlaybackTrack | undefined | Promise<PlaybackTrack | undefined>,
   popover?: ReactNode | ((playing: PlaybackTrack) => ReactNode),
@@ -81,34 +80,83 @@ export function useHoverPlayAction(
   // the hover in progress, so a track that loads after the pointer left never starts
   const hover = useRef<{ url?: string }>(undefined);
 
-  return {
-    ...popoverProps,
-    onMouseEnter(event) {
-      popoverProps.onMouseEnter(event);
-      if (!playOnHover) return;
+  // tracked so releasing a hold doesn't click through
+  const hold = useRef<{ timer?: ReturnType<typeof setTimeout>; held?: boolean }>(undefined);
 
-      const current: { url?: string } = (hover.current = {});
-      const track = load();
-      if (track instanceof Promise) setLoading(true);
+  const start = () => {
+    const current: { url?: string } = (hover.current = {});
+    const track = load();
 
-      void Promise.resolve(track).then((track) => {
-        if (hover.current !== current) return;
-        setLoading(false);
-        if (!track?.url) return;
+    if (track instanceof Promise) setLoading(true);
 
-        current.url = track.url;
-        setNowPlaying(track);
-        setPlaying(track);
-      });
-    },
-    onMouseLeave() {
-      popoverProps.onMouseLeave();
-      const url = hover.current?.url;
-      hover.current = undefined;
-      setPlaying(undefined);
+    void Promise.resolve(track).then((track) => {
+      if (hover.current !== current) return;
+
       setLoading(false);
 
-      if (url) setNowPlaying((playing) => (playing?.url === url ? undefined : playing));
+      if (!track?.url) return;
+
+      current.url = track.url;
+      setNowPlaying(track);
+      setPlaying(track);
+    });
+  };
+
+  const stop = () => {
+    const url = hover.current?.url;
+
+    hover.current = undefined;
+    setPlaying(undefined);
+    setLoading(false);
+
+    if (url) setNowPlaying((playing) => (playing?.url === url ? undefined : playing));
+  };
+
+  const release = () => {
+    clearTimeout(hold.current?.timer);
+
+    if (hold.current?.held) {
+      popoverProps.onMouseLeave();
+      stop();
+    } else hold.current = undefined;
+  };
+
+  return {
+    ...popoverProps,
+    onPointerEnter(event) {
+      if (event.pointerType === "mouse" && playOnHover) start();
+    },
+
+    onPointerLeave(event) {
+      if (event.pointerType === "mouse") stop();
+    },
+
+    onPointerDown(event) {
+      if (event.pointerType === "mouse") return;
+
+      const current: typeof hold.current = (hold.current = {});
+      const target = event.currentTarget;
+
+      current.timer = setTimeout(() => {
+        current.held = true;
+        popoverProps.onMouseEnter({ currentTarget: target }, true);
+        start();
+      }, 300);
+    },
+
+    onPointerUp: release,
+    onPointerCancel: release,
+
+    onContextMenu(event) {
+      if (hold.current?.held) event.preventDefault();
+    },
+
+    onClickCapture(event) {
+      if (!hold.current?.held) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      hold.current = undefined;
     },
   };
 }

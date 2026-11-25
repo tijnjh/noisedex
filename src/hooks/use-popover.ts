@@ -6,15 +6,20 @@ export function usePopover(content: ReactNode) {
   const hasContent = content != null;
   const anchor = `--popover-${useId().replace(/[^\w-]/g, "")}`;
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean | "touch">(false);
   const rootRef = useRef<Root>(undefined);
 
   useEffect(() => {
     if (!isOpen || !hasContent) return;
 
     const el = document.createElement("div");
-    el.className = "surface absolute pointer-coarse:hidden";
-    el.style.cssText = `position-anchor: ${anchor}; top: anchor(bottom); left: anchor(left); position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline`;
+    el.className =
+      isOpen === "touch" ? "surface absolute" : "surface absolute pointer-coarse:hidden";
+
+    // above on touch so the thumb doesn't cover it
+    const side = isOpen === "touch" ? "bottom: anchor(top)" : "top: anchor(bottom)";
+
+    el.style.cssText = `position-anchor: ${anchor}; ${side}; left: anchor(left); position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline`;
     document.body.append(el);
 
     const root = createRoot(el);
@@ -33,8 +38,8 @@ export function usePopover(content: ReactNode) {
     );
   }, [isOpen, hasContent, content]);
 
-  const open = (event: { currentTarget: HTMLElement }) => {
-    setIsOpen(true);
+  const open = (event: { currentTarget: HTMLElement }, touch?: boolean) => {
+    setIsOpen(touch ? "touch" : true);
     event.currentTarget.style.setProperty("anchor-name", anchor);
   };
 
