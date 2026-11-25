@@ -188,9 +188,6 @@ button,
   initial-value: transparent;
 }
 
-/* starts as the exact theme-color (so it continues the browser bar / mobile accent strip), holds
-   it, then eases down to 40% by --top-gradient-hold, before the first line of text: black or
-   white text on 40% of any accent stays above 4.5:1. After that it fades out by half the viewport */
 [data-top-gradient] {
   --top-gradient-color: var(--theme-color, #e4e4e7);
   --top-gradient-hold: 1.25rem;
@@ -200,19 +197,9 @@ button,
   z-index: -1;
   inset-inline: 0;
   top: 0;
-  height: 50dvh;
+  height: 75dvh;
   pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    var(--c),
-    color-mix(in srgb, var(--c) 95%, transparent) calc(var(--h) * 0.3),
-    color-mix(in srgb, var(--c) 80%, transparent) calc(var(--h) * 0.55),
-    color-mix(in srgb, var(--c) 58%, transparent) calc(var(--h) * 0.8),
-    color-mix(in srgb, var(--c) 40%, transparent) var(--h),
-    color-mix(in srgb, var(--c) 22%, transparent) calc(var(--h) + (100% - var(--h)) * 0.3),
-    color-mix(in srgb, var(--c) 8%, transparent) calc(var(--h) + (100% - var(--h)) * 0.65),
-    transparent
-  );
+  background: linear-gradient(var(--c), var(--c) var(--h), transparent);
   transition: --top-gradient-color 350ms ease;
 }
 
