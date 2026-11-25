@@ -53,7 +53,7 @@ function RootComponent() {
               <div
                 key={color}
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-x-0 -top-1.75 z-100000000 hidden max-md:pointer-coarse:block"
+                className="pointer-events-none fixed inset-x-0 -top-1.75 z-100000000 hidden h-3 max-md:pointer-coarse:block"
                 style={{ backgroundColor: color }}
               />
             )}
