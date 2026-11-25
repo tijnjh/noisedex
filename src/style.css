@@ -196,8 +196,7 @@ button,
   --top-gradient-hold: 1.25rem;
   --c: var(--top-gradient-color);
   --h: var(--top-gradient-hold);
-  /* absolute, not fixed: it belongs to the top of the page and scrolls away with it */
-  position: absolute;
+  position: fixed;
   z-index: -1;
   inset-inline: 0;
   top: 0;
