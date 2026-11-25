@@ -196,7 +196,8 @@ button,
   --top-gradient-hold: 1.25rem;
   --c: var(--top-gradient-color);
   --h: var(--top-gradient-hold);
-  position: fixed;
+  /* absolute, not fixed: it belongs to the top of the page and scrolls away with it */
+  position: absolute;
   z-index: -1;
   inset-inline: 0;
   top: 0;
@@ -223,10 +224,11 @@ button,
   }
 }
 
-/* the accent strip (see __root.tsx) covers the top ~6px on touch phones, start below it */
+/* the accent strip (see __root.tsx) shows 5px on touch phones (-top-1.75 + h-3): start 2px
+   above its bottom edge so the two overlap instead of leaving a gap */
 @media (width < 48rem) and (pointer: coarse) {
   [data-top-gradient] {
-    top: 6px;
+    top: 3px;
   }
 }
 

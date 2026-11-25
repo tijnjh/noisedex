@@ -48,13 +48,10 @@ function RootComponent() {
           <div
             data-app-shell
             className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto]"
+            // read by the [data-top-gradient] elements in each page's Layout
+            style={{ "--theme-color": color } as CSSProperties}
           >
             <NavigationSpinner />
-            <div
-              data-top-gradient
-              aria-hidden="true"
-              style={{ "--theme-color": color } as CSSProperties}
-            />
             {color && (
               <div
                 key={color}

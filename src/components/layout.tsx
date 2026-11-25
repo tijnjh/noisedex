@@ -55,6 +55,7 @@ export function Layout({
       style={{ "--page-accent": color } as CSSProperties}
     >
       <div data-page-backdrop aria-hidden="true" />
+      <div data-top-gradient aria-hidden="true" className="max-md:hidden" />
 
       <Header
         title={atTop ? undefined : title}
@@ -66,8 +67,9 @@ export function Layout({
       {children ? (
         <main
           data-scroll-restoration-id={scrollRegions.page}
-          className="flex min-h-0 flex-col overflow-hidden"
+          className="relative flex min-h-0 flex-col overflow-hidden"
         >
+          <div data-top-gradient aria-hidden="true" className="md:hidden" />
           <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
         </main>
       ) : (
@@ -75,8 +77,11 @@ export function Layout({
         <main
           data-scroll-restoration-id={scrollRegions.page}
           onScroll={handleScroll}
-          className="grid h-full grid-cols-1 gap-6 overflow-y-auto px-3 max-lg:content-start max-md:pt-15 lg:grid-cols-[auto_1fr] lg:overflow-hidden"
+          className="relative grid h-full grid-cols-1 gap-6 overflow-y-auto px-3 max-lg:content-start max-md:pt-15 lg:grid-cols-[auto_1fr] lg:overflow-hidden"
         >
+          {/* on small screens the header is at the bottom and this is the page's scroller, so the
+              gradient sits at the top of the content and scrolls away with it */}
+          <div data-top-gradient aria-hidden="true" className="md:hidden" />
           <div
             data-scroll-restoration-id={scrollRegions.sidebar}
             onScroll={handleScroll}
