@@ -182,8 +182,38 @@ button,
   transform: translateZ(0);
 }
 
+@property --top-gradient-color {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
+[data-top-gradient] {
+  --top-gradient-color: var(--theme-color, #e4e4e7);
+  position: fixed;
+  z-index: -1;
+  inset-inline: 0;
+  top: 0;
+  height: 50dvh;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--top-gradient-color),
+    color-mix(in srgb, var(--top-gradient-color) 40%, transparent) 1.25rem,
+    transparent
+  );
+  transition: --top-gradient-color 350ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-top-gradient] {
+    --top-gradient-color: var(--theme-color, #27272a);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  [data-page-backdrop] {
+  [data-page-backdrop],
+  [data-top-gradient] {
     transition: none;
   }
 }

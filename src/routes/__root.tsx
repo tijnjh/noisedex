@@ -6,6 +6,7 @@ import styleCss from "../style.css?url";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { Provider } from "jotai";
 import { domAnimation, LazyMotion } from "motion/react";
+import type { CSSProperties } from "react";
 import { SkulletProvider } from "skullet/react";
 
 export const Route = createRootRoute({
@@ -49,6 +50,11 @@ function RootComponent() {
             className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto]"
           >
             <NavigationSpinner />
+            <div
+              data-top-gradient
+              aria-hidden="true"
+              style={{ "--theme-color": color } as CSSProperties}
+            />
             {color && (
               <div
                 key={color}
