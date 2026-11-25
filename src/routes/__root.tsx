@@ -1,5 +1,5 @@
 import { AccentHead, usePageAccent } from "#components/accent-head";
-import { MiniPlayer } from "#components/mini-player";
+import { NowPlayingAudio } from "#components/now-playing-audio";
 import { NavigationSpinner } from "#components/navigation-spinner";
 import { siteName } from "#lib/constants";
 import styleCss from "../style.css?url";
@@ -70,7 +70,7 @@ function RootComponent() {
               </SkulletProvider>
             </LazyMotion>
 
-            <MiniPlayer />
+            <NowPlayingAudio />
           </div>
 
           <Scripts />
