@@ -15,6 +15,7 @@ export function usePageAccent() {
   const matches = useMatches();
   let artwork: string | undefined;
   let color: string | Promise<string | undefined> | undefined;
+  let background: string | Promise<string | undefined> | undefined;
 
   for (const match of matches) {
     if (match.status !== "success") continue;
@@ -22,6 +23,7 @@ export function usePageAccent() {
     if (match.routeId === "/$itunesId/" && match.loaderData) {
       const music = match.loaderData;
       color = music.data.accentColor;
+      if ("backgroundColor" in music.data) background = music.data.backgroundColor;
       if (music.type === "album") artwork = music.data.album.artworkUrl100;
       if (music.type === "track") artwork = music.data.track.artworkUrl100;
     }
@@ -30,6 +32,8 @@ export function usePageAccent() {
   return {
     artwork,
     color: useResolved(color).value,
+    // the plain page background behind the accent gradients
+    background: useResolved(background).value,
   };
 }
 

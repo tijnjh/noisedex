@@ -1,7 +1,7 @@
-import { extractArtworkColor } from "./artwork-color.server";
+import { extractArtworkColors } from "./artwork-color.server";
 import { createServerFn } from "@tanstack/react-start";
 import * as v from "valibot";
 
-export const getArtworkColor = createServerFn()
+export const getArtworkColors = createServerFn()
   .validator(v.string())
-  .handler(({ data }) => extractArtworkColor(data));
+  .handler(({ data }) => extractArtworkColors(data));

@@ -9,7 +9,7 @@ import * as $fantano from "#lib/api/platforms/fantano";
 import { encodeItunesId, getBigItunesArtwork } from "#lib/api/platforms/itunes-data";
 import * as $wikipedia from "#lib/api/platforms/wikipedia";
 import { resolveArtistCredit } from "#lib/artist-credit";
-import { getArtworkColor } from "#lib/artwork-color";
+import { getArtworkColors } from "#lib/artwork-color";
 import { siteName } from "#lib/constants";
 import { musicHead } from "#lib/head";
 import { albumLinks } from "#lib/platform-links";
@@ -22,6 +22,7 @@ type AlbumData = ReturnType<typeof loadAlbum>;
 // unawaited promises stream in after the page
 export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: ResultMusicTrack[] }) {
   const { collectionName, artistName } = album;
+  const colors = getArtworkColors({ data: album.artworkUrl100 }).catch(() => undefined);
 
   return {
     album,
@@ -30,7 +31,8 @@ export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: Resul
     wikipedia: $wikipedia.enrichWithGenres(
       $wikipedia.getAlbumByName({ data: { album: collectionName, artist: artistName } }),
     ),
-    accentColor: getArtworkColor({ data: album.artworkUrl100 }).catch(() => undefined),
+    accentColor: colors.then((c) => c?.accent),
+    backgroundColor: colors.then((c) => c?.background),
     fantanoReview: $fantano.getReview({ data: { album: collectionName, artist: artistName } }),
   };
 }

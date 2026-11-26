@@ -1,7 +1,8 @@
 import { cached } from "./cache.server";
 import { Vibrant } from "node-vibrant/node";
 
-export const extractArtworkColor = cached(async (url: string) => {
+// accent tints the backdrop effects and surfaces, background tints the page behind them
+export const extractArtworkColors = cached(async (url: string) => {
   const source = new URL(url);
   if (source.protocol !== "https:" || !source.hostname.endsWith(".mzstatic.com")) {
     throw new Error("Not an itunes artwork url");
@@ -13,5 +14,7 @@ export const extractArtworkColor = cached(async (url: string) => {
   const image = Buffer.from(await response.arrayBuffer());
   const palette = await Vibrant.from(image).getPalette();
 
-  return palette.Vibrant?.hex ?? palette.Muted?.hex;
+  const accent = palette.Vibrant?.hex ?? palette.Muted?.hex;
+  const background = palette.LightMuted?.hex ?? palette.LightVibrant?.hex ?? accent;
+  return { accent, background };
 });

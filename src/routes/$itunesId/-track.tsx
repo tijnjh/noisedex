@@ -9,7 +9,7 @@ import {
   isSingleRelease,
 } from "#lib/api/platforms/itunes-data";
 import { resolveArtistCredit } from "#lib/artist-credit";
-import { getArtworkColor } from "#lib/artwork-color";
+import { getArtworkColors } from "#lib/artwork-color";
 import { siteName } from "#lib/constants";
 import { absoluteUrl, musicHead } from "#lib/head";
 import { trackLinks } from "#lib/platform-links";
@@ -20,13 +20,16 @@ import type { ResultMusicTrack } from "itunes-store-api";
 type TrackData = ReturnType<typeof loadTrack>;
 
 export function loadTrack({ track }: { track: ResultMusicTrack }) {
+  const colors = getArtworkColors({ data: track.artworkUrl100 }).catch(() => undefined);
+
   return {
     track,
     artists: resolveArtistCredit(track.artistName, track.artistId),
     playback: track.previewUrl
       ? { track: itunesPlayback(track), note: "30 second preview" }
       : undefined,
-    accentColor: getArtworkColor({ data: track.artworkUrl100 }).catch(() => undefined),
+    accentColor: colors.then((c) => c?.accent),
+    backgroundColor: colors.then((c) => c?.background),
   };
 }
 

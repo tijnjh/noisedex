@@ -126,6 +126,32 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+@property --body-background {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
+/* --page-background is the artwork's second color (see __root.tsx) */
+body {
+  --body-background: var(--page-background, var(--color-zinc-100));
+  background: var(--body-background);
+  transition: --body-background 350ms ease;
+}
+
+/* a light artwork color would wash out white text, so dark mode only takes a hint of it */
+@media (prefers-color-scheme: dark) {
+  body {
+    --body-background: color-mix(in srgb, var(--page-background, black) 18%, black);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
+}
+
 [data-app-shell] {
   padding-top: env(safe-area-inset-top, 0px);
   padding-right: env(safe-area-inset-right, 0px);

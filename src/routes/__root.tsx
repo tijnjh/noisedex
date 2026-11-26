@@ -34,7 +34,7 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const { color } = usePageAccent();
+  const { color, background } = usePageAccent();
 
   return (
     <Provider>
@@ -44,7 +44,10 @@ function RootComponent() {
           <AccentHead />
         </head>
 
-        <body className="relative isolate touch-manipulation bg-zinc-100 text-black scheme-light-dark dark:bg-black dark:text-white">
+        <body
+          className="relative isolate touch-manipulation text-black scheme-light-dark dark:text-white"
+          style={{ "--page-background": background } as CSSProperties}
+        >
           <div
             data-app-shell
             className="relative grid h-dvh grid-cols-1 overflow-hidden max-md:grid-rows-[minmax(0,1fr)_auto]"
