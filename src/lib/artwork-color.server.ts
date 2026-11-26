@@ -21,5 +21,15 @@ export const extractArtworkColors = cached(async (url: string) => {
   const middle = [palette.LightVibrant, palette.Muted, palette.DarkVibrant]
     .map((swatch) => swatch?.hex)
     .find((hex) => hex && hex !== accent && hex !== background);
-  return { accent, middle, background };
+
+  return { accent: toP3(accent), middle: toP3(middle), background: toP3(background) };
 });
+
+// reuses the srgb channels as display-p3 ones, so the color keeps its character but gets more vivid
+function toP3(hex?: string) {
+  if (!hex) return;
+
+  const channels = [1, 3, 5].map((i) => (parseInt(hex.slice(i, i + 2), 16) / 255).toFixed(3));
+
+  return `color(display-p3 ${channels.join(" ")})`;
+}
