@@ -10,6 +10,12 @@ export interface GenreMeta {
   preview?: Preview;
   artists: Artist[];
   relatedGenres: Genre[];
+  links?: GenreLink[];
+}
+
+export interface GenreLink {
+  text: string;
+  href: string;
 }
 
 export interface Artist {

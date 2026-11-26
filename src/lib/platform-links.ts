@@ -1,3 +1,4 @@
+import type { GenreLink } from "./api/platforms/everynoise-data.ts";
 import { trimItunesCollectionPostfix } from "./api/platforms/itunes-data.ts";
 
 export const platforms = {
@@ -75,4 +76,16 @@ export function trackLinks(track: { artistName: string; trackName: string; track
     bandcamp: `https://bandcamp.com/search?q=${query}&item_type=t`,
     soundcloak: `https://sc.maid.zone/search?q=${query}&type=tracks`,
   });
+}
+
+export function genreLinks(links: GenreLink[] = []): PlatformLink[] {
+  const spotifyLinks = links.filter(
+    (link) => URL.parse(link.href)?.hostname === "open.spotify.com",
+  );
+
+  return spotifyLinks.map((link) => ({
+    name: link.text,
+    icon: platforms.spotify.icon,
+    href: link.href,
+  }));
 }

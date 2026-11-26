@@ -1,6 +1,7 @@
 import { Chip } from "#components/chip";
 import { GenreChip } from "#components/genre-chip";
 import { ContentPane, Layout } from "#components/layout";
+import { PlatformLinks } from "#components/platform-links";
 import { TrackCard, useHoverPlayAction } from "#components/play-button";
 import { StatusPage } from "#components/status-page";
 import { WikipediaDescription } from "#components/wikipedia-description";
@@ -9,6 +10,7 @@ import type { Artist, Genre } from "#lib/api/platforms/everynoise-data";
 import * as $wikipedia from "#lib/api/platforms/wikipedia";
 import { siteName } from "#lib/constants";
 import { pageHead } from "#lib/head";
+import { genreLinks } from "#lib/platform-links";
 import { previewPlayback } from "#lib/playback";
 import { capitalizeWords } from "#lib/utils";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
@@ -77,6 +79,8 @@ function RouteComponent() {
       playback={genre.preview && { track: previewPlayback(genre.preview), note: "example track" }}
       leading={
         <>
+          <PlatformLinks links={genreLinks(genre.links)} />
+
           <WikipediaDescription summary={genre.wikipediaGenre} />
 
           <span className="section-divider">related genres</span>
