@@ -117,6 +117,7 @@ function ArtistChip({ artist }: { artist: Artist }) {
   return (
     <Chip
       containerProps={hoverProps}
+      tint={artist.style.color}
       // everynoise only knows spotify ids, so jump to the best itunes match for the name
       to="/search"
       search={{ q: artist.artistName, lucky: true }}

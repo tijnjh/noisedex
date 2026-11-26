@@ -1,12 +1,13 @@
 import { Link, type LinkProps } from "@tanstack/react-router";
 import { cn } from "cn";
-import type { HTMLAttributes, ReactNode } from "react";
+import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
 
 export function Chip({
   children,
   subtitle,
   artwork,
   trailing,
+  tint,
   className,
   vt,
   containerProps,
@@ -16,6 +17,8 @@ export function Chip({
   subtitle?: string;
   artwork?: string;
   trailing?: ReactNode;
+  // tints the background and border, e.g. with the genre color
+  tint?: string;
   className?: string;
   // view transition names
   vt?: { img?: string; title?: string };
@@ -40,7 +43,13 @@ export function Chip({
       <Link
         {...props}
         draggable={false}
-        className={cn("btn min-w-0 grow px-0", subtitle && "h-full", className)}
+        className={cn(
+          "btn min-w-0 grow px-0",
+          subtitle && "h-full",
+          tint && "chip-tinted",
+          className,
+        )}
+        style={tint ? ({ "--chip-color": tint } as CSSProperties) : undefined}
       >
         {subtitle ? (
           <span className="flex min-w-0 flex-col px-3 leading-tight">

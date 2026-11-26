@@ -13,6 +13,7 @@ export function GenreChip({ genre }: { genre: Genre }) {
   return (
     <Chip
       containerProps={hoverProps}
+      tint={genre.style.color}
       className="lowercase"
       to="/genre/$slug"
       params={{ slug: genreNameToSlug(genre.genreName) }}
