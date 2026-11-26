@@ -33,6 +33,7 @@ export function loadAlbum({ album, tracks }: { album: ResultAlbum; tracks: Resul
     ),
     accentColor: colors.then((c) => c?.accent),
     backgroundColor: colors.then((c) => c?.background),
+    middleColor: colors.then((c) => c?.middle),
     fantanoReview: $fantano.getReview({ data: { album: collectionName, artist: artistName } }),
   };
 }

@@ -1,7 +1,8 @@
 import { cached } from "./cache.server";
 import { Vibrant } from "node-vibrant/node";
 
-// accent tints the backdrop effects and surfaces, background tints the page behind them
+// accent tints the backdrop effects and surfaces, background tints the page behind them,
+// and the top gradient runs from accent through middle into background
 export const extractArtworkColors = cached(async (url: string) => {
   const source = new URL(url);
   if (source.protocol !== "https:" || !source.hostname.endsWith(".mzstatic.com")) {
@@ -16,5 +17,9 @@ export const extractArtworkColors = cached(async (url: string) => {
 
   const accent = palette.Vibrant?.hex ?? palette.Muted?.hex;
   const background = palette.LightMuted?.hex ?? palette.LightVibrant?.hex ?? accent;
-  return { accent, background };
+  // the first other swatch, so the gradient doesn't just repeat one of its ends
+  const middle = [palette.LightVibrant, palette.Muted, palette.DarkVibrant]
+    .map((swatch) => swatch?.hex)
+    .find((hex) => hex && hex !== accent && hex !== background);
+  return { accent, middle, background };
 });

@@ -134,7 +134,9 @@ html {
 
 /* --page-background is the artwork's second color (see __root.tsx) */
 body {
-  --body-background: var(--page-background, var(--color-zinc-100));
+  /* unregistered, so it inherits: the top gradient fades into it */
+  --page-bg: var(--page-background, var(--color-zinc-100));
+  --body-background: var(--page-bg);
   background: var(--body-background);
   transition: --body-background 350ms ease;
 }
@@ -142,7 +144,7 @@ body {
 /* a light artwork color would wash out white text, so dark mode only takes a hint of it */
 @media (prefers-color-scheme: dark) {
   body {
-    --body-background: color-mix(in srgb, var(--page-background, black) 18%, black);
+    --page-bg: color-mix(in srgb, var(--page-background, black) 18%, black);
   }
 }
 
@@ -214,8 +216,26 @@ button,
   initial-value: transparent;
 }
 
+@property --top-gradient-middle {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
+@property --top-gradient-end {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
 [data-top-gradient] {
   --top-gradient-color: var(--theme-color, #e4e4e7);
+  --top-gradient-end: var(--page-bg);
+  /* a third artwork color where there is one, otherwise just halfway between the ends */
+  --top-gradient-middle: var(
+    --theme-middle,
+    color-mix(in oklab, var(--top-gradient-color), var(--top-gradient-end))
+  );
   --top-gradient-hold: 1.25rem;
   --c: var(--top-gradient-color);
   --h: var(--top-gradient-hold);
@@ -225,8 +245,17 @@ button,
   top: 0;
   height: 75dvh;
   pointer-events: none;
-  background: linear-gradient(var(--c), var(--c) var(--h), transparent);
-  transition: --top-gradient-color 350ms ease;
+  background: linear-gradient(
+    in oklch,
+    var(--c),
+    var(--c) var(--h),
+    var(--top-gradient-middle),
+    var(--top-gradient-end)
+  );
+  transition:
+    --top-gradient-color 350ms ease,
+    --top-gradient-middle 350ms ease,
+    --top-gradient-end 350ms ease;
 }
 
 /* small screens put the header at the bottom, so the first text is ~5rem down: hold longer */
@@ -247,6 +276,12 @@ button,
 @media (prefers-color-scheme: dark) {
   [data-top-gradient] {
     --top-gradient-color: var(--theme-color, #27272a);
+    /* a light middle color would glare against the dark background, so tone it down */
+    --top-gradient-middle: color-mix(
+      in oklab,
+      var(--theme-middle, var(--top-gradient-color)) 50%,
+      var(--top-gradient-end)
+    );
   }
 }
 

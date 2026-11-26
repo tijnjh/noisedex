@@ -30,6 +30,7 @@ export function loadTrack({ track }: { track: ResultMusicTrack }) {
       : undefined,
     accentColor: colors.then((c) => c?.accent),
     backgroundColor: colors.then((c) => c?.background),
+    middleColor: colors.then((c) => c?.middle),
   };
 }
 

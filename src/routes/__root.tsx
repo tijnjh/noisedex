@@ -34,7 +34,7 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const { color, background } = usePageAccent();
+  const { color, background, middle } = usePageAccent();
 
   return (
     <Provider>
@@ -56,7 +56,7 @@ function RootComponent() {
             <div
               data-top-gradient
               aria-hidden="true"
-              style={{ "--theme-color": color } as CSSProperties}
+              style={{ "--theme-color": color, "--theme-middle": middle } as CSSProperties}
             />
             {color && (
               <div
