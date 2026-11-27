@@ -5,6 +5,4 @@ export const scrollRegions = {
   genres: "genre-grid",
 } as const;
 
-export const scrollRegionSelectors = Object.values(scrollRegions).map(
-  (id) => `[data-scroll-restoration-id="${id}"]`,
-);
+export type ScrollRegion = keyof typeof scrollRegions;

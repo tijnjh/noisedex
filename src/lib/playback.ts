@@ -1,17 +1,4 @@
-import { atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
-
-export interface PlaybackTrack {
-  title?: string;
-  artist?: string;
-  artworkSrc?: string;
-  url?: string;
-}
-
-// undefined while nothing plays
-export const nowPlayingAtom = atom<PlaybackTrack>();
-
-export const playOnHoverAtom = atomWithStorage("play-on-hover", false);
+import type { PlaybackTrack } from "#domain/playback";
 
 export function itunesPlayback(track: {
   trackName: string;
@@ -35,6 +22,6 @@ export function previewPlayback(preview: { title: string; url: string }): Playba
     .match(/^(.+?)\s+"([\s\S]*)"$/);
 
   return match
-    ? { artist: match[1], title: match[2], url: preview.url }
+    ? { artist: match[1]!, title: match[2]!, url: preview.url }
     : { title: preview.title, url: preview.url };
 }

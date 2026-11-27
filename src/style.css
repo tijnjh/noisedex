@@ -144,7 +144,7 @@ html {
   initial-value: transparent;
 }
 
-/* --page-background is the artwork's second color (see __root.tsx) */
+/* --page-background is the artwork's second color (see App.ts) */
 body {
   /* unregistered, so it inherits: the top gradient fades into it */
   --page-bg: var(--page-background, var(--color-zinc-100));
@@ -277,7 +277,7 @@ button,
   }
 }
 
-/* the accent strip (see __root.tsx) shows 5px on touch phones (-top-1.75 + h-3): start 2px
+/* the accent strip (see App.ts) shows 5px on touch phones (-top-1.75 + h-3): start 2px
    above its bottom edge so the two overlap instead of leaving a gap */
 @media (width < 48rem) and (pointer: coarse) {
   [data-top-gradient] {
@@ -324,14 +324,102 @@ button,
     display: none;
   }
 
-  &[data-starting-style],
+  /* opens from the clamped preview with a keyframe animation, which ui-kit holds back until it
+     has measured the panel; a transition from data-starting-style starts from full height */
+  &[data-open] {
+    animation: wikipedia-panel-open 150ms ease-out;
+  }
+
   &[data-ending-style] {
+    height: var(--description-preview-height);
+  }
+}
+
+@keyframes wikipedia-panel-open {
+  from {
     height: var(--description-preview-height);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   [data-wikipedia-panel] {
+    animation: none;
     transition: none;
+  }
+}
+
+/* the server renders the app into #app, which shouldn't add a box of its own */
+#app {
+  display: contents;
+}
+
+/* popovers sit in the top layer, so they escape the scrolling panes. undo the browser's popover
+   styles, and what they'd inherit from their anchor's surroundings (see PopoverLayer) */
+[data-popover] {
+  --page-accent: initial;
+  inset: auto;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  font-size: 1rem;
+  line-height: var(--default-line-height);
+  font-weight: 400;
+  font-style: normal;
+  text-align: start;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: normal;
+  cursor: auto;
+}
+
+/* the logo's letters that fold away once the big title scrolls out of view */
+[data-collapsible-letters] {
+  width: 0;
+  transition: width 0.3s cubic-bezier(0.25, 0.1, 0.35, 1);
+
+  &[data-shown] {
+    width: auto;
+  }
+}
+
+/* the page title that moves into the header, fading in and out */
+[data-page-title] {
+  transition:
+    opacity 0.3s cubic-bezier(0.25, 0.1, 0.35, 1),
+    display 0.3s allow-discrete;
+
+  &:not([data-shown]) {
+    display: none;
+    opacity: 0;
+  }
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+/* the big title fades out as it scrolls away */
+[data-title-row] {
+  transition: opacity 0.3s cubic-bezier(0.25, 0.1, 0.35, 1);
+}
+
+/* the play button in front of the big title folds away when there's nothing to play */
+[data-title-playback] {
+  width: auto;
+  margin-right: 12px;
+  transition:
+    width 0.3s cubic-bezier(0.25, 0.1, 0.35, 1),
+    margin-right 0.3s cubic-bezier(0.25, 0.1, 0.35, 1),
+    opacity 0.3s cubic-bezier(0.25, 0.1, 0.35, 1),
+    display 0.3s allow-discrete;
+
+  &:not([data-shown]) {
+    display: none;
+    width: 0;
+    margin-right: 0;
+    opacity: 0;
   }
 }

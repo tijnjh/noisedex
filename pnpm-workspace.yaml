@@ -26,3 +26,6 @@ minimumReleaseAgeExclude:
   - vitest
   - "@vitest/*"
   - allo-font@1.0.0
+  - effect@4.1.6
+  - "@effect/platform-node-shared@4.1.6"
+  - "@effect/platform-node@4.1.6"

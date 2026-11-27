@@ -2,21 +2,22 @@ import { cached, day } from "../../cache.server";
 import { genreNameToSlug, type ArtistMeta, type Genre, type GenreMeta } from "./everynoise-data";
 import { searchArtists } from "./spotify.server";
 import uFuzzy from "@leeoniya/ufuzzy";
-import { isResponseError, up } from "up-fetch";
+import { fetchJson, ResponseError } from "#lib/fetch.server";
 
 // pinned so jsdelivr caches it, and so the data only changes when we deploy
 const everynoiseDataCommit = "1b1adbca29e767a44fd80dd20cfdcb1a40b39aaa";
 
-const everynoiseFetch = up(fetch, () => ({
-  timeout: 4000,
-  baseUrl: `https://cdn.jsdelivr.net/gh/tijnjh/everynoise-json@${everynoiseDataCommit}/data-min`,
-}));
+const everynoiseFetch = <T>(path: string) =>
+  fetchJson<T>(
+    `https://cdn.jsdelivr.net/gh/tijnjh/everynoise-json@${everynoiseDataCommit}/data-min${path}`,
+    { timeout: 4000 },
+  );
 
 async function fetchIfExists<T>(path: string) {
   try {
     return await everynoiseFetch<T>(path);
   } catch (error) {
-    if (isResponseError(error) && error.status === 404) return;
+    if (error instanceof ResponseError && error.status === 404) return;
     throw error;
   }
 }
@@ -24,10 +25,11 @@ async function fetchIfExists<T>(path: string) {
 export const getAllGenres = cached(() => everynoiseFetch<Genre[]>("/genres.json"), day);
 
 // mappings update hourly so read from main, jsdelivr refuses unpinned urls since the repo is over 50MB
-const artistMappingsFetch = up(fetch, () => ({
-  timeout: 20_000,
-  baseUrl: "https://raw.githubusercontent.com/tijnjh/everynoise-json/main/data/artist-mappings",
-}));
+const artistMappingsFetch = <T>(path: string) =>
+  fetchJson<T>(
+    `https://raw.githubusercontent.com/tijnjh/everynoise-json/main/data/artist-mappings${path}`,
+    { timeout: 20_000 },
+  );
 
 export const getMappedArtistIds = cached(async () => {
   const ids = await artistMappingsFetch<unknown>("/all.json");

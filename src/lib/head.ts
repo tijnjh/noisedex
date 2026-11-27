@@ -1,4 +1,6 @@
-import { siteName, siteUrl } from "./constants";
+import { Head } from "@effect/ui";
+import { HtmlHead } from "@effect/ui/html";
+import { siteName, siteUrl } from "./constants.ts";
 
 export const absoluteUrl = (path: string) => `${siteUrl}${path}`;
 
@@ -8,11 +10,15 @@ interface Page {
   path: string;
 }
 
+export const canonical = (path: string) =>
+  HtmlHead.link({ rel: "canonical", href: absoluteUrl(path) });
+
 export function pageHead({ title, description, path }: Page) {
-  return {
-    meta: [{ title: `${title} • ${siteName}` }, { name: "description", content: description }],
-    links: [{ rel: "canonical", href: absoluteUrl(path) }],
-  };
+  return [
+    Head.title(`${title} • ${siteName}`),
+    HtmlHead.meta({ name: "description", content: description }),
+    canonical(path),
+  ];
 }
 
 export function musicHead({
@@ -25,29 +31,20 @@ export function musicHead({
   type: "music.album" | "music.song";
   jsonLd: Record<string, unknown>;
 }) {
-  const { meta, links } = pageHead(page);
   const url = absoluteUrl(page.path);
 
-  return {
-    meta: [
-      ...meta,
-      { property: "og:type", content: type },
-      { property: "og:title", content: `${page.title} • ${siteName}` },
-      { property: "og:description", content: page.description },
-      { property: "og:image", content: artwork },
-      { property: "og:url", content: url },
-    ],
-    links,
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@id": url,
-          url,
-          ...jsonLd,
-        }).replace(/</g, "\\u003c"),
-      },
-    ],
-  };
+  return [
+    ...pageHead(page),
+    HtmlHead.meta({ property: "og:type", content: type }),
+    HtmlHead.meta({ property: "og:title", content: `${page.title} • ${siteName}` }),
+    HtmlHead.meta({ property: "og:description", content: page.description }),
+    HtmlHead.meta({ property: "og:image", content: artwork }),
+    HtmlHead.meta({ property: "og:url", content: url }),
+    // through json, which drops the fields that are undefined
+    HtmlHead.jsonLd(
+      JSON.parse(
+        JSON.stringify({ "@context": "https://schema.org", "@id": url, url, ...jsonLd }),
+      ) as object,
+    ),
+  ];
 }
