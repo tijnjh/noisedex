@@ -22,7 +22,7 @@ last.fm, bandcamp, AOTY and RYM are linked, not data sources
 
 ## stack
 
-react, tanstack start, jotai, tailwindcss and vite+
+[effect ui](https://github.com/Effect-TS/ui) (`@effect/ui` and `@effect/ui-kit`), effect, tailwindcss and vite+
 
 ## development
 

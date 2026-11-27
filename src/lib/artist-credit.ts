@@ -1,8 +1,8 @@
-import * as $itunes from "#lib/api/platforms/itunes";
+import { Effect } from "effect";
 
 export interface CreditedArtist {
   name: string;
-  artistId?: number;
+  artistId?: number | undefined;
 }
 
 const creditSeparator = /\s*,\s*|\s+&\s+/;
@@ -30,15 +30,18 @@ export function splitArtistCredit(credit: string, knownNames: string[] = []) {
 }
 
 // itunes only ids the first artist, its full name shows where it ends
-export async function resolveArtistCredit(
+export function resolveCredit(
   credit: string,
   artistId: number,
-): Promise<CreditedArtist[]> {
-  if (!creditSeparator.test(credit)) return [{ name: credit, artistId }];
+  artistName: (id: number) => Effect.Effect<string | null>,
+): Effect.Effect<CreditedArtist[]> {
+  if (!creditSeparator.test(credit)) return Effect.succeed([{ name: credit, artistId }]);
 
-  const firstName = await $itunes.getArtistName(artistId).catch(() => undefined);
+  return artistName(artistId).pipe(
+    Effect.map((firstName) => {
+      const [first = credit, ...rest] = splitArtistCredit(credit, firstName ? [firstName] : []);
 
-  const [first, ...rest] = splitArtistCredit(credit, firstName ? [firstName] : []);
-
-  return [{ name: first, artistId }, ...rest.map((name) => ({ name }))];
+      return [{ name: first, artistId }, ...rest.map((name) => ({ name }))];
+    }),
+  );
 }
