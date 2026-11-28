@@ -5,15 +5,12 @@ import { TrackCard, useHoverPlayAction } from "./play-button";
 
 export function GenreChip({ genre }: { genre: Genre }) {
   const track = previewPlayback(genre.preview);
-  const hoverProps = useHoverPlayAction(
-    () => track,
-    <TrackCard track={track} note="example track" />,
-  );
+  const hoverProps = useHoverPlayAction(() => track, <TrackCard track={track} />);
 
   return (
     <Chip
       containerProps={hoverProps}
-      tint={genre.style.color}
+      color={genre.style.color}
       className="lowercase"
       to="/genre/$slug"
       params={{ slug: genreNameToSlug(genre.genreName) }}

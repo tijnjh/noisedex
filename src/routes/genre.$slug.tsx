@@ -109,15 +109,12 @@ function RouteComponent() {
 
 function ArtistChip({ artist }: { artist: Artist }) {
   const track = previewPlayback(artist.preview);
-  const hoverProps = useHoverPlayAction(
-    () => track,
-    <TrackCard track={track} note="example track" />,
-  );
+  const hoverProps = useHoverPlayAction(() => track, <TrackCard track={track} />);
 
   return (
     <Chip
       containerProps={hoverProps}
-      tint={artist.style.color}
+      color={artist.style.color}
       // everynoise only knows spotify ids, so jump to the best itunes match for the name
       to="/search"
       search={{ q: artist.artistName, lucky: true }}

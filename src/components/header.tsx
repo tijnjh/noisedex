@@ -21,20 +21,18 @@ export function Header({ collapsed, ...titleProps }: HeaderProps) {
   const [playOnHover, setPlayOnHover] = useAtom(playOnHoverAtom);
 
   return (
-    <header className="flex gap-3 overflow-hidden p-3 max-md:order-last max-md:flex-col md:items-center md:justify-between">
+    <header className="p-3 gap-3 grid md:grid-cols-4 max-md:order-last grid-cols-1">
       <div className="flex items-center gap-3 truncate">
         <Logo collapsed={collapsed} />
         <PageTitle {...titleProps} />
       </div>
 
-      <div className="flex grow items-center gap-3 md:max-w-xl">
-        <label className="flex cursor-pointer items-center gap-3 select-none max-md:hidden pointer-coarse:hidden">
-          play on hover
-          <Switch checked={playOnHover} onCheckedChange={setPlayOnHover} />
-        </label>
+      <SearchBar />
 
-        <SearchBar />
-      </div>
+      <label className="flex place-self-end h-full cursor-pointer items-center gap-3 select-none max-md:hidden pointer-coarse:hidden">
+        play on hover
+        <Switch checked={playOnHover} onCheckedChange={setPlayOnHover} />
+      </label>
     </header>
   );
 }
@@ -133,7 +131,7 @@ function SearchBar() {
   return (
     <form
       style={{ viewTransitionName: "search" }}
-      className="flex grow gap-3"
+      className="flex grow gap-3 col-span-2"
       onSubmit={(e) => {
         e.preventDefault();
         const query = value.trim();

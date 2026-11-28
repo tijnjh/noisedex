@@ -103,7 +103,7 @@ export function AlbumPage({
         <ContentPane label="Track list" className="overflow-x-clip pb-32 lg:h-full">
           <h2 className="section-divider">tracks</h2>
 
-          <div className="grid w-full grid-cols-[max-content_1fr] gap-3">
+          <div className="w-full flex flex-col gap-3">
             {tracks.map((track) => (
               <Track key={track.trackId} track={track} />
             ))}
@@ -152,18 +152,12 @@ function Track({ track }: { track: ResultMusicTrack }) {
   const playback = itunesPlayback(track);
   const hoverProps = useHoverPlayAction(
     () => playback,
-    (playing) => (
-      <TrackCard track={playing} note={track.previewUrl ? "30 second preview" : undefined} />
-    ),
+    (playing) => <TrackCard track={playing} />,
   );
 
   return (
-    <div {...hoverProps} className="col-span-full grid w-full grid-cols-subgrid">
-      <div className="flex items-center justify-end">{track.trackNumber}</div>
-
-      <Chip to="/$itunesId" params={{ itunesId: encodeItunesId(track.trackId) }}>
-        {track.trackName}
-      </Chip>
-    </div>
+    <Chip {...hoverProps} to="/$itunesId" params={{ itunesId: encodeItunesId(track.trackId) }}>
+      {track.trackName}
+    </Chip>
   );
 }

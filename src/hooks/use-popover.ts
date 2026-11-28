@@ -1,3 +1,4 @@
+import { SmoothCorners } from "@lisse/react";
 import { createElement, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
@@ -16,10 +17,7 @@ export function usePopover(content: ReactNode) {
     el.className =
       isOpen === "touch" ? "surface absolute" : "surface absolute pointer-coarse:hidden";
 
-    // above on touch so the thumb doesn't cover it
-    const side = isOpen === "touch" ? "bottom: anchor(top)" : "top: anchor(bottom)";
-
-    el.style.cssText = `position-anchor: ${anchor}; ${side}; left: anchor(left); position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline`;
+    el.style.cssText = `position-anchor: ${anchor}; bottom: calc(anchor(top) + .75rem); left: anchor(left); position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline`;
     document.body.append(el);
 
     const root = createRoot(el);
